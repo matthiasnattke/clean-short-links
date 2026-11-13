@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,14 @@ Only for the link check: it requests the target addresses of your own short link
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.3.0 =
+* Link check: once a day, when saving and at the push of a button – does each short link answer, and can its targets still be reached? Problems show on the card, as a key figure and in a filter.
+* Unreachable targets are skipped: fallback, default target, otherwise “temporarily unavailable” (503) and after 30 days without a break “gone” (410). Once the target is back, the link works again.
+* Click limit: a link ends after a number of real visits.
+* Invitation links: personal links group by group, each with its own address, limit and expiry; copy all, CSV export.
+* Default target per site – home page, page, post, short link or URL – for unknown and inactive short links.
+* Other short links and the home page can be chosen as targets.
 
 = 0.2.0 =
 * Admin screens in the Clean Maintenance design: header with key figures, section navigation, tiles, switches, a card per short link and a sticky save bar.
