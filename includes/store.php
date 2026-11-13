@@ -503,15 +503,10 @@ function list_links( array $args = array() ) {
 	$like     = '%' . $wpdb->esc_like( $search ) . '%';
 	$state    = (string) ( $args['state'] ?? '' );
 	$now      = time();
-	// One fixed query: every filter is switched on or off by its parameter.
-	$where = '(%s = \'\' OR title LIKE %s OR slug LIKE %s OR target LIKE %s)
-		AND (%s <> \'paused\' OR status = \'paused\')
-		AND (%s <> \'waiting\' OR (status = \'active\' AND starts_at > %d))
-		AND (%s <> \'expired\' OR (status = \'active\' AND ends_at > 0 AND ends_at <= %d))
-		AND (%s <> \'scheduled\' OR rules <> \'[]\')';
-	$params = array( $search, $like, $like, $like, $state, $state, $now, $state, $now, $state );
-	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE $where", array_merge( array( $t['links'] ), $params ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a constant string with placeholders.
-	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE $where ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d", array_merge( array( $t['links'] ), $params, array( $per_page, ( $paged - 1 ) * $per_page ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a constant string with placeholders.
+	// Fixed queries: every filter is switched on or off by its parameter.
+	$params = array( $t['links'], $search, $like, $like, $like, $state, $state, $now, $state, $now, $state );
+	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]')", $params ) );
+	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]') ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d", array_merge( $params, array( $per_page, ( $paged - 1 ) * $per_page ) ) ) );
 	return array(
 		'items' => array_map( __NAMESPACE__ . '\\row_to_link', $rows ),
 		'total' => $total,

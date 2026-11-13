@@ -802,14 +802,14 @@ msgid "The short link could not be created."
 msgstr "Der Kurzlink konnte nicht angelegt werden."
 
 #. translators: 1: date, 2: number of visits
-#: includes/stats.php:192
+#: includes/stats.php:190
 #, php-format
 msgid "%1$s: %2$d visit"
 msgid_plural "%1$s: %2$d visits"
 msgstr[0] "%1$s: %2$d Aufruf"
 msgstr[1] "%1$s: %2$d Aufrufe"
 
-#: includes/stats.php:207
+#: includes/stats.php:205
 msgid "Visits per day"
 msgstr "Aufrufe pro Tag"
 
@@ -851,11 +851,11 @@ msgstr "Bitte ein Ziel wählen – einen Beitrag, eine Seite oder eine URL."
 msgid "The short link could not be saved."
 msgstr "Der Kurzlink konnte nicht gespeichert werden."
 
-#: includes/store.php:596
+#: includes/store.php:571
 msgid "(deleted content)"
 msgstr "(gelöschter Inhalt)"
 
-#: includes/store.php:599
+#: includes/store.php:574
 msgid "(no title)"
 msgstr "(ohne Titel)"
 
