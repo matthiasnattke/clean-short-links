@@ -112,6 +112,10 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * Invitation links: personal links group by group, each with its own address, limit and expiry; copy all, CSV export.
 * Default target per site – home page, page, post, short link or URL – for unknown and inactive short links.
 * Other short links and the home page can be chosen as targets.
+* Social media: link previews for messengers and networks – for posts and pages straight from the content, for outside addresses with title, description and image of their own; share buttons; channel addresses with their own statistics.
+* UTM parameters on request, derived from short link, channel and QR code.
+* Link-in-bio page with buttons for chosen short links.
+* Permanent redirects (301) for links that cannot change by themselves.
 
 = 0.2.0 =
 * Admin screens in the Clean Maintenance design: header with key figures, section navigation, tiles, switches, a card per short link and a sticky save bar.
