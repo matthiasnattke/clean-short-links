@@ -38,6 +38,20 @@ add_action(
 	}
 );
 
+/*
+ * The browser tab says "Edit short link" when an existing link is open.
+ */
+add_filter(
+	'admin_title',
+	function ( $title ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only reads which screen is shown.
+		if ( isset( $_GET['page'], $_GET['id'] ) && 'clean-short-links-edit' === $_GET['page'] && absint( $_GET['id'] ) ) {
+			return str_replace( __( 'Add short link', 'clean-short-links' ), __( 'Edit short link', 'clean-short-links' ), $title );
+		}
+		return $title;
+	}
+);
+
 /**
  * Texts and settings for admin.js and qr-designer.js.
  *

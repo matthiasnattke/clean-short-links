@@ -12,7 +12,7 @@
 .csl-top li { display: flex; justify-content: space-between; gap: 8px; }
 .csl-num { text-align: right; font-variant-numeric: tabular-nums; }
 .csl-table td { vertical-align: top; }
-.csl-target { color: #50575e; margin-top: 2px; }
+.csl-target { color: #50575e; margin-top: 2px; overflow-wrap: anywhere; }
 .csl-badge { display: inline-block; background: var(--csl-soft); color: var(--csl-ink); border-radius: 10px; padding: 0 8px; font-size: 12px; line-height: 20px; margin-left: 4px; }
 .csl-state { display: inline-block; border-radius: 10px; padding: 0 8px; font-size: 12px; line-height: 20px; background: #edfaef; color: #00450c; }
 .csl-state-waiting { background: #fcf9e8; color: #614a00; }
@@ -88,4 +88,10 @@
 
 @media (max-width: 1100px) {
 	.csl-columns, .csl-summary { grid-template-columns: 1fr; }
+}
+@media (max-width: 782px) {
+	.csl-table { table-layout: fixed; }
+	.csl-table th:nth-child(n+4), .csl-table td:nth-child(n+4) { display: none; }
+	.csl-copy { flex-wrap: wrap; }
+	.csl-copy code { white-space: normal; overflow-wrap: anywhere; }
 }
