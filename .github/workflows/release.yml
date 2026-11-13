@@ -12,6 +12,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Fallback: start by hand for an existing tag (gh workflow run Release --ref vX.Y.Z).
+  workflow_dispatch:
 
 permissions:
   contents: write
