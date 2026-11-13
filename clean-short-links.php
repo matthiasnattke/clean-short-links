@@ -3,7 +3,7 @@
  * Plugin Name:       Clean Short Links
  * Plugin URI:        https://couch-blog.de/projekte/clean-short-links/
  * Description:       Short links for posts, pages and any URL: random, memorable or your own, with start and end dates, targets that change by date and time, QR codes with your logo and privacy-friendly click statistics. In a multisite network every site has its own short links, and the network admin shows them all at a glance.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Network:           true
  * Requires at least: 6.4
  * Requires PHP:      8.0
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CLEAN_SHORT_LINKS_VERSION', '0.1.0' );
+define( 'CLEAN_SHORT_LINKS_VERSION', '0.2.0' );
 define( 'CLEAN_SHORT_LINKS_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/core.php';

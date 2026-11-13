@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,7 +78,11 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 
 == Changelog ==
 
+= 0.2.0 =
+* Admin screens in the Clean Maintenance design: header with key figures, section navigation, tiles, switches, a card per short link and a sticky save bar.
+* QR codes: connected dots, round corners, a call-to-action pill (below the code or on a frame), transparent background and vector PDF export.
+* New icon and banner.
+* Asset versions include the file time, so browsers load updates right away.
+
 = 0.1.0 =
-* Admin screens in the Clean Maintenance design: header, section navigation, tiles, switches and a sticky save bar.
-* QR codes: connected dots, round corners, call-to-action pill, transparent background, PDF export.
 * First version: short links for posts, pages and URLs, random/memorable/title/own short addresses, short form without prefix, aliases, time windows with fallback, rules by date and time, QR designer with logo, statistics, block editor panel, automatic links, bulk creation, import, network overview and settings.
