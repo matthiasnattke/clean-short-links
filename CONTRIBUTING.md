@@ -61,6 +61,8 @@ git tag -a v0.2.0 -m "Clean Short Links 0.2.0"
 git push origin main v0.2.0
 ```
 
+If a tag push ever does not start the release workflow, start it by hand for that tag: `gh workflow run Release --ref v0.2.0`.
+
 Pushing a tag starts the release workflow: it checks that the tag matches the plugin version (final versions must be on `main`), runs the tests, builds the installable ZIP and creates a GitHub release – marked as pre-release for tags with a suffix. Once the plugin is listed on WordPress.org and the secrets `SVN_USERNAME` and `SVN_PASSWORD` are set, final versions are deployed there automatically, including icon and banner from `.wordpress-org/`.
 
 ## Translations
