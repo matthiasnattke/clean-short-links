@@ -350,3 +350,21 @@ textarea.csl-wide { max-width: none; }
 .csl-invites td { padding: 6px 8px 6px 0; border-bottom: 1px solid #f6f7f7; vertical-align: middle; }
 .csl-invites td:last-child { width: 30px; }
 #csl-sec-default:not(:has(.csl-tile-default-custom input:checked)) .csl-default-custom { display: none; }
+
+/* Sharing and social media */
+.csl-social-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; }
+.csl-og { display: flex; flex-direction: column; max-width: 420px; border: 1px solid var(--csl-line); border-radius: 12px; overflow: hidden; background: #fff; }
+.csl-og img { display: block; width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; background: var(--csl-soft); }
+.csl-og-text { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #f6f7f7; }
+.csl-og-text small { color: var(--csl-muted); text-transform: uppercase; font-size: 11px; letter-spacing: .03em; }
+.csl-og-text strong { font-size: 14px; line-height: 1.3; }
+.csl-og-text span { color: var(--csl-muted); font-size: 13px; line-height: 1.4; }
+.csl-social-from-post { max-width: 420px; }
+.csl-social-own { margin-top: 12px; }
+.csl-social-own .csl-field { margin-bottom: 10px; }
+.csl-social-image { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.csl-social-image img { width: 120px; height: 63px; object-fit: cover; border-radius: 8px; border: 1px solid var(--csl-line); }
+.csl-share { display: flex; flex-wrap: wrap; gap: 8px; }
+.csl-channel-urls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.csl-bio-order { margin-top: 10px; }
+@media (max-width: 960px) { .csl-social-grid { grid-template-columns: minmax(0, 1fr); } }

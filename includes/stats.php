@@ -146,7 +146,7 @@ function breakdown( $link_id, $column, $days = 30 ) {
 function export_csv( $link_id ) {
 	global $wpdb;
 	$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT day, source, device, referrer, hits FROM %i WHERE link_id = %d ORDER BY day, source, device', tables()['clicks'], $link_id ) );
-	$src  = array( 'link', 'qr', 'short-form' );
+	$src  = array( 'link', 'qr', 'short-form', 'link-in-bio' );
 	$dev  = array( 'desktop', 'mobile', 'tablet' );
 	$out  = "day,source,device,referrer,visits\n";
 	foreach ( $rows as $r ) {

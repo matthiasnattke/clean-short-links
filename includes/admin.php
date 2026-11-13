@@ -88,6 +88,7 @@ function admin_js_data() {
 			'removeRule'  => __( 'Remove this rule?', 'clean-short-links' ),
 			'shortLink'   => __( 'Short link', 'clean-short-links' ),
 			'homePage'    => __( 'Home page', 'clean-short-links' ),
+			'chooseImage' => __( 'Choose preview image', 'clean-short-links' ),
 		),
 	);
 }
@@ -497,6 +498,144 @@ function check_line( array $link ) {
 }
 
 /**
+ * Label of a referrer entry in the statistics: a host, a channel ("@ig") or none.
+ *
+ * @param string $key Stored value.
+ * @return string
+ */
+function referrer_label( $key ) {
+	if ( '' === $key ) {
+		return __( 'direct or app', 'clean-short-links' );
+	}
+	if ( 0 === strpos( $key, '@' ) ) {
+		$name = channels()[ substr( $key, 1 ) ] ?? substr( $key, 1 );
+		/* translators: %s: channel name, e.g. Instagram */
+		return sprintf( __( 'Channel: %s', 'clean-short-links' ), $name );
+	}
+	return $key;
+}
+
+/**
+ * Sharing and social media: preview, share links, channel addresses and options.
+ *
+ * @param array $link Link (id 0 for a new one).
+ */
+function social_card( array $link ) {
+	$s       = site_settings();
+	$meta    = $link['meta'];
+	$data    = $link['id'] ? preview_data( $link, $link['target'] ) : null;
+	$own     = (bool) preg_match( '#^https?://#', $link['target'] );
+	$img_id  = (int) $meta['social']['image'];
+	$img_url = $img_id ? wp_get_attachment_image_url( $img_id, 'medium' ) : '';
+	card_open( 'csl-sec-social', 'share', __( 'Sharing and social media', 'clean-short-links' ), __( 'How the link looks when shared, where you share it and how visits are labelled.', 'clean-short-links' ) );
+	?>
+		<div class="csl-social-grid">
+			<div>
+				<span class="csl-field-label"><?php esc_html_e( 'Link preview', 'clean-short-links' ); ?></span>
+				<?php if ( $data ) : ?>
+					<div class="csl-og">
+						<?php if ( '' !== $data['image'] ) : ?>
+							<img src="<?php echo esc_url( $data['image'] ); ?>" alt="">
+						<?php endif; ?>
+						<div class="csl-og-text">
+							<small><?php echo esc_html( preg_replace( '#^https?://(www\.)?([^/]+).*$#', '$2', $data['url'] ) ); ?></small>
+							<strong><?php echo esc_html( $data['title'] ); ?></strong>
+							<?php if ( '' !== $data['description'] ) : ?>
+								<span><?php echo esc_html( wp_trim_words( $data['description'], 24, '…' ) ); ?></span>
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endif; ?>
+				<p class="csl-help csl-social-from-post">
+					<?php
+					if ( $data && 'post' === $data['source'] ) {
+						$pid = target_post_id( $link['target'] );
+						esc_html_e( 'Title, excerpt and featured image come straight from the content – change them there, nothing to maintain twice.', 'clean-short-links' );
+						if ( $pid && current_user_can( 'edit_post', $pid ) ) {
+							echo ' <a href="' . esc_url( (string) get_edit_post_link( $pid ) ) . '">' . esc_html__( 'Edit content', 'clean-short-links' ) . '</a>';
+						}
+					} elseif ( $data && 'site' === $data['source'] ) {
+						esc_html_e( 'Name, tagline and icon of the site.', 'clean-short-links' );
+					} else {
+						esc_html_e( 'For posts and pages the preview comes straight from the content: title, excerpt and featured image.', 'clean-short-links' );
+					}
+					?>
+				</p>
+				<div class="csl-social-own" <?php echo $own ? '' : 'hidden'; ?>>
+					<p class="csl-help"><?php esc_html_e( 'For an address outside the site you can set the preview yourself. Leave it empty and networks read the target page as usual.', 'clean-short-links' ); ?></p>
+					<label class="csl-field"><span><?php esc_html_e( 'Title', 'clean-short-links' ); ?></span><input type="text" name="meta[social][title]" class="csl-wide" maxlength="120" value="<?php echo esc_attr( $meta['social']['title'] ); ?>"></label>
+					<label class="csl-field"><span><?php esc_html_e( 'Description', 'clean-short-links' ); ?></span><textarea name="meta[social][description]" class="csl-wide" rows="2" maxlength="300"><?php echo esc_textarea( $meta['social']['description'] ); ?></textarea></label>
+					<div class="csl-social-image">
+						<input type="hidden" name="meta[social][image]" value="<?php echo esc_attr( (string) $img_id ); ?>">
+						<img src="<?php echo esc_url( (string) $img_url ); ?>" alt="" <?php echo $img_url ? '' : 'hidden'; ?>>
+						<button type="button" class="button csl-btn csl-social-pick"><?php esc_html_e( 'Image from the media library …', 'clean-short-links' ); ?></button>
+						<button type="button" class="button-link csl-social-clear" <?php echo $img_id ? '' : 'hidden'; ?>><?php esc_html_e( 'Remove image', 'clean-short-links' ); ?></button>
+					</div>
+				</div>
+			</div>
+			<?php if ( $link['id'] ) : ?>
+				<div>
+					<span class="csl-field-label"><?php esc_html_e( 'Share', 'clean-short-links' ); ?></span>
+					<div class="csl-share">
+						<?php foreach ( share_links( short_urls( $link )['link'], $data ? $data['title'] : $link['title'] ) as $name => $href ) : ?>
+							<a class="button csl-btn" href="<?php echo esc_url( $href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $name ); ?></a>
+						<?php endforeach; ?>
+					</div>
+					<span class="csl-help"><?php esc_html_e( 'Opens the network’s own share page – no scripts, no tracking.', 'clean-short-links' ); ?></span>
+				</div>
+			<?php endif; ?>
+		</div>
+
+		<div class="csl-sub">
+			<span class="csl-field-label"><?php esc_html_e( 'Channel addresses', 'clean-short-links' ); ?></span>
+			<div class="csl-chips">
+				<?php foreach ( channels() as $key => $name ) : ?>
+					<label class="csl-chip"><input type="checkbox" name="meta[channels][]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $meta['channels'], true ) ); ?>><span><?php echo esc_html( $name ); ?></span></label>
+				<?php endforeach; ?>
+			</div>
+			<?php
+			$chs = $link['id'] ? channel_slugs( $link['id'], $link['slug'] ) : array();
+			if ( $chs ) :
+				list( $p ) = prefixes();
+				?>
+				<div class="csl-channel-urls">
+					<?php foreach ( $chs as $cs => $key ) : ?>
+						<?php copy_field( home_url( '/' . $p . '/' . $cs ), channels()[ $key ] ?? $key ); ?>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+			<?php /* translators: %s: example address */ ?>
+			<span class="csl-help"><?php echo esc_html( sprintf( __( 'Each channel gets its own address, e.g. %s – the statistics then show which channel brings how many visitors, without cookies.', 'clean-short-links' ), '…/' . ( '' !== $link['slug'] ? $link['slug'] : 'blue-couch' ) . '-ig' ) ); ?></span>
+		</div>
+
+		<div class="csl-sub">
+			<?php
+			/* translators: %s: example of the added parameters */
+			toggle( 'meta[utm]', ! empty( $meta['utm'] ) || ( ! $link['id'] && ! empty( $s['utm_default'] ) ), __( 'Add UTM parameters', 'clean-short-links' ), sprintf( __( 'For the statistics of the target page, e.g. %s. Taken from the short link, the channel and QR codes – parameters the target already has stay untouched.', 'clean-short-links' ), 'utm_source=ig&utm_medium=social&utm_campaign=' . ( '' !== $link['slug'] ? $link['slug'] : 'blue-couch' ) ) );
+			?>
+		</div>
+		<div class="csl-sub">
+			<?php toggle( 'meta[permanent]', ! empty( $meta['permanent'] ), __( 'Permanent redirect (301)', 'clean-short-links' ), __( 'For links that point to one page for good, e.g. an old address that moved. Search engines then pass its weight on to the target. Only used without time window, rules and limit – otherwise the link redirects temporarily. Browsers remember a 301, so repeat visits are not counted.', 'clean-short-links' ) ); ?>
+		</div>
+		<div class="csl-sub">
+			<?php if ( ! empty( $s['bio_enabled'] ) ) : ?>
+				<?php
+				list( $p ) = prefixes();
+				/* translators: %s: address of the link-in-bio page */
+				toggle( 'meta[bio]', ! empty( $meta['bio'] ), __( 'Show on the link-in-bio page', 'clean-short-links' ), sprintf( __( 'A button on %s – labelled with the title of this short link, otherwise of the content it leads to.', 'clean-short-links' ), preg_replace( '#^https?://#', '', home_url( '/' . $p . '/' . $s['bio_slug'] ) ) ) );
+				?>
+				<label class="csl-field csl-bio-order"><span><?php esc_html_e( 'Position', 'clean-short-links' ); ?></span><input type="number" name="meta[bio_order]" class="csl-num-input" value="<?php echo esc_attr( (string) $meta['bio_order'] ); ?>"></label>
+			<?php else : ?>
+				<input type="hidden" name="meta[bio]" value="<?php echo esc_attr( (string) $meta['bio'] ); ?>">
+				<input type="hidden" name="meta[bio_order]" value="<?php echo esc_attr( (string) $meta['bio_order'] ); ?>">
+				<span class="csl-help"><?php esc_html_e( 'A link-in-bio page for Instagram and other profiles can be switched on in the settings.', 'clean-short-links' ); ?> <a href="<?php echo esc_url( admin_page_url( 'settings' ) . '#csl-sec-social' ); ?>"><?php esc_html_e( 'Settings', 'clean-short-links' ); ?></a></span>
+			<?php endif; ?>
+		</div>
+	<?php
+	card_close();
+}
+
+/**
  * The invitation links of a main link: generator and list.
  *
  * @param array $link Main link.
@@ -587,6 +726,7 @@ function page_edit() {
 		'max_clicks' => 0,
 		'clicks'     => 0,
 		'parent_id'  => 0,
+		'meta'       => clean_meta( array() ),
 		'check'      => array(
 			'status' => '',
 			'items'  => array(),
@@ -605,6 +745,7 @@ function page_edit() {
 		'csl-sec-slug'   => __( 'Short address', 'clean-short-links' ),
 		'csl-sec-time'   => __( 'Time window', 'clean-short-links' ),
 		'csl-sec-rules'  => __( 'Rules', 'clean-short-links' ),
+		'csl-sec-social' => __( 'Sharing', 'clean-short-links' ),
 	);
 	if ( $link['id'] ) {
 		$sections['csl-sec-invites'] = __( 'Invitations', 'clean-short-links' );
@@ -780,6 +921,7 @@ function page_edit() {
 				<?php card_close(); ?>
 
 				<?php
+				social_card( $link );
 				if ( $link['id'] ) {
 					invites_card( $link );
 				}
@@ -876,7 +1018,7 @@ function page_edit() {
 					$dev    = breakdown( $link['id'], 'device', $days );
 					$ref    = breakdown( $link['id'], 'referrer', $days );
 					$total  = array_sum( $series );
-					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ) );
+					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ), __( 'Link-in-bio page', 'clean-short-links' ) );
 					$dnames = array( __( 'Desktop', 'clean-short-links' ), __( 'Mobile', 'clean-short-links' ), __( 'Tablet', 'clean-short-links' ) );
 					card_open( 'csl-sec-stats', 'chart', __( 'Visits', 'clean-short-links' ), __( 'Counted without IP addresses or cookies. Bots and link previews are left out.', 'clean-short-links' ) );
 					?>
@@ -907,7 +1049,7 @@ function page_edit() {
 									<?php else : ?>
 										<ul class="csl-toplist">
 										<?php foreach ( $block[1] as $k => $v ) : ?>
-											<li><span><?php echo esc_html( $block[2] ? ( $block[2][ (int) $k ] ?? $k ) : ( '' !== $k ? $k : __( 'direct or app', 'clean-short-links' ) ) ); ?></span> <span class="csl-num"><?php echo esc_html( number_format_i18n( $v ) ); ?></span>
+											<li><span><?php echo esc_html( $block[2] ? ( $block[2][ (int) $k ] ?? $k ) : referrer_label( (string) $k ) ); ?></span> <span class="csl-num"><?php echo esc_html( number_format_i18n( $v ) ); ?></span>
 												<span class="csl-bar-bg"><span style="width:<?php echo esc_attr( (string) round( 100 * $v / $sum ) ); ?>%"></span></span></li>
 										<?php endforeach; ?>
 										</ul>
@@ -991,6 +1133,7 @@ add_action(
 			'status'     => empty( $p['paused'] ) ? 'active' : 'paused',
 			'old_slug'   => 'retire' === ( $p['old_slug'] ?? '' ) ? 'retire' : 'alias',
 			'max_clicks' => absint( $p['max_clicks'] ?? 0 ),
+			'meta'       => clean_meta( (array) ( $p['meta'] ?? array() ) ),
 		);
 		if ( 'date' === $data['start_mode'] && ! $starts ) {
 			$data['start_mode'] = '';
@@ -1148,6 +1291,7 @@ function page_settings() {
 		'csl-sec-addr'   => __( 'Addresses', 'clean-short-links' ),
 		'csl-sec-default' => __( 'Default target', 'clean-short-links' ),
 		'csl-sec-auto'   => __( 'Create automatically', 'clean-short-links' ),
+		'csl-sec-social' => __( 'Social media', 'clean-short-links' ),
 		'csl-sec-check'  => __( 'Link check', 'clean-short-links' ),
 		'csl-sec-stat'   => __( 'Statistics', 'clean-short-links' ),
 		'csl-sec-bulk'   => __( 'Existing content', 'clean-short-links' ),
@@ -1235,6 +1379,19 @@ function page_settings() {
 						</div>
 					<?php card_close(); ?>
 
+					<?php card_open( 'csl-sec-social', 'share', __( 'Social media', 'clean-short-links' ), __( 'Link previews for posts and pages always come straight from the content – there is nothing to set up for them.', 'clean-short-links' ) ); ?>
+						<?php toggle( 'bio_enabled', ! empty( $s['bio_enabled'] ), __( 'Link-in-bio page', 'clean-short-links' ), __( 'A simple page with buttons for chosen short links – for the link in your Instagram, TikTok or Mastodon profile. Name, tagline and icon come from the site settings.', 'clean-short-links' ) ); ?>
+						<div class="csl-sub">
+							<label class="csl-field" for="csl-bio-slug"><span><?php esc_html_e( 'Address of the page', 'clean-short-links' ); ?></span></label>
+							<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home . $p . '/' ); ?></span><input type="text" id="csl-bio-slug" name="bio_slug" value="<?php echo esc_attr( $s['bio_slug'] ); ?>" maxlength="40"></span>
+							<?php if ( ! empty( $s['bio_enabled'] ) ) : ?>
+								<p><?php copy_field( home_url( '/' . $p . '/' . $s['bio_slug'] ) ); ?></p>
+							<?php endif; ?>
+							<span class="csl-help"><?php esc_html_e( 'Which short links appear is chosen at each short link under “Sharing”.', 'clean-short-links' ); ?></span>
+						</div>
+						<div class="csl-sub"><?php toggle( 'utm_default', ! empty( $s['utm_default'] ), __( 'New short links add UTM parameters', 'clean-short-links' ), __( 'Can be changed per short link.', 'clean-short-links' ) ); ?></div>
+					<?php card_close(); ?>
+
 					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
 						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.', 'clean-short-links' ) ); ?>
 						<div class="csl-sub">
@@ -1320,6 +1477,9 @@ add_action(
 			'auto_check'    => empty( $p['auto_check'] ) ? 0 : 1,
 			'skip_broken'   => empty( $p['skip_broken'] ) ? 0 : 1,
 			'gone_days'     => min( 365, max( 1, absint( $p['gone_days'] ?? 30 ) ) ),
+			'utm_default'   => empty( $p['utm_default'] ) ? 0 : 1,
+			'bio_enabled'   => empty( $p['bio_enabled'] ) ? 0 : 1,
+			'bio_slug'      => is_valid_slug( normalize_slug( $p['bio_slug'] ?? '' ) ) ? normalize_slug( $p['bio_slug'] ) : 'links',
 		);
 		if ( 'custom' === $new['default_mode'] && '' === $new['default_url'] ) {
 			$new['default_mode'] = '';

@@ -37,7 +37,9 @@ function esc_url_raw( $u ) { return filter_var( $u, FILTER_VALIDATE_URL ) ? $u :
 function sanitize_text_field( $v ) { return trim( preg_replace( '/[\r\n\t ]+/', ' ', strip_tags( (string) $v ) ) ); }
 function sanitize_key( $v ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $v ) ); }
 function wp_json_encode( $v ) { return json_encode( $v ); }
+function absint( $v ) { return abs( (int) $v ); }
 
 define( 'CLEAN_SHORT_LINKS_FILE', dirname( __DIR__ ) . '/clean-short-links.php' );
 require dirname( __DIR__ ) . '/includes/core.php';
 require dirname( __DIR__ ) . '/includes/checker.php';
+require dirname( __DIR__ ) . '/includes/social.php';

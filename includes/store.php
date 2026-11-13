@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery -- Custom tables of this plugin; there is no WordPress API for them.
 
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 /**
  * Table names of the current site.
@@ -67,6 +67,7 @@ function install() {
   check_info text NULL,
   checked_at bigint(20) unsigned NOT NULL DEFAULT 0,
   broken_since bigint(20) unsigned NOT NULL DEFAULT 0,
+  meta longtext NULL,
   PRIMARY KEY  (id),
   KEY post_id (post_id),
   KEY slug (slug),
@@ -127,6 +128,7 @@ function row_to_link( $row ) {
 	$rules = json_decode( (string) $row['rules'], true );
 	$qr    = json_decode( (string) $row['qr'], true );
 	$check = json_decode( (string) ( $row['check_info'] ?? '' ), true );
+	$meta  = json_decode( (string) ( $row['meta'] ?? '' ), true );
 	return array(
 		'id'         => (int) $row['id'],
 		'title'      => (string) $row['title'],
@@ -147,6 +149,7 @@ function row_to_link( $row ) {
 		'created_at' => (int) $row['created_at'],
 		'updated_at' => (int) $row['updated_at'],
 		'parent_id'  => (int) ( $row['parent_id'] ?? 0 ),
+		'meta'       => clean_meta( is_array( $meta ) ? $meta : array() ),
 		'max_clicks' => (int) ( $row['max_clicks'] ?? 0 ),
 		'clicks'     => (int) ( $row['clicks'] ?? 0 ),
 		'check'      => array(
@@ -313,6 +316,15 @@ function check_slug( $slug, $link_id = 0 ) {
 			'message'  => __( 'Use letters, digits and dashes only.', 'clean-short-links' ),
 		);
 	}
+	$site = site_settings();
+	if ( ! empty( $site['bio_enabled'] ) && $slug === $site['bio_slug'] ) {
+		return array(
+			'slug'     => $slug,
+			'ok'       => false,
+			'reserved' => false,
+			'message'  => __( 'This is the address of the link-in-bio page.', 'clean-short-links' ),
+		);
+	}
 	if ( ! slug_available( $slug, $link_id ) ) {
 		$owner = slug_owner( $slug );
 		return array(
@@ -406,6 +418,7 @@ function save_link( array $data ) {
 		'qr'         => wp_json_encode( is_array( $data['qr'] ?? null ) ? $data['qr'] : ( $old['qr'] ?? new \stdClass() ) ),
 		'status'     => 'paused' === ( $data['status'] ?? '' ) ? 'paused' : 'active',
 		'max_clicks' => max( 0, (int) ( $data['max_clicks'] ?? 0 ) ),
+		'meta'       => wp_json_encode( clean_meta( $data['meta'] ?? ( $old['meta'] ?? array() ) ) ),
 		'updated_at' => $now,
 	);
 	if ( 'date' !== $row['start_mode'] ) {
@@ -467,7 +480,74 @@ function save_link( array $data ) {
 			)
 		);
 	}
+	sync_channel_slugs( $id, $slug, clean_meta( json_decode( $row['meta'], true ) )['channels'], $old ? $old['slug'] : '' );
 	return $id;
+}
+
+/**
+ * Channel addresses of a link (short address => channel key).
+ *
+ * @param int    $id   Link ID.
+ * @param string $slug Main short address.
+ * @return array<string,string>
+ */
+function channel_slugs( $id, $slug ) {
+	global $wpdb;
+	$out = array();
+	foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT slug FROM %i WHERE link_id = %d AND kind = 'channel'", tables()['slugs'], $id ) ) as $s ) {
+		if ( 0 === strpos( $s, $slug . '-' ) ) {
+			$out[ $s ] = substr( $s, strlen( $slug ) + 1 );
+		}
+	}
+	return $out;
+}
+
+/**
+ * Creates and removes the channel addresses of a link: always "<short address>-<channel>".
+ * If the short address changed, the old channel addresses keep working as aliases.
+ *
+ * @param int    $id       Link ID.
+ * @param string $slug     Main short address.
+ * @param array  $wanted   Channel keys.
+ * @param string $old_slug Previous short address, '' for a new link.
+ */
+function sync_channel_slugs( $id, $slug, array $wanted, $old_slug ) {
+	global $wpdb;
+	$t = tables();
+	foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT slug FROM %i WHERE link_id = %d AND kind = 'channel'", $t['slugs'], $id ) ) as $s ) {
+		$key = 0 === strpos( $s, $slug . '-' ) ? substr( $s, strlen( $slug ) + 1 ) : '';
+		if ( '' !== $old_slug && $old_slug !== $slug && 0 === strpos( $s, $old_slug . '-' ) ) {
+			$wpdb->update( $t['slugs'], array( 'kind' => 'alias' ), array( 'slug' => $s ) );
+		} elseif ( '' === $key || ! in_array( $key, $wanted, true ) ) {
+			$wpdb->delete( $t['slugs'], array( 'slug' => $s ) );
+		}
+	}
+	foreach ( $wanted as $key ) {
+		$s = substr( $slug, 0, 64 - strlen( $key ) - 1 ) . '-' . $key;
+		if ( slug_available( $s, $id ) ) {
+			$wpdb->replace(
+				$t['slugs'],
+				array(
+					'slug'       => $s,
+					'link_id'    => $id,
+					'kind'       => 'channel',
+					'created_at' => time(),
+				)
+			);
+		}
+	}
+}
+
+/**
+ * Links shown on the link-in-bio page, in their order.
+ *
+ * @return array[]
+ */
+function bio_links() {
+	global $wpdb;
+	$links = array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE parent_id = 0 AND status = 'active' AND meta LIKE %s", tables()['links'], '%' . $wpdb->esc_like( '"bio":1' ) . '%' ) ) );
+	usort( $links, fn( $a, $b ) => $a['meta']['bio_order'] <=> $b['meta']['bio_order'] ?: $b['created_at'] <=> $a['created_at'] );
+	return $links;
 }
 
 /**

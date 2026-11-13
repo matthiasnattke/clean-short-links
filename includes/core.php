@@ -18,6 +18,7 @@ const RANDOM_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 const SOURCE_LINK = 0;
 const SOURCE_QR   = 1;
 const SOURCE_ROOT = 2;
+const SOURCE_BIO  = 3;
 
 /** Device class of a visit. */
 const DEVICE_DESKTOP = 0;
@@ -80,6 +81,9 @@ function site_defaults() {
 		'auto_check'    => 1,
 		'skip_broken'   => 1,
 		'gone_days'     => 30,
+		'utm_default'   => 0,
+		'bio_enabled'   => 0,
+		'bio_slug'      => 'links',
 	);
 }
 
@@ -395,6 +399,130 @@ function unreachable( array $link, $now, $days = 30 ) {
 		return '';
 	}
 	return $now - $since >= max( 1, (int) $days ) * DAY_IN_SECONDS ? 'gone' : 'temporary';
+}
+
+/**
+ * Channels a short link can get an address of its own for. The key becomes part of the
+ * address (blue-couch-ig) and the utm_source.
+ *
+ * @return array<string,string> Key => name.
+ */
+function channels() {
+	$list = array(
+		'ig'    => 'Instagram',
+		'fb'    => 'Facebook',
+		'wa'    => 'WhatsApp',
+		'tg'    => 'Telegram',
+		'masto' => 'Mastodon',
+		'li'    => 'LinkedIn',
+		'yt'    => 'YouTube',
+		'tt'    => 'TikTok',
+		'nl'    => __( 'Newsletter', 'clean-short-links' ),
+		'mail'  => __( 'E-mail', 'clean-short-links' ),
+		'print' => __( 'Print', 'clean-short-links' ),
+	);
+	/**
+	 * Filters the channels short links can get addresses of their own for.
+	 *
+	 * @param array $list Key (letters and digits) => name.
+	 */
+	return apply_filters( 'clean_short_links_channels', $list );
+}
+
+/**
+ * Cleans the extra settings of a link.
+ *
+ * @param array $meta Raw values.
+ * @return array
+ */
+function clean_meta( $meta ) {
+	$meta     = is_array( $meta ) ? $meta : array();
+	$social   = is_array( $meta['social'] ?? null ) ? $meta['social'] : array();
+	$channels = array_values( array_intersect( array_map( 'sanitize_key', (array) ( $meta['channels'] ?? array() ) ), array_keys( channels() ) ) );
+	return array(
+		'social'    => array(
+			'title'       => substr( sanitize_text_field( $social['title'] ?? '' ), 0, 120 ),
+			'description' => substr( sanitize_text_field( $social['description'] ?? '' ), 0, 300 ),
+			'image'       => absint( $social['image'] ?? 0 ),
+		),
+		'channels'  => $channels,
+		'utm'       => empty( $meta['utm'] ) ? 0 : 1,
+		'permanent' => empty( $meta['permanent'] ) ? 0 : 1,
+		'bio'       => empty( $meta['bio'] ) ? 0 : 1,
+		'bio_order' => (int) ( $meta['bio_order'] ?? 0 ),
+	);
+}
+
+/**
+ * May this link answer with a permanent redirect (301)? Only if nothing about it can
+ * change by itself: no time window, rules, limit or invitations – browsers and search
+ * engines remember a 301.
+ *
+ * @param array $link Link.
+ * @return bool
+ */
+function permanent_allowed( array $link ) {
+	return ! empty( $link['meta']['permanent'] )
+		&& empty( $link['parent_id'] )
+		&& empty( $link['rules'] )
+		&& empty( $link['starts_at'] ) && '' === ( $link['start_mode'] ?? '' )
+		&& empty( $link['ends_at'] )
+		&& empty( $link['max_clicks'] );
+}
+
+/**
+ * Appends UTM parameters, without overwriting ones the URL already has.
+ *
+ * @param string $url    URL.
+ * @param array  $params utm_source, utm_medium, utm_campaign.
+ * @return string
+ */
+function add_utm( $url, array $params ) {
+	$query = array();
+	parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+	$add = array();
+	foreach ( $params as $key => $value ) {
+		if ( '' !== (string) $value && ! isset( $query[ $key ] ) ) {
+			$add[ $key ] = rawurlencode( (string) $value );
+		}
+	}
+	if ( ! $add ) {
+		return $url;
+	}
+	$hash = '';
+	$pos  = strpos( $url, '#' );
+	if ( false !== $pos ) {
+		$hash = substr( $url, $pos );
+		$url  = substr( $url, 0, $pos );
+	}
+	$pairs = array();
+	foreach ( $add as $k => $v ) {
+		$pairs[] = $k . '=' . $v;
+	}
+	return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . implode( '&', $pairs ) . $hash;
+}
+
+/**
+ * The UTM parameters of a visit – derived from the short link itself, nothing to maintain.
+ *
+ * @param array  $link    Link.
+ * @param int    $source  Source.
+ * @param string $channel Channel key or ''.
+ * @return array
+ */
+function utm_params( array $link, $source, $channel = '' ) {
+	if ( '' !== $channel ) {
+		$medium = in_array( $channel, array( 'nl', 'mail' ), true ) ? 'email' : ( 'print' === $channel ? 'print' : 'social' );
+		$src    = $channel;
+	} else {
+		$medium = SOURCE_QR === $source ? 'qr' : ( SOURCE_BIO === $source ? 'social' : 'shortlink' );
+		$src    = SOURCE_BIO === $source ? 'linkinbio' : ( SOURCE_QR === $source ? 'qr' : 'shortlink' );
+	}
+	return array(
+		'utm_source'   => $src,
+		'utm_medium'   => $medium,
+		'utm_campaign' => $link['slug'] ?? '',
+	);
 }
 
 /**

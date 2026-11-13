@@ -51,6 +51,10 @@ add_action(
 		if ( ! $req || SOURCE_ROOT === $req[0] ) {
 			return;
 		}
+		$s = site_settings();
+		if ( ! empty( $s['bio_enabled'] ) && SOURCE_LINK === $req[0] && $req[1] === $s['bio_slug'] ) {
+			render_bio();
+		}
 		$found = find_slug( $req[1] );
 		if ( ! $found ) {
 			// Unknown short address: the default target of the site, if set – otherwise WordPress' 404 page.
@@ -60,7 +64,7 @@ add_action(
 			}
 			return;
 		}
-		$result = handle( $found, $req[0] );
+		$result = handle( $found, $req[0], $req[1] );
 		if ( $result ) {
 			// Dead link: let WordPress render its 404 page with our status.
 			$wp->query_vars = array( 'error' => '404' );
@@ -83,7 +87,7 @@ add_action(
 		if ( ! $found || ( $found[0] && empty( $found[0]['root'] ) ) || 'retired' === $found[1] ) {
 			return;
 		}
-		handle( $found, SOURCE_ROOT );
+		handle( $found, SOURCE_ROOT, $req[1] );
 	},
 	0
 );
@@ -134,12 +138,17 @@ function default_target_url( $case ) {
  * Invitations follow their main link: target, rules, time window and fallback come from
  * there, their own click limit and expiry still apply.
  *
- * @param array $found  Result of find_slug().
- * @param int   $source Where the visit came from.
+ * @param array  $found  Result of find_slug().
+ * @param int    $source Where the visit came from.
+ * @param string $slug   The short address that was requested.
  * @return int 0 when redirected (never returns then), otherwise the status of the dead link.
  */
-function handle( array $found, $source ) {
+function handle( array $found, $source, $slug = '' ) {
 	list( $link, $kind ) = $found;
+	$channel = $link && 'channel' === $kind && 0 === strpos( $slug, $link['slug'] . '-' ) ? substr( $slug, strlen( $link['slug'] ) + 1 ) : '';
+	if ( isset( $_GET['cslsrc'] ) && 'bio' === $_GET['cslsrc'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only marks a visit from the link-in-bio page.
+		$source = SOURCE_BIO;
+	}
 	if ( $link && ! empty( $link['parent_id'] ) ) {
 		$parent = link_by_id( $link['parent_id'] );
 		$link   = $parent ? merge_parent( $link, $parent ) : null;
@@ -175,9 +184,22 @@ function handle( array $found, $source ) {
 			'target' => $fallback,
 		);
 	}
+	// Social networks and messengers get a preview – from the post itself, or what was
+	// entered for an address outside the site. Without one they simply follow the redirect.
+	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+	if ( is_preview_bot( $ua ) ) {
+		$data = preview_data( $link, $result['target'] );
+		if ( $data ) {
+			render_preview( $data, $result['url'] );
+		}
+	}
+	$url = $result['url'];
+	if ( ! empty( $link['meta']['utm'] ) ) {
+		$url = add_utm( $url, utm_params( $link, $source, $channel ) );
+	}
 	// Only real uses count – not the way to the fallback page of an expired link.
 	$used = 'default' === $result['state'] || 0 === strpos( $result['state'], 'rule-' );
-	go_to( $result['url'], $link, $source, $used );
+	go_to( $url, $link, $source, $used, $channel, 'default' === $result['state'] && permanent_allowed( $link ) ? 301 : 302 );
 	return 0;
 }
 
@@ -205,14 +227,18 @@ function dead_end( $status, $link, $source ) {
  * @param string     $url    Target URL.
  * @param array|null $link   Link.
  * @param int        $source Source.
- * @param bool       $count  Count the visit.
+ * @param bool       $count   Count the visit.
+ * @param string     $channel Channel key of a channel address.
+ * @param int        $code    302, or 301 for permanent links.
  */
-function go_to( $url, $link, $source, $count ) {
+function go_to( $url, $link, $source, $count, $channel = '', $code = 302 ) {
 	if ( $count && $link ) {
-		count_visit( $link, $source );
+		count_visit( $link, $source, $channel );
 	}
-	if ( ! empty( site_settings()['pass_query'] ) && ! empty( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
-		$url = add_query_arg( map_deep( wp_unslash( $_GET ), 'rawurlencode' ), $url ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$query = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
+	unset( $query['cslsrc'] );
+	if ( ! empty( site_settings()['pass_query'] ) && $query ) {
+		$url = add_query_arg( map_deep( $query, 'rawurlencode' ), $url );
 	}
 	/**
 	 * Filters the address a short link leads to right now.
@@ -222,20 +248,26 @@ function go_to( $url, $link, $source, $count ) {
 	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address.
 	 */
 	$url = apply_filters( 'clean_short_links_redirect', $url, $link, $source );
-	nocache_headers();
+	if ( 301 === $code ) {
+		// Permanent: browsers and search engines may remember it (visits from them are then no longer counted).
+		header( 'Cache-Control: public, max-age=86400' );
+	} else {
+		nocache_headers();
+	}
 	header( 'X-Robots-Tag: noindex' );
 	// Targets may be on other hosts by design, so this is not wp_safe_redirect().
-	wp_redirect( $url, 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
+	wp_redirect( $url, $code, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 	exit;
 }
 
 /**
  * Counts a visit – without IP address, cookie or user ID.
  *
- * @param array $link   Link.
- * @param int   $source Source.
+ * @param array  $link    Link.
+ * @param int    $source  Source.
+ * @param string $channel Channel key – stored in place of the referring host as "@key".
  */
-function count_visit( array $link, $source ) {
+function count_visit( array $link, $source, $channel = '' ) {
 	$method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : 'GET';
 	$ua     = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 	if ( 'GET' !== $method || is_bot( $ua ) ) {
@@ -245,6 +277,9 @@ function count_visit( array $link, $source ) {
 		return;
 	}
 	$ref = isset( $_SERVER['HTTP_REFERER'] ) ? referrer_host( esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) ) : '';
+	if ( '' !== $channel ) {
+		$ref = '@' . $channel;
+	}
 	record_click( $link['id'], $source, device_class( $ua ), $ref );
 	add_click( $link['id'] );
 }

@@ -88,6 +88,17 @@ Open *QR code* on the edit screen and click *Create QR code*.
 - Exports: *SVG* and *PDF* are vector files for print (the PDF embeds the logo with its transparency), *PNG* in 512–2048 px, or *Save to media library*.
 - The design is stored with the link when you save.
 
+## Sharing and social media
+
+The card *Sharing* on each short link:
+
+- **Link preview** – what WhatsApp, Facebook & co. show. For posts and pages it is read live from the content (title, excerpt, featured image; the site icon if there is no image) – change it in the post, never twice. For the home page: site name, tagline and icon. Only addresses outside the site can get their own title, description and image; empty means networks read the target page themselves. Preview robots get a small page with these details; people are redirected as always.
+- **Share** – buttons that open the share pages of WhatsApp, Telegram, Facebook, LinkedIn, X, Bluesky and e-mail with the short link.
+- **Channel addresses** – tick Instagram, Newsletter, Print … and the link gets `…/blue-couch-ig`, `…/blue-couch-nl` and so on. They lead to the same target; the statistics list them as “Channel: Instagram”.
+- **UTM parameters** – `utm_source` (channel, `qr`, `linkinbio` or `shortlink`), `utm_medium` (`social`, `email`, `print`, `qr`, `shortlink`) and `utm_campaign` (the short address) are added to the target. Parameters the target already has are kept.
+- **Permanent redirect (301)** – for links that point to one page for good. Used only while the link has no time window, rules or limit.
+- **Link-in-bio page** – switch it on in *Settings → Social media* (address `…/s/links` by default) and tick *Show on the link-in-bio page* at the links that should appear. Name, tagline and icon come from the site settings; the buttons are labelled with the short link's title or, if it has none, the post's title. Visits from the page count as source “Link-in-bio page”.
+
 ## Statistics
 
 Per link: visits per day (7, 30, 90 or 365 days), split by source (link, QR code, short form), device (desktop, mobile, tablet) and referring site (host only). CSV export at the bottom.

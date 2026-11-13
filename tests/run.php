@@ -287,6 +287,48 @@ test( 'Invitations follow their main link but keep limit, counter and expiry', f
 	same( 'paused', merge_parent( $invite, $parent )['status'] );
 } );
 
+echo "\nSocial media\n";
+
+test( 'UTM parameters are added without overwriting existing ones', function () {
+	same( 'https://example.com/a?utm_source=ig&utm_medium=social', add_utm( 'https://example.com/a', array( 'utm_source' => 'ig', 'utm_medium' => 'social' ) ) );
+	same( 'https://example.com/a?x=1&utm_medium=qr#top', add_utm( 'https://example.com/a?x=1#top', array( 'utm_medium' => 'qr' ) ) );
+	same( 'https://example.com/a?utm_source=own', add_utm( 'https://example.com/a?utm_source=own', array( 'utm_source' => 'ig' ) ) );
+} );
+
+test( 'UTM values come from the link, channel and source', function () {
+	$l = array( 'slug' => 'fest' );
+	same( array( 'utm_source' => 'ig', 'utm_medium' => 'social', 'utm_campaign' => 'fest' ), utm_params( $l, SOURCE_LINK, 'ig' ) );
+	same( 'email', utm_params( $l, SOURCE_LINK, 'nl' )['utm_medium'] );
+	same( array( 'utm_source' => 'qr', 'utm_medium' => 'qr', 'utm_campaign' => 'fest' ), utm_params( $l, SOURCE_QR ) );
+	same( 'linkinbio', utm_params( $l, SOURCE_BIO )['utm_source'] );
+} );
+
+test( 'Permanent redirects only for links that cannot change by themselves', function () {
+	$l = link( array( 'meta' => array( 'permanent' => 1 ) ) );
+	same( true, permanent_allowed( $l ) );
+	same( false, permanent_allowed( array_merge( $l, array( 'rules' => array( array( 'target' => 'post:1' ) ) ) ) ) );
+	same( false, permanent_allowed( array_merge( $l, array( 'ends_at' => 5 ) ) ) );
+	same( false, permanent_allowed( array_merge( $l, array( 'max_clicks' => 5 ) ) ) );
+	same( false, permanent_allowed( array_merge( $l, array( 'start_mode' => 'publish' ) ) ) );
+	same( false, permanent_allowed( link() ) );
+} );
+
+test( 'Extra settings are cleaned', function () {
+	$m = clean_meta( array( 'channels' => array( 'ig', 'nope', 'wa' ), 'utm' => '1', 'social' => array( 'title' => ' <b>Hi</b> ', 'image' => '12' ) ) );
+	same( array( 'ig', 'wa' ), $m['channels'] );
+	same( 1, $m['utm'] );
+	same( 'Hi', $m['social']['title'] );
+	same( 12, $m['social']['image'] );
+	same( 0, $m['permanent'] );
+} );
+
+test( 'Preview robots are recognised', function () {
+	same( true, is_preview_bot( 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' ) );
+	same( true, is_preview_bot( 'WhatsApp/2.23.20.0' ) );
+	same( true, is_preview_bot( 'TelegramBot (like TwitterBot)' ) );
+	same( false, is_preview_bot( 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/604.1' ) );
+} );
+
 echo "\nLink check\n";
 
 test( 'Unreachable targets are recognised from the last check', function () {

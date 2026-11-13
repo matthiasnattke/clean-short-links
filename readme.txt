@@ -29,6 +29,15 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 * A click limit ends a link after a number of visits – bots, link previews and logged-in editors do not count.
 * A default target per site – the home page, a page, a post, another short link or a URL – catches mistyped short addresses and links that have run out.
 
+**Social media and search engines**
+
+* Link previews for WhatsApp, Facebook, Instagram, LinkedIn, X, Telegram, Mastodon and others. For posts and pages they come straight from the content – title, excerpt, featured image – nothing to maintain twice. Addresses outside the site can get a title, description and image of their own.
+* Share buttons in the editor screen – plain links to each network's own share page, no scripts.
+* Channel addresses like `example.com/s/blue-couch-ig` show which channel brings how many visitors, without cookies.
+* UTM parameters on request, taken from the short link, channel and QR code.
+* A link-in-bio page for Instagram, TikTok or Mastodon profiles with buttons for chosen short links; name, tagline and icon come from the site settings.
+* Permanent redirects (301) for links that point to one page for good.
+
 **Invitation links**
 
 * Create personal links for a short link, group by group – e.g. 10 links for the family with one visit each, 5 for clubs with 20 visits each.

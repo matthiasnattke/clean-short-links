@@ -233,6 +233,31 @@
 		}
 	}
 	form.addEventListener( 'csl-target', publishOption );
+
+	/* ---- Sharing: own preview only for addresses outside the site ---- */
+	var own = $( '.csl-social-own' );
+	if ( own ) {
+		form.addEventListener( 'csl-target', function () {
+			own.hidden = ! /^https?:\/\//i.test( $( 'input[name="target"]' ).value );
+		} );
+		var imgInput = $( 'input[name="meta[social][image]"]' ), img = $( '.csl-social-image img' ), clear = $( '.csl-social-clear' );
+		$( '.csl-social-pick' ).addEventListener( 'click', function () {
+			var frame = window.wp.media( { title: T.chooseImage, button: { text: T.useLogo }, library: { type: 'image' }, multiple: false } );
+			frame.on( 'select', function () {
+				var a = frame.state().get( 'selection' ).first().toJSON();
+				imgInput.value = a.id;
+				img.src = a.sizes && a.sizes.medium ? a.sizes.medium.url : a.url;
+				img.hidden = false;
+				clear.hidden = false;
+			} );
+			frame.open();
+		} );
+		clear.addEventListener( 'click', function () {
+			imgInput.value = '';
+			img.hidden = true;
+			clear.hidden = true;
+		} );
+	}
 	publishOption();
 	var startAt = $( 'input[name="starts_at"]' );
 	startAt.addEventListener( 'input', function () {
