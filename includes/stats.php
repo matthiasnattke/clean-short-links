@@ -56,15 +56,13 @@ function since( $days ) {
  */
 function totals( array $ids = array(), $days = 30 ) {
 	global $wpdb;
-	$t      = tables();
-	$where  = $days ? $wpdb->prepare( 'day >= %s', since( $days ) ) : '1=1';
-	$ids    = array_filter( array_map( 'intval', $ids ) );
-	$filter = $ids ? ' AND link_id IN (' . implode( ',', $ids ) . ')' : '';
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $where is prepared, $filter holds integers only.
-	$rows = $wpdb->get_results( $wpdb->prepare( "SELECT link_id, SUM(hits) AS hits FROM %i WHERE $where$filter GROUP BY link_id", $t['clicks'] ) );
+	$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT link_id, SUM(hits) AS hits FROM %i WHERE day >= %s GROUP BY link_id', tables()['clicks'], $days ? since( $days ) : '1000-01-01' ) );
+	$ids  = array_flip( array_filter( array_map( 'intval', $ids ) ) );
 	$out  = array();
 	foreach ( $rows as $r ) {
-		$out[ (int) $r->link_id ] = (int) $r->hits;
+		if ( ! $ids || isset( $ids[ (int) $r->link_id ] ) ) {
+			$out[ (int) $r->link_id ] = (int) $r->hits;
+		}
 	}
 	return $out;
 }

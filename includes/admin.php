@@ -200,7 +200,7 @@ function page_list() {
 					<ol>
 						<?php
 						foreach ( $top as $id => $hits ) :
-							$l = get_link( $id );
+							$l = link_by_id( $id );
 							if ( ! $l ) {
 								continue;
 							}
@@ -378,7 +378,7 @@ function rule_row( $i, array $rule ) {
  */
 function page_edit() {
 	$id   = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Selects the link to edit.
-	$link = $id ? get_link( $id ) : null;
+	$link = $id ? link_by_id( $id ) : null;
 	if ( $id && ! $link ) {
 		echo '<div class="wrap"><h1>' . esc_html__( 'Short links', 'clean-short-links' ) . '</h1><p>' . esc_html__( 'This short link no longer exists.', 'clean-short-links' ) . '</p></div>';
 		return;
@@ -687,7 +687,7 @@ add_action(
 		$p    = wp_unslash( $_POST );
 		$id   = absint( $p['id'] ?? 0 );
 		$kind = sanitize_key( $p['kind'] ?? 'custom' );
-		$old  = $id ? get_link( $id ) : null;
+		$old  = $id ? link_by_id( $id ) : null;
 		if ( $old && normalize_slug( $p['slug'] ?? '' ) !== $old['slug'] && 'custom' !== $kind && $old['kind'] === $kind ) {
 			$kind = 'custom';
 		}
@@ -730,7 +730,7 @@ add_action(
 add_action(
 	'admin_post_clean_short_links_delete',
 	function () {
-		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
 		if ( ! current_user_can( capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
 		}
@@ -744,7 +744,7 @@ add_action(
 add_action(
 	'admin_post_clean_short_links_alias',
 	function () {
-		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
 		if ( ! current_user_can( capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
 		}
@@ -758,12 +758,12 @@ add_action(
 add_action(
 	'admin_post_clean_short_links_csv',
 	function () {
-		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
 		if ( ! current_user_can( capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
 		}
 		check_admin_referer( 'clean_short_links_csv_' . $id );
-		$link = get_link( $id );
+		$link = link_by_id( $id );
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="short-link-' . sanitize_file_name( $link ? $link['slug'] : (string) $id ) . '.csv"' );
 		echo export_csv( $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV download of numbers, dates and host names.

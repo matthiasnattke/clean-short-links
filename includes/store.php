@@ -143,7 +143,7 @@ function row_to_link( $row ) {
  * @param int $id ID.
  * @return array|null
  */
-function get_link( $id ) {
+function link_by_id( $id ) {
 	global $wpdb;
 	return row_to_link( $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', tables()['links'], $id ) ) );
 }
@@ -175,7 +175,7 @@ function find_slug( $slug ) {
 	if ( 'retired' === $row->kind ) {
 		return array( null, 'retired' );
 	}
-	$link = get_link( (int) $row->link_id );
+	$link = link_by_id( (int) $row->link_id );
 	return $link ? array( $link, $row->kind ) : null;
 }
 
@@ -342,7 +342,7 @@ function save_link( array $data ) {
 	global $wpdb;
 	$t   = tables();
 	$id  = (int) ( $data['id'] ?? 0 );
-	$old = $id ? get_link( $id ) : null;
+	$old = $id ? link_by_id( $id ) : null;
 	if ( $id && ! $old ) {
 		return new \WP_Error( 'missing', __( 'This short link no longer exists.', 'clean-short-links' ) );
 	}
@@ -491,7 +491,7 @@ function delete_alias( $id, $slug ) {
 /**
  * Lists links.
  *
- * @param array $args search, state (active|waiting|expired|paused), orderby, order, paged, per_page.
+ * @param array $args search, state (waiting|expired|paused|scheduled), paged, per_page.
  * @return array{items:array,total:int}
  */
 function list_links( array $args = array() ) {
@@ -499,39 +499,19 @@ function list_links( array $args = array() ) {
 	$t        = tables();
 	$per_page = max( 1, (int) ( $args['per_page'] ?? 30 ) );
 	$paged    = max( 1, (int) ( $args['paged'] ?? 1 ) );
-	$where    = array( '1=1' );
-	$params   = array( $t['links'] );
-	if ( ! empty( $args['search'] ) ) {
-		$like     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-		$where[]  = '(title LIKE %s OR slug LIKE %s OR target LIKE %s)';
-		$params[] = $like;
-		$params[] = $like;
-		$params[] = $like;
-	}
-	$now = time();
-	switch ( $args['state'] ?? '' ) {
-		case 'paused':
-			$where[] = "status = 'paused'";
-			break;
-		case 'waiting':
-			$where[]  = "status = 'active' AND starts_at > %d";
-			$params[] = $now;
-			break;
-		case 'expired':
-			$where[]  = "status = 'active' AND ends_at > 0 AND ends_at <= %d";
-			$params[] = $now;
-			break;
-		case 'scheduled':
-			$where[] = "rules <> '[]'";
-			break;
-	}
-	$orderby = in_array( $args['orderby'] ?? '', array( 'title', 'slug', 'created_at' ), true ) ? $args['orderby'] : 'created_at';
-	$order   = 'asc' === strtolower( $args['order'] ?? '' ) ? 'ASC' : 'DESC';
-	$sql     = 'FROM %i WHERE ' . implode( ' AND ', $where );
-	// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- Built from fixed pieces above, values go through prepare().
-	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) $sql", $params ) );
-	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * $sql ORDER BY $orderby $order LIMIT %d OFFSET %d", array_merge( $params, array( $per_page, ( $paged - 1 ) * $per_page ) ) ) );
-	// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+	$search   = (string) ( $args['search'] ?? '' );
+	$like     = '%' . $wpdb->esc_like( $search ) . '%';
+	$state    = (string) ( $args['state'] ?? '' );
+	$now      = time();
+	// One fixed query: every filter is switched on or off by its parameter.
+	$where = '(%s = \'\' OR title LIKE %s OR slug LIKE %s OR target LIKE %s)
+		AND (%s <> \'paused\' OR status = \'paused\')
+		AND (%s <> \'waiting\' OR (status = \'active\' AND starts_at > %d))
+		AND (%s <> \'expired\' OR (status = \'active\' AND ends_at > 0 AND ends_at <= %d))
+		AND (%s <> \'scheduled\' OR rules <> \'[]\')';
+	$params = array( $search, $like, $like, $like, $state, $state, $now, $state, $now, $state );
+	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE $where", array_merge( array( $t['links'] ), $params ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a constant string with placeholders.
+	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE $where ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d", array_merge( array( $t['links'] ), $params, array( $per_page, ( $paged - 1 ) * $per_page ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a constant string with placeholders.
 	return array(
 		'items' => array_map( __NAMESPACE__ . '\\row_to_link', $rows ),
 		'total' => $total,

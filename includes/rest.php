@@ -163,7 +163,7 @@ add_action(
 					),
 					'callback'            => function ( $r ) {
 						$id = create_for_post( (int) $r['id'], $r['kind'] );
-						return is_wp_error( $id ) ? $id : array( 'link' => link_for_js( get_link( $id ) ) );
+						return is_wp_error( $id ) ? $id : array( 'link' => link_for_js( link_by_id( $id ) ) );
 					},
 				),
 			)

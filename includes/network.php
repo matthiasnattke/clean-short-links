@@ -58,7 +58,7 @@ function page_network() {
 		if ( $ready ) {
 			$top = top_links( 30, 1 );
 			if ( $top ) {
-				$l          = get_link( (int) array_key_first( $top ) );
+				$l          = link_by_id( (int) array_key_first( $top ) );
 				$row['top'] = $l ? ( '' !== $l['title'] ? $l['title'] : $l['slug'] ) . ' (' . number_format_i18n( reset( $top ) ) . ')' : '';
 			}
 		}
