@@ -116,6 +116,7 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * UTM parameters on request, derived from short link, channel and QR code.
 * Link-in-bio page with buttons for chosen short links.
 * Permanent redirects (301) for links that cannot change by themselves.
+* Works together with Clean Maintenance: one shared rule per site for short links during maintenance (redirect, let targets through, pause) and for short links that do not work (error page or maintenance page).
 
 = 0.2.0 =
 * Admin screens in the Clean Maintenance design: header with key figures, section navigation, tiles, switches, a card per short link and a sticky save bar.

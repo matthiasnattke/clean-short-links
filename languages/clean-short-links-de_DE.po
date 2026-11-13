@@ -14,7 +14,7 @@ msgid "Short links"
 msgstr "Kurzlinks"
 
 #. translators: %s: version number
-#: includes/admin.php:17 includes/admin.php:17 includes/admin.php:771 includes/admin.php:1310 includes/ui.php:109
+#: includes/admin.php:17 includes/admin.php:17 includes/admin.php:771 includes/admin.php:1314 includes/ui.php:109
 msgid "All short links"
 msgstr "Alle Kurzlinks"
 
@@ -26,12 +26,12 @@ msgstr "Kurzlink hinzufügen"
 msgid "Add new"
 msgstr "Neu hinzufügen"
 
-#: includes/admin.php:19 includes/admin.php:1302
+#: includes/admin.php:19 includes/admin.php:1306
 msgid "Short link settings"
 msgstr "Kurzlink-Einstellungen"
 
 #. translators: %s: version number
-#: includes/admin.php:19 includes/admin.php:234 includes/admin.php:631 includes/admin.php:1305 includes/network.php:91 includes/ui.php:109
+#: includes/admin.php:19 includes/admin.php:234 includes/admin.php:631 includes/admin.php:1309 includes/network.php:91 includes/ui.php:109
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -125,11 +125,11 @@ msgstr "Die Adresse ist zu lang für einen QR-Code."
 msgid "Remove this rule?"
 msgstr "Diese Regel entfernen?"
 
-#: includes/admin.php:89 includes/admin.php:386 includes/admin.php:491 includes/admin.php:1638 includes/rest.php:232
+#: includes/admin.php:89 includes/admin.php:386 includes/admin.php:491 includes/admin.php:1671 includes/rest.php:232
 msgid "Short link"
 msgstr "Kurzlink"
 
-#: includes/admin.php:90 includes/admin.php:387 includes/admin.php:1352 includes/store.php:835
+#: includes/admin.php:90 includes/admin.php:387 includes/admin.php:1356 includes/store.php:835
 msgid "Home page"
 msgstr "Startseite"
 
@@ -260,7 +260,7 @@ msgstr "Nichts gefunden."
 msgid "No short links yet."
 msgstr "Noch keine Kurzlinks."
 
-#: includes/admin.php:318 includes/admin.php:1295 includes/admin.php:1395
+#: includes/admin.php:318 includes/admin.php:1296 includes/admin.php:1425
 msgid "Link check"
 msgstr "Linkprüfung"
 
@@ -658,31 +658,31 @@ msgstr "Nur für dich, z. B. „Plakat 725 Jahre“"
 msgid "How should the short link read?"
 msgstr "Wie soll der Kurzlink lauten?"
 
-#: includes/admin.php:821 includes/admin.php:1371
+#: includes/admin.php:821 includes/admin.php:1375
 msgid "Kind of short address"
 msgstr "Art der Kurzadresse"
 
-#: includes/admin.php:823 includes/admin.php:1374 includes/rest.php:235
+#: includes/admin.php:823 includes/admin.php:1378 includes/rest.php:235
 msgid "Random"
 msgstr "Zufällig"
 
-#: includes/admin.php:823 includes/admin.php:1374
+#: includes/admin.php:823 includes/admin.php:1378
 msgid "Short and unique, e.g. k7mq4"
 msgstr "Kurz und eindeutig, z. B. k7mq4"
 
-#: includes/admin.php:824 includes/admin.php:1375 includes/rest.php:236
+#: includes/admin.php:824 includes/admin.php:1379 includes/rest.php:236
 msgid "Memorable"
 msgstr "Gut merkbar"
 
-#: includes/admin.php:824 includes/admin.php:1375
+#: includes/admin.php:824 includes/admin.php:1379
 msgid "Two words, e.g. blue-couch"
 msgstr "Zwei Wörter, z. B. blaue-couch"
 
-#: includes/admin.php:825 includes/admin.php:1376 includes/rest.php:237
+#: includes/admin.php:825 includes/admin.php:1380 includes/rest.php:237
 msgid "From the title"
 msgstr "Aus dem Titel"
 
-#: includes/admin.php:825 includes/admin.php:1376
+#: includes/admin.php:825 includes/admin.php:1380
 msgid "The first words of the title"
 msgstr "Die ersten Wörter des Titels"
 
@@ -883,7 +883,7 @@ msgstr "Transparent"
 msgid "Call to action"
 msgstr "Aufruf"
 
-#: includes/admin.php:981 includes/admin.php:1351
+#: includes/admin.php:981 includes/admin.php:1355
 msgid "None"
 msgstr "Keiner"
 
@@ -931,7 +931,7 @@ msgstr "SVG und PDF sind Vektordateien für den Druck. Die Gestaltung wird beim 
 msgid "Link"
 msgstr "Link"
 
-#: includes/admin.php:1021 includes/admin.php:1383
+#: includes/admin.php:1021 includes/admin.php:1387
 msgid "Link-in-bio page"
 msgstr "Link-in-Bio-Seite"
 
@@ -982,7 +982,7 @@ msgstr "Als CSV exportieren"
 msgid "Save short link"
 msgstr "Kurzlink speichern"
 
-#: includes/admin.php:1065 includes/admin.php:1640 includes/rest.php:238
+#: includes/admin.php:1065 includes/admin.php:1673 includes/rest.php:238
 msgid "Create short link"
 msgstr "Kurzlink anlegen"
 
@@ -990,7 +990,7 @@ msgstr "Kurzlink anlegen"
 msgid "Delete short link"
 msgstr "Kurzlink löschen"
 
-#: includes/admin.php:1107 includes/admin.php:1180 includes/admin.php:1204 includes/admin.php:1225 includes/admin.php:1244 includes/admin.php:1258 includes/admin.php:1459 includes/admin.php:1510 includes/admin.php:1570 includes/network.php:165
+#: includes/admin.php:1107 includes/admin.php:1180 includes/admin.php:1204 includes/admin.php:1225 includes/admin.php:1244 includes/admin.php:1258 includes/admin.php:1489 includes/admin.php:1543 includes/admin.php:1603 includes/network.php:165
 msgid "You are not allowed to do this."
 msgstr "Dazu fehlt dir die Berechtigung."
 
@@ -1010,195 +1010,259 @@ msgstr "2 Jahre"
 msgid "Forever"
 msgstr "Für immer"
 
-#: includes/admin.php:1291 includes/admin.php:1326
+#: includes/admin.php:1291 includes/admin.php:1330
 msgid "Addresses"
 msgstr "Adressen"
 
-#: includes/admin.php:1292 includes/admin.php:1348 includes/admin.php:1357
+#: includes/admin.php:1292 includes/admin.php:1352 includes/admin.php:1361
 msgid "Default target"
 msgstr "Standard-Ziel"
 
-#: includes/admin.php:1293 includes/admin.php:1364
+#: includes/admin.php:1293 includes/admin.php:1368
 msgid "Create automatically"
 msgstr "Automatisch anlegen"
 
-#: includes/admin.php:1294 includes/admin.php:1382
+#: includes/admin.php:1294 includes/admin.php:1386
 msgid "Social media"
 msgstr "Soziale Medien"
 
-#: includes/admin.php:1296 includes/admin.php:1405
+#: includes/admin.php:1295 includes/admin.php:1401
+msgid "Maintenance mode"
+msgstr "Wartungsmodus"
+
+#: includes/admin.php:1297 includes/admin.php:1435
 msgid "Statistics"
 msgstr "Statistik"
 
-#: includes/admin.php:1297
+#: includes/admin.php:1298
 msgid "Existing content"
 msgstr "Vorhandene Inhalte"
 
-#: includes/admin.php:1298 includes/admin.php:1440 includes/admin.php:1444 includes/admin.php:1446
+#: includes/admin.php:1299 includes/admin.php:1470 includes/admin.php:1474 includes/admin.php:1476
 msgid "Import"
 msgstr "Importieren"
 
-#: includes/admin.php:1326
+#: includes/admin.php:1330
 msgid "Under which paths short links and QR codes live."
 msgstr "Unter welchen Pfaden Kurzlinks und QR-Codes erreichbar sind."
 
-#: includes/admin.php:1329
+#: includes/admin.php:1333
 msgid "Links"
 msgstr "Links"
 
-#: includes/admin.php:1331
+#: includes/admin.php:1335
 msgid "QR codes"
 msgstr "QR-Codes"
 
-#: includes/admin.php:1334
+#: includes/admin.php:1338
 msgid "Changing a prefix changes all short links – printed QR codes then stop working. Best decide once."
 msgstr "Ein neues Präfix ändert alle Kurzlinks – gedruckte QR-Codes funktionieren dann nicht mehr. Am besten einmal festlegen."
 
-#: includes/admin.php:1337 includes/admin.php:1416
+#: includes/admin.php:1341 includes/admin.php:1446
 msgid "Set for the whole network."
 msgstr "Für das ganze Netzwerk festgelegt."
 
-#: includes/admin.php:1340 includes/network.php:139
+#: includes/admin.php:1344 includes/network.php:139
 msgid "Allow the short form without prefix (example.com/slug) – only used where the site has no content"
 msgstr "Kurzform ohne Präfix erlauben (example.com/kurz) – greift nur, wo die Website keinen Inhalt hat"
 
-#: includes/admin.php:1343
+#: includes/admin.php:1347
 msgid "New memorable and own short addresses also get the short form without prefix"
 msgstr "Neue merkbare und selbst vergebene Kurzadressen bekommen auch die Kurzform ohne Präfix"
 
-#: includes/admin.php:1345
+#: includes/admin.php:1349
 msgid "Pass parameters such as ?utm_source=… on to the target"
 msgstr "Parameter wie ?utm_source=… an das Ziel weitergeben"
 
-#: includes/admin.php:1348
+#: includes/admin.php:1352
 msgid "Where visitors go when a short link does not lead anywhere – instead of a “not found” page."
 msgstr "Wohin Besucher kommen, wenn ein Kurzlink gerade nirgendwohin führt – statt einer „Nicht gefunden“-Seite."
 
-#: includes/admin.php:1351
+#: includes/admin.php:1355 includes/admin.php:1415
 msgid "“Not found” or “gone” as usual."
 msgstr "Wie gewohnt „nicht gefunden“ oder „nicht mehr vorhanden“."
 
-#: includes/admin.php:1352
+#: includes/admin.php:1356
 msgid "Visitors land on the home page."
 msgstr "Besucher landen auf der Startseite."
 
-#: includes/admin.php:1353
+#: includes/admin.php:1357
 msgid "My choice"
 msgstr "Eigene Auswahl"
 
-#: includes/admin.php:1353
+#: includes/admin.php:1357
 msgid "A page, a post, a short link or a URL."
 msgstr "Eine Seite, ein Beitrag, ein Kurzlink oder eine URL."
 
-#: includes/admin.php:1360
+#: includes/admin.php:1364
 msgid "For unknown short addresses"
 msgstr "Bei unbekannten Kurzadressen"
 
-#: includes/admin.php:1360
+#: includes/admin.php:1364
 msgid "e.g. a mistyped example.com/s/…"
 msgstr "z. B. ein vertipptes example.com/s/…"
 
-#: includes/admin.php:1361
+#: includes/admin.php:1365
 msgid "For short links that do not lead anywhere right now"
 msgstr "Bei Kurzlinks, die gerade nirgendwohin führen"
 
-#: includes/admin.php:1361
+#: includes/admin.php:1365
 msgid "Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own."
 msgstr "Noch nicht gestartet, abgelaufen, Limit erreicht, pausiert oder stillgelegt – außer der Link hat ein eigenes Ersatzziel."
 
-#: includes/admin.php:1364
+#: includes/admin.php:1368
 msgid "When something of these types is published for the first time it gets a short link that starts with the publication."
 msgstr "Wird etwas dieser Art zum ersten Mal veröffentlicht, bekommt es einen Kurzlink, der mit der Veröffentlichung startet."
 
-#: includes/admin.php:1382
+#: includes/admin.php:1386
 msgid "Link previews for posts and pages always come straight from the content – there is nothing to set up for them."
 msgstr "Link-Vorschauen für Beiträge und Seiten kommen immer direkt aus dem Inhalt – dafür ist nichts einzurichten."
 
-#: includes/admin.php:1383
+#: includes/admin.php:1387
 msgid "A simple page with buttons for chosen short links – for the link in your Instagram, TikTok or Mastodon profile. Name, tagline and icon come from the site settings."
 msgstr "Eine schlichte Seite mit Knöpfen für ausgewählte Kurzlinks – für den Link im Instagram-, TikTok- oder Mastodon-Profil. Name, Untertitel und Icon kommen aus den Website-Einstellungen."
 
-#: includes/admin.php:1385
+#: includes/admin.php:1389
 msgid "Address of the page"
 msgstr "Adresse der Seite"
 
-#: includes/admin.php:1390
+#: includes/admin.php:1394
 msgid "Which short links appear is chosen at each short link under “Sharing”."
 msgstr "Welche Kurzlinks erscheinen, wählst du beim jeweiligen Kurzlink unter „Teilen“."
 
-#: includes/admin.php:1392
+#: includes/admin.php:1396
 msgid "New short links add UTM parameters"
 msgstr "Neue Kurzlinks hängen UTM-Parameter an"
 
-#: includes/admin.php:1392
+#: includes/admin.php:1396
 msgid "Can be changed per short link."
 msgstr "Pro Kurzlink änderbar."
 
-#: includes/admin.php:1395
+#: includes/admin.php:1401
+msgid "How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings."
+msgstr "Wie Kurzlinks und der Wartungsmodus von Clean Maintenance auf dieser Website zusammenspielen. Dieselbe Einstellung erscheint auch in den Wartungsmodus-Einstellungen."
+
+#: includes/admin.php:1403
+msgid "While maintenance mode is on"
+msgstr "Bei eingeschaltetem Wartungsmodus"
+
+#: includes/admin.php:1406
+msgid "Redirect as usual"
+msgstr "Wie gewohnt weiterleiten"
+
+#: includes/admin.php:1406
+msgid "Short links work; pages of this site show the maintenance page."
+msgstr "Kurzlinks funktionieren; Seiten dieser Website zeigen die Wartungsseite."
+
+#: includes/admin.php:1407
+msgid "Let targets through"
+msgstr "Ziele durchlassen"
+
+#: includes/admin.php:1407
+msgid "Pages that active short links lead to stay reachable."
+msgstr "Seiten, zu denen aktive Kurzlinks führen, bleiben erreichbar."
+
+#: includes/admin.php:1408
+msgid "Pause short links"
+msgstr "Kurzlinks pausieren"
+
+#: includes/admin.php:1408
+msgid "Short links show the maintenance page too."
+msgstr "Auch Kurzlinks zeigen die Wartungsseite."
+
+#: includes/admin.php:1412
+msgid "Short links that do not work"
+msgstr "Kurzlinks, die nicht funktionieren"
+
+#: includes/admin.php:1415
+msgid "Error page"
+msgstr "Fehlerseite"
+
+#: includes/admin.php:1416
+msgid "Maintenance page when temporary"
+msgstr "Wartungsseite, wenn vorübergehend"
+
+#: includes/admin.php:1416
+msgid "For targets that are only temporarily unreachable."
+msgstr "Bei Zielen, die nur vorübergehend nicht erreichbar sind."
+
+#: includes/admin.php:1417
+msgid "Always the maintenance page"
+msgstr "Immer die Wartungsseite"
+
+#: includes/admin.php:1417
+msgid "Instead of every error page – also without maintenance mode."
+msgstr "Statt jeder Fehlerseite – auch ohne Wartungsmodus."
+
+#: includes/admin.php:1420
+msgid "A fallback of the short link and the default target always come first."
+msgstr "Ein Ersatzziel des Kurzlinks und das Standard-Ziel haben immer Vorrang."
+
+#: includes/admin.php:1425
 msgid "Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent."
 msgstr "Prüft, ob Kurzlinks antworten und ob ihre Ziele noch erreichbar sind. Abgerufen werden nur die Zieladressen – sonst wird nichts gesendet."
 
-#: includes/admin.php:1396
+#: includes/admin.php:1426
 msgid "Check automatically once a day"
 msgstr "Einmal täglich automatisch prüfen"
 
-#: includes/admin.php:1396
+#: includes/admin.php:1426
 msgid "Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them."
 msgstr "Bis zu 25 Kurzlinks pro Tag, die am längsten nicht geprüften zuerst. Neue und geänderte Links werden beim Speichern geprüft."
 
-#: includes/admin.php:1398
+#: includes/admin.php:1428
 msgid "Permanently unreachable after"
 msgstr "Dauerhaft nicht erreichbar nach"
 
-#: includes/admin.php:1399
+#: includes/admin.php:1429
 msgid "days"
 msgstr "Tagen"
 
-#: includes/admin.php:1400
+#: includes/admin.php:1430
 msgid "Until then an unreachable target counts as temporarily unreachable: “try again later” (503). Afterwards: “gone” (410). If the target answers again, the link works again."
 msgstr "Bis dahin gilt ein unerreichbares Ziel als vorübergehend nicht erreichbar: „später erneut versuchen“ (503). Danach: „nicht mehr vorhanden“ (410). Antwortet das Ziel wieder, funktioniert der Link wieder."
 
-#: includes/admin.php:1402
+#: includes/admin.php:1432
 msgid "Do not send visitors to unreachable targets"
 msgstr "Besucher nicht zu unerreichbaren Zielen schicken"
 
-#: includes/admin.php:1402
+#: includes/admin.php:1432
 msgid "If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page."
 msgstr "Hat die Prüfung ein Ziel als unerreichbar erkannt, führt der Link stattdessen zu seinem Ersatzziel – sonst zum Standard-Ziel oder zur „Nicht gefunden“-Seite."
 
-#: includes/admin.php:1405 includes/network.php:147
+#: includes/admin.php:1435 includes/network.php:147
 msgid "Only daily totals are stored – no IP addresses, no cookies."
 msgstr "Gespeichert werden nur Tagessummen – keine IP-Adressen, keine Cookies."
 
-#: includes/admin.php:1406
+#: includes/admin.php:1436
 msgid "Also count visits of logged-in authors and editors"
 msgstr "Auch Aufrufe angemeldeter Autoren und Redakteure zählen"
 
-#: includes/admin.php:1408 includes/network.php:141
+#: includes/admin.php:1438 includes/network.php:141
 msgid "Keep statistics"
 msgstr "Statistik aufbewahren"
 
-#: includes/admin.php:1422 includes/network.php:155
+#: includes/admin.php:1452 includes/network.php:155
 msgid "Save settings"
 msgstr "Einstellungen speichern"
 
-#: includes/admin.php:1426
+#: includes/admin.php:1456
 msgid "Short links for existing content"
 msgstr "Kurzlinks für vorhandene Inhalte"
 
-#: includes/admin.php:1426
+#: includes/admin.php:1456
 msgid "One click gives every published item without a short link one – with the kind chosen above."
 msgstr "Ein Klick gibt jedem veröffentlichten Inhalt ohne Kurzlink einen – in der oben gewählten Art."
 
-#: includes/admin.php:1430
+#: includes/admin.php:1460
 msgid "Content type"
 msgstr "Inhaltstyp"
 
-#: includes/admin.php:1436
+#: includes/admin.php:1466
 msgid "Create short links"
 msgstr "Kurzlinks anlegen"
 
-#: includes/admin.php:1440
+#: includes/admin.php:1470
 msgid "One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working."
 msgstr "Ein Kurzlink pro Zeile: Kurzadresse ; Ziel ; Titel – getrennt durch Semikolon oder Tabulator. Ziele auf dieser Website werden als Beiträge und Seiten erkannt. Importierte Links bekommen auch die Kurzform ohne Präfix, damit bestehende Kurzlinks wie example.com/abc weiter funktionieren."
 

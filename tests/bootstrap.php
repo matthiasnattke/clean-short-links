@@ -43,3 +43,4 @@ define( 'CLEAN_SHORT_LINKS_FILE', dirname( __DIR__ ) . '/clean-short-links.php' 
 require dirname( __DIR__ ) . '/includes/core.php';
 require dirname( __DIR__ ) . '/includes/checker.php';
 require dirname( __DIR__ ) . '/includes/social.php';
+require dirname( __DIR__ ) . '/includes/maintenance.php';

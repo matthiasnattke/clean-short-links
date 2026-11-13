@@ -1292,11 +1292,15 @@ function page_settings() {
 		'csl-sec-default' => __( 'Default target', 'clean-short-links' ),
 		'csl-sec-auto'   => __( 'Create automatically', 'clean-short-links' ),
 		'csl-sec-social' => __( 'Social media', 'clean-short-links' ),
+		'csl-sec-maintenance' => __( 'Maintenance mode', 'clean-short-links' ),
 		'csl-sec-check'  => __( 'Link check', 'clean-short-links' ),
 		'csl-sec-stat'   => __( 'Statistics', 'clean-short-links' ),
 		'csl-sec-bulk'   => __( 'Existing content', 'clean-short-links' ),
 		'csl-sec-import' => __( 'Import', 'clean-short-links' ),
 	);
+	if ( ! maintenance_available() ) {
+		unset( $sections['csl-sec-maintenance'] );
+	}
 	?>
 	<div class="wrap csl-wrap">
 		<h1 class="screen-reader-text"><?php esc_html_e( 'Short link settings', 'clean-short-links' ); ?></h1>
@@ -1391,6 +1395,32 @@ function page_settings() {
 						</div>
 						<div class="csl-sub"><?php toggle( 'utm_default', ! empty( $s['utm_default'] ), __( 'New short links add UTM parameters', 'clean-short-links' ), __( 'Can be changed per short link.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
+
+					<?php if ( maintenance_available() ) : ?>
+						<?php $mr = maintenance_rules(); ?>
+						<?php card_open( 'csl-sec-maintenance', 'pause', __( 'Maintenance mode', 'clean-short-links' ), __( 'How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings.', 'clean-short-links' ) ); ?>
+							<input type="hidden" name="cm_rules[present]" value="1">
+							<span class="csl-field-label"><?php esc_html_e( 'While maintenance mode is on', 'clean-short-links' ); ?></span>
+							<div class="csl-tiles csl-tiles-3">
+								<?php
+								tile( 'cm_rules[during]', 'redirect', 'redirect' === $mr['during'], 'external', __( 'Redirect as usual', 'clean-short-links' ), __( 'Short links work; pages of this site show the maintenance page.', 'clean-short-links' ) );
+								tile( 'cm_rules[during]', 'open', 'open' === $mr['during'], 'target', __( 'Let targets through', 'clean-short-links' ), __( 'Pages that active short links lead to stay reachable.', 'clean-short-links' ) );
+								tile( 'cm_rules[during]', 'pause', 'pause' === $mr['during'], 'pause', __( 'Pause short links', 'clean-short-links' ), __( 'Short links show the maintenance page too.', 'clean-short-links' ) );
+								?>
+							</div>
+							<div class="csl-sub">
+								<span class="csl-field-label"><?php esc_html_e( 'Short links that do not work', 'clean-short-links' ); ?></span>
+								<div class="csl-tiles csl-tiles-3">
+									<?php
+									tile( 'cm_rules[dead]', 'never', 'never' === $mr['dead'], 'page', __( 'Error page', 'clean-short-links' ), __( '“Not found” or “gone” as usual.', 'clean-short-links' ) );
+									tile( 'cm_rules[dead]', 'temporary', 'temporary' === $mr['dead'], 'clock', __( 'Maintenance page when temporary', 'clean-short-links' ), __( 'For targets that are only temporarily unreachable.', 'clean-short-links' ) );
+									tile( 'cm_rules[dead]', 'always', 'always' === $mr['dead'], 'logo', __( 'Always the maintenance page', 'clean-short-links' ), __( 'Instead of every error page – also without maintenance mode.', 'clean-short-links' ) );
+									?>
+								</div>
+								<span class="csl-help"><?php esc_html_e( 'A fallback of the short link and the default target always come first.', 'clean-short-links' ); ?></span>
+							</div>
+						<?php card_close(); ?>
+					<?php endif; ?>
 
 					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
 						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.', 'clean-short-links' ) ); ?>
@@ -1492,6 +1522,9 @@ add_action(
 			$new['qr_prefix'] = '';
 		}
 		update_option( 'clean_short_links_site', $new );
+		if ( maintenance_available() && ! empty( $p['cm_rules']['present'] ) ) {
+			update_option( 'clean_maintenance_short_links', clean_maintenance_rules( $p['cm_rules'] ) );
+		}
 		if ( ! is_multisite() ) {
 			$n                   = network_settings();
 			$n['allow_root']     = empty( $p['allow_root'] ) ? 0 : 1;

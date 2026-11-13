@@ -116,6 +116,15 @@ Stored: daily totals only. No IP address, cookie, user ID or full referrer is ev
 - **Short links for existing content** – one click for every published post or page without a link.
 - **Import** – `short address ; target ; title`, one per line. Imported links get the short form, so old short links like `example.com/abc` keep working.
 
+## Maintenance mode (with Clean Maintenance)
+
+With Clean Maintenance active, *Settings → Maintenance mode* holds one rule per site that both plugins share – the same card appears in the maintenance mode settings, and changing it in one place changes it in the other.
+
+- **While maintenance mode is on:** *Redirect as usual* (short links work; pages of this site show the maintenance page), *Let targets through* (pages and posts that active short links lead to – and the home page if a link leads there – stay reachable, like an automatic exception) or *Pause short links* (they show the maintenance page too).
+- **Short links that do not work:** *Error page* (“not found” / “gone”), *Maintenance page when temporary* (for targets that are temporarily unreachable) or *Always the maintenance page* (instead of every error page, also when maintenance mode is off). A link's fallback and the default target always come first.
+
+Exceptions of the maintenance mode (slugs, addresses, access pass) still apply: a short link whose address matches an exception keeps working while the others pause.
+
 ## Network (multisite)
 
 **Network admin → Short links** lists every site with its prefixes, number of links, visits and most visited link, and holds the network-wide settings: prefixes for links and QR codes, whether sites may choose their own, whether the short form is allowed, how long statistics are kept and reserved words.

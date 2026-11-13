@@ -51,6 +51,7 @@ add_action(
 		if ( ! $req || SOURCE_ROOT === $req[0] ) {
 			return;
 		}
+		maybe_pause_for_maintenance();
 		$s = site_settings();
 		if ( ! empty( $s['bio_enabled'] ) && SOURCE_LINK === $req[0] && $req[1] === $s['bio_slug'] ) {
 			render_bio();
@@ -62,6 +63,7 @@ add_action(
 			if ( $default ) {
 				go_to( $default, null, $req[0], false );
 			}
+			maybe_maintenance_for_dead_link( 404 );
 			return;
 		}
 		$result = handle( $found, $req[0], $req[1] );
@@ -87,9 +89,10 @@ add_action(
 		if ( ! $found || ( $found[0] && empty( $found[0]['root'] ) ) || 'retired' === $found[1] ) {
 			return;
 		}
+		maybe_pause_for_maintenance();
 		handle( $found, SOURCE_ROOT, $req[1] );
 	},
-	0
+	-10 // Before the maintenance mode of Clean Maintenance (priority 0).
 );
 
 /*
@@ -216,6 +219,7 @@ function dead_end( $status, $link, $source ) {
 	if ( $default ) {
 		go_to( $default, $link, $source, false );
 	}
+	maybe_maintenance_for_dead_link( $status );
 	$GLOBALS['clean_short_links_status'] = $status;
 	nocache_headers();
 	return $status;

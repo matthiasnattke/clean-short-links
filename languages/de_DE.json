@@ -347,5 +347,21 @@
 	"Newsletter": "Newsletter",
 	"E-mail": "E-Mail",
 	"Print": "Druck",
-	"This is the address of the link-in-bio page.": "Das ist die Adresse der Link-in-Bio-Seite."
+	"This is the address of the link-in-bio page.": "Das ist die Adresse der Link-in-Bio-Seite.",
+	"Maintenance mode": "Wartungsmodus",
+	"How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings.": "Wie Kurzlinks und der Wartungsmodus von Clean Maintenance auf dieser Website zusammenspielen. Dieselbe Einstellung erscheint auch in den Wartungsmodus-Einstellungen.",
+	"While maintenance mode is on": "Bei eingeschaltetem Wartungsmodus",
+	"Redirect as usual": "Wie gewohnt weiterleiten",
+	"Short links work; pages of this site show the maintenance page.": "Kurzlinks funktionieren; Seiten dieser Website zeigen die Wartungsseite.",
+	"Let targets through": "Ziele durchlassen",
+	"Pages that active short links lead to stay reachable.": "Seiten, zu denen aktive Kurzlinks führen, bleiben erreichbar.",
+	"Pause short links": "Kurzlinks pausieren",
+	"Short links show the maintenance page too.": "Auch Kurzlinks zeigen die Wartungsseite.",
+	"Short links that do not work": "Kurzlinks, die nicht funktionieren",
+	"Error page": "Fehlerseite",
+	"Maintenance page when temporary": "Wartungsseite, wenn vorübergehend",
+	"For targets that are only temporarily unreachable.": "Bei Zielen, die nur vorübergehend nicht erreichbar sind.",
+	"Always the maintenance page": "Immer die Wartungsseite",
+	"Instead of every error page – also without maintenance mode.": "Statt jeder Fehlerseite – auch ohne Wartungsmodus.",
+	"A fallback of the short link and the default target always come first.": "Ein Ersatzziel des Kurzlinks und das Standard-Ziel haben immer Vorrang."
 }

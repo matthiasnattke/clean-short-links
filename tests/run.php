@@ -329,6 +329,17 @@ test( 'Preview robots are recognised', function () {
 	same( false, is_preview_bot( 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/604.1' ) );
 } );
 
+echo "\nMaintenance mode\n";
+
+test( 'Shared maintenance rules: same defaults and values as Clean Maintenance', function () {
+	same( array( 'during' => 'redirect', 'dead' => 'never' ), clean_maintenance_rules( null ) );
+	same( array( 'during' => 'open', 'dead' => 'always' ), clean_maintenance_rules( array( 'during' => 'open', 'dead' => 'always', 'present' => '1' ) ) );
+	same( array( 'during' => 'redirect', 'dead' => 'never' ), clean_maintenance_rules( array( 'during' => 'later', 'dead' => 'sometimes' ) ) );
+	update_option( 'clean_maintenance_short_links', array( 'during' => 'pause', 'dead' => 'temporary' ) );
+	same( array( 'during' => 'pause', 'dead' => 'temporary' ), maintenance_rules() );
+	same( false, maintenance_available(), 'without Clean Maintenance nothing applies' );
+} );
+
 echo "\nLink check\n";
 
 test( 'Unreachable targets are recognised from the last check', function () {
