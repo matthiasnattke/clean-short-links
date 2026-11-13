@@ -54,7 +54,10 @@ function preview_data( array $link, $target, $depth = 0 ) {
 		}
 		$image = get_the_post_thumbnail_url( $post, 'large' );
 		$icon  = get_site_icon_url( 512 );
-		$text  = has_excerpt( $post ) ? get_the_excerpt( $post ) : wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ), 30, '…' );
+		// Without an excerpt: the first words of the content – block and tag borders become spaces.
+		$plain = preg_replace( '#<(script|style)[^>]*>.*?</\1>#is', ' ', strip_shortcodes( $post->post_content ) );
+		$plain = wp_strip_all_tags( preg_replace( '/<[^>]+>/', ' ', $plain ) );
+		$text  = has_excerpt( $post ) ? get_the_excerpt( $post ) : wp_trim_words( preg_replace( '/\s+/', ' ', $plain ), 30, '…' );
 		return array(
 			'title'       => get_the_title( $post ),
 			'description' => html_entity_decode( $text, ENT_QUOTES, 'UTF-8' ),
