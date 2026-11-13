@@ -850,11 +850,11 @@ msgstr ""
 msgid "The short link could not be saved."
 msgstr ""
 
-#: includes/store.php:571
+#: includes/store.php:570
 msgid "(deleted content)"
 msgstr ""
 
-#: includes/store.php:574
+#: includes/store.php:573
 msgid "(no title)"
 msgstr ""
 

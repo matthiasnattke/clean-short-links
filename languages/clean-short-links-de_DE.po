@@ -851,11 +851,11 @@ msgstr "Bitte ein Ziel wählen – einen Beitrag, eine Seite oder eine URL."
 msgid "The short link could not be saved."
 msgstr "Der Kurzlink konnte nicht gespeichert werden."
 
-#: includes/store.php:571
+#: includes/store.php:570
 msgid "(deleted content)"
 msgstr "(gelöschter Inhalt)"
 
-#: includes/store.php:574
+#: includes/store.php:573
 msgid "(no title)"
 msgstr "(ohne Titel)"
 
