@@ -39,7 +39,7 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 
 * Checks once a day – or at the push of a button – whether each short link answers and whether all its targets (main target, rule targets, fallback) can still be reached.
 * Problems show up on the short link's card and in a filter of their own.
-* Links whose target is unreachable lead to their fallback, the default target or the “not found” page instead.
+* Links whose target is unreachable lead to their fallback or the default target instead – otherwise they answer “temporarily unavailable” (503), and after 30 days without a break “gone” (410). Once the target is back, the link works again.
 
 **QR codes**
 

@@ -302,5 +302,12 @@
 	"Short link %1$s (/%2$s)": "Kurzlink %1$s (/%2$s)",
 	"Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.": "Bis zu 25 Kurzlinks pro Tag, die am längsten nicht geprüften zuerst. Neue und geänderte Links werden beim Speichern geprüft.",
 	"Do not send visitors to unreachable targets": "Besucher nicht zu unerreichbaren Zielen schicken",
-	"If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.": "Hat die Prüfung ein Ziel als unerreichbar erkannt, führt der Link stattdessen zu seinem Ersatzziel – sonst zum Standard-Ziel oder zur „Nicht gefunden“-Seite."
+	"If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.": "Hat die Prüfung ein Ziel als unerreichbar erkannt, führt der Link stattdessen zu seinem Ersatzziel – sonst zum Standard-Ziel oder zur „Nicht gefunden“-Seite.",
+	"Temporarily unreachable": "Vorübergehend nicht erreichbar",
+	"Permanently unreachable": "Dauerhaft nicht erreichbar",
+	"Unreachable for %1$s – that is %2$d days or more, so the link counts as permanently unreachable and answers “gone”.": "Seit %1$s nicht erreichbar – das sind %2$d Tage oder mehr, der Link gilt daher als dauerhaft nicht erreichbar und antwortet „nicht mehr vorhanden“.",
+	"Unreachable for %1$s – visitors get “temporarily unavailable” or the fallback; after %2$d days without a break it counts as permanently unreachable.": "Seit %1$s nicht erreichbar – Besucher bekommen „vorübergehend nicht verfügbar“ oder das Ersatzziel; nach %2$d Tagen ohne Unterbrechung gilt er als dauerhaft nicht erreichbar.",
+	"Permanently unreachable after": "Dauerhaft nicht erreichbar nach",
+	"days": "Tagen",
+	"Until then an unreachable target counts as temporarily unreachable: “try again later” (503). Afterwards: “gone” (410). If the target answers again, the link works again.": "Bis dahin gilt ein unerreichbares Ziel als vorübergehend nicht erreichbar: „später erneut versuchen“ (503). Danach: „nicht mehr vorhanden“ (410). Antwortet das Ziel wieder, funktioniert der Link wieder."
 }

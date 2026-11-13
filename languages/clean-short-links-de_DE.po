@@ -158,11 +158,11 @@ msgstr "Limit erreicht"
 
 #: includes/admin.php:119
 msgid "Temporarily unreachable"
-msgstr ""
+msgstr "Vorübergehend nicht erreichbar"
 
 #: includes/admin.php:120
 msgid "Permanently unreachable"
-msgstr ""
+msgstr "Dauerhaft nicht erreichbar"
 
 #: includes/admin.php:140 includes/admin.php:140 includes/rest.php:239
 msgid "Copy"
@@ -382,13 +382,13 @@ msgstr "vor %s"
 #: includes/admin.php:482
 #, php-format
 msgid "Unreachable for %1$s – that is %2$d days or more, so the link counts as permanently unreachable and answers “gone”."
-msgstr ""
+msgstr "Seit %1$s nicht erreichbar – das sind %2$d Tage oder mehr, der Link gilt daher als dauerhaft nicht erreichbar und antwortet „nicht mehr vorhanden“."
 
 #. translators: 1: time span, e.g. "3 days", 2: number of days
 #: includes/admin.php:482
 #, php-format
 msgid "Unreachable for %1$s – visitors get “temporarily unavailable” or the fallback; after %2$d days without a break it counts as permanently unreachable."
-msgstr ""
+msgstr "Seit %1$s nicht erreichbar – Besucher bekommen „vorübergehend nicht verfügbar“ oder das Ersatzziel; nach %2$d Tagen ohne Unterbrechung gilt er als dauerhaft nicht erreichbar."
 
 #. translators: 1: time span, e.g. "3 days", 2: number of days
 #: includes/admin.php:485
@@ -1001,15 +1001,15 @@ msgstr "Bis zu 25 Kurzlinks pro Tag, die am längsten nicht geprüften zuerst. N
 
 #: includes/admin.php:1241
 msgid "Permanently unreachable after"
-msgstr ""
+msgstr "Dauerhaft nicht erreichbar nach"
 
 #: includes/admin.php:1242
 msgid "days"
-msgstr ""
+msgstr "Tagen"
 
 #: includes/admin.php:1243
 msgid "Until then an unreachable target counts as temporarily unreachable: “try again later” (503). Afterwards: “gone” (410). If the target answers again, the link works again."
-msgstr ""
+msgstr "Bis dahin gilt ein unerreichbares Ziel als vorübergehend nicht erreichbar: „später erneut versuchen“ (503). Danach: „nicht mehr vorhanden“ (410). Antwortet das Ziel wieder, funktioniert der Link wieder."
 
 #: includes/admin.php:1245
 msgid "Do not send visitors to unreachable targets"

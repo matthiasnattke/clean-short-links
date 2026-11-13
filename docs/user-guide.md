@@ -65,7 +65,7 @@ Once a day the 25 short links checked longest ago are checked – and *Check now
 
 Results appear on the short link's card, in the header of the edit screen and in the *Problems* filter.
 
-New and changed links are checked as soon as you save them. With *Do not send visitors to unreachable targets* (on by default) a link whose target was found unreachable leads to its fallback instead – or to the default target, or the “not found” page. The next successful check lets it lead to the target again.
+New and changed links are checked as soon as you save them. With *Do not send visitors to unreachable targets* (on by default) a link whose target was found unreachable leads to its fallback instead – or to the default target, or the “not found” page. While a target has been unreachable for less than 30 days (*Settings → Link check*), the link counts as *temporarily unreachable*: without a fallback or default target visitors get “try again later” (503), and the daily check looks at such links first. Unreachable for 30 days without a break, it counts as *permanently unreachable* and answers “gone” (410). Either way, the next successful check lets it lead to the target again.
 
 ## When a link does not work (any more)
 
