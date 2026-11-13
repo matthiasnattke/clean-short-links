@@ -29,6 +29,7 @@ require_once __DIR__ . '/includes/stats.php';
 require_once __DIR__ . '/includes/rest.php';
 
 if ( is_admin() ) {
+	require_once __DIR__ . '/includes/ui.php';
 	require_once __DIR__ . '/includes/admin.php';
 	if ( is_multisite() ) {
 		require_once __DIR__ . '/includes/network.php';

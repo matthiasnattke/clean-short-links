@@ -90,7 +90,7 @@ function link_for_js( $link ) {
 		'rules'  => count( $link['rules'] ),
 		'visits' => totals( array( $link['id'] ), 30 )[ $link['id'] ] ?? 0,
 		'edit'   => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] ),
-		'qr'     => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] . '#csl-qr' ),
+		'qr'     => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] . '#csl-sec-qr' ),
 	);
 }
 

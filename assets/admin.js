@@ -227,7 +227,7 @@
 	var rules = $( '.csl-rules' ), tpl = $( '#csl-rule-template' ), next = $$( '.csl-rule', rules ).length + 100;
 	function number() {
 		$$( '.csl-rule', rules ).forEach( function ( r, i ) {
-			$( '.csl-rule-no', r ).textContent = ( i + 1 ) + '.';
+			$( '.csl-rule-no', r ).textContent = String( i + 1 );
 		} );
 	}
 	$( '.csl-rule-add' ).addEventListener( 'click', function () {
