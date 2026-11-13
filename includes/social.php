@@ -171,6 +171,7 @@ function render_bio() {
 	nocache_headers();
 	header( 'Content-Type: text/html; charset=utf-8' );
 	$name = get_bloginfo( 'name' );
+	$name = '' !== trim( $name ) ? $name : preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
 	$desc = get_bloginfo( 'description' );
 	?>
 <!doctype html>
