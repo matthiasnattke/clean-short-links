@@ -75,12 +75,6 @@ Short-link redirects send no-cache headers. If your cache ignores them, exclude 
 
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
-== Screenshots ==
-
-1. All short links with visits and state.
-2. Edit screen with rules by date and time.
-3. QR designer with logo.
-
 == Changelog ==
 
 = 0.1.0 =

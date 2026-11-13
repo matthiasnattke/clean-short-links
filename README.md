@@ -18,6 +18,11 @@ example.com/blue-couch       optional short form – only where the site has no 
 - **Editor:** block editor panel, automatic links on publishing, `wp_get_shortlink()` integration.
 - **Network:** every site has its own links; the network admin shows all sites and sets prefixes and rules.
 
+## Documentation
+
+- [User guide](docs/user-guide.md) – creating links, time windows, rules, QR codes, statistics, settings
+- [How it works](docs/how-it-works.md) – request flow, data, QR encoder, hooks, privacy
+
 ## Development
 
 ```sh

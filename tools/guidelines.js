@@ -20,7 +20,7 @@ const online = args.includes('--online');
 const root = path.resolve(args.find(a => !a.startsWith('--')) || path.join(__dirname, '..'));
 const slug = 'clean-short-links';
 const isRepo = fs.existsSync(path.join(root, '.git'));
-const devOnly = new Set(['.git', '.github', '.wordpress-org', 'tests', 'tools', 'node_modules', 'build']);
+const devOnly = new Set(['.git', '.github', '.wordpress-org', 'docs', 'tests', 'tools', 'node_modules', 'build']);
 
 /* All files that end up in the plugin package. */
 function walk(dir, out = []) {
