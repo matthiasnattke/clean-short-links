@@ -18,6 +18,10 @@ example.com/blue-couch       optional short form – only where the site has no 
 - **Editor:** block editor panel, automatic links on publishing, `wp_get_shortlink()` integration.
 - **Network:** every site has its own links; the network admin shows all sites and sets prefixes and rules.
 
+## Languages
+
+The plugin is written in English. A complete German translation is included; WordPress picks it automatically on German sites. Memorable short addresses use English or German words to match the site language. More languages are welcome – see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
+
 ## Documentation
 
 - [User guide](docs/user-guide.md) – creating links, time windows, rules, QR codes, statistics, settings

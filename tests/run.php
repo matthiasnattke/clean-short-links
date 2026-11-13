@@ -77,7 +77,7 @@ echo "Short addresses\n";
 test( 'Normalizing: lowercase, umlauts, spaces, junk', function () {
 	same( 'blaue-couch', normalize_slug( '  Blaue Couch ' ) );
 	same( 'groesse-strasse', normalize_slug( 'Größe_Straße' ) );
-	same( '725-jahre-peitz', normalize_slug( '725 Jahre Peitz!' ) );
+	same( '725-years-of-town', normalize_slug( '725 Years of Town!' ) );
 	same( 'a-b', normalize_slug( '--a///b--' ) );
 } );
 
@@ -110,9 +110,9 @@ test( 'Memorable short addresses are two plain words', function () {
 } );
 
 test( 'Short address from a title: first words, at most 30 characters', function () {
-	same( '725-jahre-peitz', title_slug( '725 Jahre Peitz' ) );
-	same( 'das-grosse-sommerfest-im', title_slug( 'Das große Sommerfest im Park am Wasser' ) );
-	same( true, strlen( title_slug( 'Donaudampfschifffahrtsgesellschaftskapitaensmuetze' ) ) <= 30 );
+	same( '725-years-of-town', title_slug( '725 Years of Town' ) );
+	same( 'the-big-summer-party', title_slug( 'The big summer party in the park by the water' ) );
+	same( true, strlen( title_slug( 'Pneumonoultramicroscopicsilicovolcanoconiosis' ) ) <= 30 );
 } );
 
 test( 'Request paths', function () {

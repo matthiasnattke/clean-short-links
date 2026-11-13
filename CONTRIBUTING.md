@@ -84,7 +84,7 @@ Until then – or if you prefer GitHub – you can add a translation here. Pick 
 **With a JSON file (what the bundled German uses)**
 
 1. Copy [`languages/de_DE.json`](languages/de_DE.json) to `languages/<locale>.json`, e.g. `fr_FR.json`.
-2. Replace each German value with your translation. Keys are the English originals – leave them as they are. Plurals are lists, for example `"%d site changed.": ["%d site modifié.", "%d sites modifiés."]`. If your language has other plural rules, add `"_plural_forms": "nplurals=…; plural=…;"`.
+2. Replace each German value with your translation. Keys are the English originals – leave them as they are. Plurals are lists, for example `"%d short link created.": ["%d lien court créé.", "%d liens courts créés."]`. If your language has other plural rules, add `"_plural_forms": "nplurals=…; plural=…;"`.
 3. See what is still missing and build the files:
 
    ```sh
