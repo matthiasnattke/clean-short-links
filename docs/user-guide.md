@@ -50,9 +50,11 @@ Open *QR code* on the edit screen and click *Create QR code*.
 
 - The code contains `example.com/q/<short address>` – the same short address as the link unless you untick *QR code uses the same short address*. Scans are counted separately from clicks.
 - *Compact code* writes the address in capitals. Short links ignore case, and the QR standard has a compact mode for capitals, digits and a few symbols – the code gets fewer, larger modules and scans more reliably.
+- *Dots*: squares, rounded, dots or connected (neighbouring dots merge into capsules). *Corners*: square, rounded or round.
+- *Call to action*: a pill with a scan symbol and your text (default "Scan me") – below the code, or sitting on a rounded frame around it.
 - *Logo or symbol* places an image from the media library in the middle. Error correction is raised to the highest level automatically.
-- Colours: keep a dark colour on a light background; the designer warns about low contrast.
-- *Download SVG* for print, *Download PNG* in 512–2048 px, or *Save to media library*.
+- Colours: keep a dark colour on a light background; the designer warns about low contrast. *Transparent* leaves out the background in every export.
+- Exports: *SVG* and *PDF* are vector files for print (the PDF embeds the logo with its transparency), *PNG* in 512–2048 px, or *Save to media library*.
 - The design is stored with the link when you save.
 
 ## Statistics

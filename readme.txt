@@ -30,10 +30,11 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 **QR codes**
 
 * Created on demand in the browser with a built-in encoder – no external service, no CDN.
-* Logo or symbol from the media library in the middle, colours, dots and rounded corners. Error correction is raised automatically when a logo is used.
+* Logo or symbol from the media library in the middle, colours, square, rounded, dotted or connected modules and rounded corners. Error correction is raised automatically when a logo is used.
+* An optional call to action – a pill like "Scan me" below the code or on a frame around it.
 * QR codes lead through their own prefix (`/q/…`), so statistics tell scans from clicks. By default they use the same short address as the link.
 * URLs are encoded in capitals where possible – this compact QR mode gives coarser codes that scan more reliably.
-* Download as SVG for print or PNG, or save straight to the media library.
+* Download as SVG or PDF (vector, for print) or PNG – each also with a transparent background – or save straight to the media library.
 
 **Statistics without personal data**
 
@@ -78,4 +79,6 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 == Changelog ==
 
 = 0.1.0 =
+* Admin screens in the Clean Maintenance design: header, section navigation, tiles, switches and a sticky save bar.
+* QR codes: connected dots, round corners, call-to-action pill, transparent background, PDF export.
 * First version: short links for posts, pages and URLs, random/memorable/title/own short addresses, short form without prefix, aliases, time windows with fallback, rules by date and time, QR designer with logo, statistics, block editor panel, automatic links, bulk creation, import, network overview and settings.
