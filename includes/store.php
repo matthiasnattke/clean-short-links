@@ -410,6 +410,12 @@ function save_link( array $data ) {
 		$row['starts_at'] = 0;
 	}
 
+	if ( $old && ( $old['target'] !== $row['target'] || $old['fallback'] !== $row['fallback'] || wp_json_encode( $old['rules'] ) !== $row['rules'] ) ) {
+		// Targets changed: old check results no longer apply.
+		$row['check_status'] = '';
+		$row['check_info']   = '[]';
+		$row['checked_at']   = 0;
+	}
 	if ( $old ) {
 		$wpdb->update( $t['links'], $row, array( 'id' => $id ) );
 	} else {

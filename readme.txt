@@ -39,6 +39,7 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 
 * Checks once a day – or at the push of a button – whether each short link answers and whether all its targets (main target, rule targets, fallback) can still be reached.
 * Problems show up on the short link's card and in a filter of their own.
+* Links whose target is unreachable lead to their fallback, the default target or the “not found” page instead.
 
 **QR codes**
 

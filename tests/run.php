@@ -192,7 +192,7 @@ test( 'Rule: times over midnight', function () {
 echo "\nResolving\n";
 
 test( 'Plain link leads to its target', function () {
-	same( array( 'status' => 302, 'url' => 'https://example.com/hello/', 'state' => 'default' ), go( link(), '2026-06-01 12:00' ) );
+	same( array( 'status' => 302, 'url' => 'https://example.com/hello/', 'state' => 'default', 'target' => 'post:1' ), go( link(), '2026-06-01 12:00' ) );
 } );
 
 test( 'Paused link: 404', function () {
@@ -288,6 +288,24 @@ test( 'Invitations follow their main link but keep limit, counter and expiry', f
 } );
 
 echo "\nLink check\n";
+
+test( 'Unreachable targets are recognised from the last check', function () {
+	$l = link(
+		array(
+			'check' => array(
+				'items' => array(
+					array( 'role' => 'main', 'target' => 'post:1', 'status' => 'broken' ),
+					array( 'role' => 'fallback', 'target' => 'https://example.com/soon/', 'status' => 'ok' ),
+					array( 'role' => 'self', 'target' => 'post:9', 'status' => 'broken' ),
+				),
+			),
+		)
+	);
+	same( true, target_broken( $l, 'post:1' ) );
+	same( false, target_broken( $l, 'https://example.com/soon/' ) );
+	same( false, target_broken( $l, 'post:9' ), 'the self-check is not a target' );
+	same( false, target_broken( link(), 'post:1' ), 'not checked yet' );
+} );
 
 test( 'Answers are classified', function () {
 	same( 'ok', classify_response( 200 ) );

@@ -291,7 +291,6 @@
 	"Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own.": "Noch nicht gestartet, abgelaufen, Limit erreicht, pausiert oder stillgelegt – außer der Link hat ein eigenes Ersatzziel.",
 	"Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.": "Prüft, ob Kurzlinks antworten und ob ihre Ziele noch erreichbar sind. Abgerufen werden nur die Zieladressen – sonst wird nichts gesendet.",
 	"Check automatically once a day": "Einmal täglich automatisch prüfen",
-	"Up to 25 short links per day, the ones checked longest ago first.": "Bis zu 25 Kurzlinks pro Tag, die am längsten nicht geprüften zuerst.",
 	"The short link it leads to has a problem.": "Der Kurzlink, zu dem er führt, hat ein Problem.",
 	"The short link it leads to no longer exists.": "Den Kurzlink, zu dem er führt, gibt es nicht mehr.",
 	"The content was deleted.": "Der Inhalt wurde gelöscht.",
@@ -300,5 +299,8 @@
 	"Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way.": "Antwortet mit %1$d statt %2$d – vielleicht stört ein Cache oder ein anderes Plugin.",
 	"A short link cannot lead to itself.": "Ein Kurzlink kann nicht zu sich selbst führen.",
 	"(deleted short link)": "(gelöschter Kurzlink)",
-	"Short link %1$s (/%2$s)": "Kurzlink %1$s (/%2$s)"
+	"Short link %1$s (/%2$s)": "Kurzlink %1$s (/%2$s)",
+	"Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.": "Bis zu 25 Kurzlinks pro Tag, die am längsten nicht geprüften zuerst. Neue und geänderte Links werden beim Speichern geprüft.",
+	"Do not send visitors to unreachable targets": "Besucher nicht zu unerreichbaren Zielen schicken",
+	"If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.": "Hat die Prüfung ein Ziel als unerreichbar erkannt, führt der Link stattdessen zu seinem Ersatzziel – sonst zum Standard-Ziel oder zur „Nicht gefunden“-Seite."
 }

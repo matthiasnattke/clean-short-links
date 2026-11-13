@@ -155,6 +155,21 @@ function handle( array $found, $source ) {
 	if ( 302 !== $result['status'] ) {
 		return dead_end( $result['status'], $link, $source );
 	}
+	// The link check found this target unreachable: the link's own fallback, otherwise the
+	// default target of the site, otherwise the 404 page.
+	if ( ! empty( site_settings()['skip_broken'] ) && target_broken( $link, $result['target'] ) ) {
+		$fallback = $link['fallback'] ?? '';
+		$url      = '' !== $fallback && $fallback !== $result['target'] && ! target_broken( $link, $fallback ) ? target_url( $fallback ) : null;
+		if ( ! $url ) {
+			return dead_end( 404, $link, $source );
+		}
+		$result = array(
+			'status' => 302,
+			'url'    => $url,
+			'state'  => 'unreachable',
+			'target' => $fallback,
+		);
+	}
 	// Only real uses count – not the way to the fallback page of an expired link.
 	$used = 'default' === $result['state'] || 0 === strpos( $result['state'], 'rule-' );
 	go_to( $result['url'], $link, $source, $used );

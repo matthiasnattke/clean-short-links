@@ -998,6 +998,11 @@ add_action(
 		if ( ! empty( $p['reset_clicks'] ) ) {
 			reset_clicks( $result );
 		}
+		// New or changed targets are checked right away, so a broken target shows up at once.
+		$saved = link_by_id( $result );
+		if ( $saved && '' === $saved['check']['status'] ) {
+			check_link( $saved );
+		}
 		$msg = array(
 			'id'      => $result,
 			'csl-msg' => 'saved',
@@ -1222,7 +1227,8 @@ function page_settings() {
 					<?php card_close(); ?>
 
 					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
-						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first.', 'clean-short-links' ) ); ?>
+						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.', 'clean-short-links' ) ); ?>
+						<div class="csl-sub"><?php toggle( 'skip_broken', ! empty( $s['skip_broken'] ), __( 'Do not send visitors to unreachable targets', 'clean-short-links' ), __( 'If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
 					<?php card_open( 'csl-sec-stat', 'chart', __( 'Statistics', 'clean-short-links' ), __( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ) ); ?>
@@ -1298,6 +1304,7 @@ add_action(
 			'default_unknown'  => empty( $p['default_unknown'] ) ? 0 : 1,
 			'default_inactive' => empty( $p['default_inactive'] ) ? 0 : 1,
 			'auto_check'    => empty( $p['auto_check'] ) ? 0 : 1,
+			'skip_broken'   => empty( $p['skip_broken'] ) ? 0 : 1,
 		);
 		if ( 'custom' === $new['default_mode'] && '' === $new['default_url'] ) {
 			$new['default_mode'] = '';

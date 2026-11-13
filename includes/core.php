@@ -78,6 +78,7 @@ function site_defaults() {
 		'default_unknown'  => 1,
 		'default_inactive' => 1,
 		'auto_check'    => 1,
+		'skip_broken'   => 1,
 	);
 }
 
@@ -363,6 +364,22 @@ function merge_parent( array $invite, array $parent ) {
 }
 
 /**
+ * Did the last link check find this target unreachable?
+ *
+ * @param array  $link   Link with its check results.
+ * @param string $target Target.
+ * @return bool
+ */
+function target_broken( array $link, $target ) {
+	foreach ( (array) ( $link['check']['items'] ?? array() ) as $item ) {
+		if ( ( $item['target'] ?? '' ) === $target && 'self' !== ( $item['role'] ?? '' ) ) {
+			return 'broken' === ( $item['status'] ?? '' );
+		}
+	}
+	return false;
+}
+
+/**
  * Has a link used up its click limit?
  *
  * @param array $link Link.
@@ -470,7 +487,7 @@ function rule_matches( array $rule, \DateTimeImmutable $now ) {
  * @param \DateTimeImmutable $now      Now, in the site's time zone.
  * @param callable           $url_of   Turns a target into a URL, null if it is not available (e.g. a draft).
  * @param callable           $published Returns the publication time of a target (Unix time) or null.
- * @return array{status:int,url:string,state:string} status 302, 404 or 410.
+ * @return array{status:int,url:string,state:string,target:string} status 302, 404 or 410.
  */
 function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callable $published ) {
 	$fallback = function ( $status, $state ) use ( $link, $url_of ) {
@@ -479,10 +496,12 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 			'status' => 302,
 			'url'    => $url,
 			'state'  => $state,
+			'target' => $link['fallback'],
 		) : array(
 			'status' => $status,
 			'url'    => '',
 			'state'  => $state,
+			'target' => '',
 		);
 	};
 
@@ -491,6 +510,7 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 			'status' => 404,
 			'url'    => '',
 			'state'  => 'paused',
+			'target' => '',
 		);
 	}
 	$ts    = $now->getTimestamp();
@@ -530,6 +550,7 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 		'status' => 302,
 		'url'    => $url,
 		'state'  => $state,
+		'target' => $target,
 	);
 }
 

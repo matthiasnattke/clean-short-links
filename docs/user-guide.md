@@ -65,6 +65,12 @@ Once a day the 25 short links checked longest ago are checked – and *Check now
 
 Results appear on the short link's card, in the header of the edit screen and in the *Problems* filter.
 
+New and changed links are checked as soon as you save them. With *Do not send visitors to unreachable targets* (on by default) a link whose target was found unreachable leads to its fallback instead – or to the default target, or the “not found” page. The next successful check lets it lead to the target again.
+
+## When a link does not work (any more)
+
+In every case the order is the same: the link's own fallback → the site's default target (if set) → the “not found” page. This covers unknown short addresses, links that have not started or have expired, used-up limits, paused, deleted and retired links, content that is no longer published and targets the link check found unreachable.
+
 ## Default target
 
 *Settings → Default target*: none, the home page, or your choice of a page, post, short link or URL. It can apply to unknown short addresses and to links that do not lead anywhere right now (not started, expired, limit reached, paused, retired) – a link's own fallback always comes first.
