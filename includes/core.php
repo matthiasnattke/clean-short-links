@@ -73,6 +73,11 @@ function site_defaults() {
 		'root_default'  => 1,
 		'count_editors' => 0,
 		'pass_query'    => 1,
+		'default_mode'  => '',
+		'default_url'   => '',
+		'default_unknown'  => 1,
+		'default_inactive' => 1,
+		'auto_check'    => 1,
 	);
 }
 
@@ -296,15 +301,19 @@ function parse_path( $path, $home_path, $prefix, $qr_prefix ) {
  * ------------------------------------------------------------------------ */
 
 /**
- * Cleans a target: "post:123" for content of this site, otherwise an http(s) URL.
+ * Cleans a target: "post:123" for content of this site, "link:45" for another short link,
+ * "home" for the home page, otherwise an http(s) URL.
  *
  * @param string $value Raw value.
  * @return string Empty if invalid.
  */
 function clean_target( $value ) {
 	$value = trim( (string) $value );
-	if ( preg_match( '/^post:(\d+)$/', $value, $m ) ) {
-		return (int) $m[1] > 0 ? 'post:' . (int) $m[1] : '';
+	if ( 'home' === $value ) {
+		return 'home';
+	}
+	if ( preg_match( '/^(post|link):(\d+)$/', $value, $m ) ) {
+		return (int) $m[2] > 0 ? $m[1] . ':' . (int) $m[2] : '';
 	}
 	if ( preg_match( '#^https?://[^\s/$.?\#].[^\s]*$#i', $value ) ) {
 		return esc_url_raw( $value );
@@ -320,6 +329,47 @@ function clean_target( $value ) {
  */
 function target_post_id( $target ) {
 	return preg_match( '/^post:(\d+)$/', (string) $target, $m ) ? (int) $m[1] : 0;
+}
+
+/**
+ * Short link ID of a target that points to another short link, otherwise 0.
+ *
+ * @param string $target Target.
+ * @return int
+ */
+function target_link_id( $target ) {
+	return preg_match( '/^link:(\d+)$/', (string) $target, $m ) ? (int) $m[1] : 0;
+}
+
+/**
+ * The link an invitation follows: target, rules, time window and fallback come from the
+ * main link; the invitation keeps its own status, click limit, counter and – if set –
+ * its own expiry.
+ *
+ * @param array $invite Invitation link.
+ * @param array $parent Main link.
+ * @return array Effective link.
+ */
+function merge_parent( array $invite, array $parent ) {
+	$link = $parent;
+	foreach ( array( 'id', 'slug', 'qr_slug', 'title', 'parent_id', 'max_clicks', 'clicks', 'root' ) as $key ) {
+		$link[ $key ] = $invite[ $key ] ?? null;
+	}
+	$link['status'] = 'active' === ( $invite['status'] ?? 'active' ) && 'active' === ( $parent['status'] ?? 'active' ) ? 'active' : 'paused';
+	if ( ! empty( $invite['ends_at'] ) && ( empty( $parent['ends_at'] ) || (int) $invite['ends_at'] < (int) $parent['ends_at'] ) ) {
+		$link['ends_at'] = $invite['ends_at'];
+	}
+	return $link;
+}
+
+/**
+ * Has a link used up its click limit?
+ *
+ * @param array $link Link.
+ * @return bool
+ */
+function limit_reached( array $link ) {
+	return ! empty( $link['max_clicks'] ) && (int) ( $link['clicks'] ?? 0 ) >= (int) $link['max_clicks'];
 }
 
 /**
@@ -459,6 +509,9 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 	if ( ! empty( $link['ends_at'] ) && $ts >= (int) $link['ends_at'] ) {
 		return $fallback( 410, 'expired' );
 	}
+	if ( limit_reached( $link ) ) {
+		return $fallback( 410, 'exhausted' );
+	}
 
 	$target = $link['target'];
 	$state  = 'default';
@@ -481,7 +534,7 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 }
 
 /**
- * State of a link for lists: active, waiting, expired, paused.
+ * State of a link for lists: active, waiting, expired, exhausted, paused.
  *
  * @param array $link Link.
  * @param int   $now  Unix time.
@@ -496,6 +549,9 @@ function link_state( array $link, $now ) {
 	}
 	if ( ! empty( $link['ends_at'] ) && $now >= (int) $link['ends_at'] ) {
 		return 'expired';
+	}
+	if ( limit_reached( $link ) ) {
+		return 'exhausted';
 	}
 	return 'active';
 }

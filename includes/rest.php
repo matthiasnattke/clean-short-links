@@ -121,6 +121,45 @@ add_action(
 
 		register_rest_route(
 			'clean-short-links/v1',
+			'/links',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => $manage,
+				'args'                => array(
+					'search'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'exclude' => array(
+						'type'    => 'integer',
+						'default' => 0,
+					),
+				),
+				'callback'            => function ( $r ) {
+					$out = array();
+					foreach ( list_links(
+						array(
+							'search'   => $r['search'],
+							'per_page' => 8,
+						)
+					)['items'] as $l ) {
+						if ( (int) $l['id'] === (int) $r['exclude'] ) {
+							continue;
+						}
+						$out[] = array(
+							'id'    => $l['id'],
+							'title' => '' !== $l['title'] ? $l['title'] : $l['slug'],
+							'slug'  => $l['slug'],
+							'label' => target_label( 'link:' . $l['id'] ),
+						);
+					}
+					return $out;
+				},
+			)
+		);
+
+		register_rest_route(
+			'clean-short-links/v1',
 			'/check',
 			array(
 				'methods'             => 'GET',

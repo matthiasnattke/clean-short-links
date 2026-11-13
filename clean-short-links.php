@@ -27,6 +27,7 @@ require_once __DIR__ . '/includes/store.php';
 require_once __DIR__ . '/includes/redirect.php';
 require_once __DIR__ . '/includes/stats.php';
 require_once __DIR__ . '/includes/rest.php';
+require_once __DIR__ . '/includes/checker.php';
 
 if ( is_admin() ) {
 	require_once __DIR__ . '/includes/ui.php';

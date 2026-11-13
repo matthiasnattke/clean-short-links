@@ -44,6 +44,31 @@ Example for a festival poster:
 
 Redirects are always temporary (302) and sent with no-cache headers, so browsers never remember an old target.
 
+## Click limit
+
+*Maximum number of visits* ends a link after that many uses; it then behaves as if it had expired (fallback, or *410 Gone*). Only real uses count – not bots, link previews, logged-in editors or the way to a fallback page. *Reset counter* starts again from zero.
+
+## Invitation links
+
+On a saved short link, *Invitation links* creates personal links group by group: a group name, how many, visits each (0 = unlimited) and an optional expiry. Each invitation gets a random eight-character address and follows the main link's target, rules and time window; its own limit and expiry apply on top, and pausing or expiring the main link ends all invitations.
+
+Per group you see how many were used, can copy all addresses at once and delete single ones. *Export all invitations as CSV* lists group, link, QR address, uses, limit, expiry and state.
+
+## Link check
+
+Once a day the 25 short links checked longest ago are checked – and *Check now* (edit screen) or *Check links* (list) checks right away:
+
+- content of the site: still there and published,
+- other short links: still there and without problems,
+- URLs: a HEAD request (small GET as fallback); 2xx/3xx is fine, 401/403/429/503 are worth a look, anything else counts as unreachable,
+- the short link itself: does the site answer with the status it should right now?
+
+Results appear on the short link's card, in the header of the edit screen and in the *Problems* filter.
+
+## Default target
+
+*Settings → Default target*: none, the home page, or your choice of a page, post, short link or URL. It can apply to unknown short addresses and to links that do not lead anywhere right now (not started, expired, limit reached, paused, retired) – a link's own fallback always comes first.
+
 ## QR codes
 
 Open *QR code* on the edit screen and click *Create QR code*.

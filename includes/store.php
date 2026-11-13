@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery -- Custom tables of this plugin; there is no WordPress API for them.
 
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 /**
  * Table names of the current site.
@@ -60,9 +60,16 @@ function install() {
   author bigint(20) unsigned NOT NULL DEFAULT 0,
   created_at bigint(20) unsigned NOT NULL DEFAULT 0,
   updated_at bigint(20) unsigned NOT NULL DEFAULT 0,
+  parent_id bigint(20) unsigned NOT NULL DEFAULT 0,
+  max_clicks int(10) unsigned NOT NULL DEFAULT 0,
+  clicks bigint(20) unsigned NOT NULL DEFAULT 0,
+  check_status varchar(12) NOT NULL DEFAULT '',
+  check_info text NULL,
+  checked_at bigint(20) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY  (id),
   KEY post_id (post_id),
-  KEY slug (slug)
+  KEY slug (slug),
+  KEY parent_id (parent_id)
 ) $charset;
 CREATE TABLE {$t['slugs']} (
   slug varchar(64) NOT NULL,
@@ -86,6 +93,9 @@ CREATE TABLE {$t['clicks']} (
 	update_option( 'clean_short_links_db', DB_VERSION );
 	if ( ! wp_next_scheduled( 'clean_short_links_prune' ) ) {
 		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'clean_short_links_prune' );
+	}
+	if ( ! wp_next_scheduled( 'clean_short_links_check' ) ) {
+		wp_schedule_event( time() + 2 * HOUR_IN_SECONDS, 'daily', 'clean_short_links_check' );
 	}
 }
 
@@ -115,6 +125,7 @@ function row_to_link( $row ) {
 	$row   = (array) $row;
 	$rules = json_decode( (string) $row['rules'], true );
 	$qr    = json_decode( (string) $row['qr'], true );
+	$check = json_decode( (string) ( $row['check_info'] ?? '' ), true );
 	return array(
 		'id'         => (int) $row['id'],
 		'title'      => (string) $row['title'],
@@ -134,6 +145,14 @@ function row_to_link( $row ) {
 		'author'     => (int) $row['author'],
 		'created_at' => (int) $row['created_at'],
 		'updated_at' => (int) $row['updated_at'],
+		'parent_id'  => (int) ( $row['parent_id'] ?? 0 ),
+		'max_clicks' => (int) ( $row['max_clicks'] ?? 0 ),
+		'clicks'     => (int) ( $row['clicks'] ?? 0 ),
+		'check'      => array(
+			'status' => (string) ( $row['check_status'] ?? '' ),
+			'items'  => is_array( $check ) ? $check : array(),
+			'at'     => (int) ( $row['checked_at'] ?? 0 ),
+		),
 	);
 }
 
@@ -207,8 +226,8 @@ function slug_available( $slug, $link_id = 0 ) {
  *
  * @return string
  */
-function unique_random_slug() {
-	for ( $len = 5; $len < 12; $len++ ) {
+function unique_random_slug( $min = 5 ) {
+	for ( $len = $min; $len < 14; $len++ ) {
 		for ( $i = 0; $i < 8; $i++ ) {
 			$s = random_slug( $len );
 			if ( slug_available( $s ) && ! in_array( $s, reserved_words(), true ) ) {
@@ -364,6 +383,9 @@ function save_link( array $data ) {
 	if ( '' === $target ) {
 		return new \WP_Error( 'target', __( 'Please choose a target – a post, a page or a URL.', 'clean-short-links' ) );
 	}
+	if ( $id && target_link_id( $target ) === $id ) {
+		return new \WP_Error( 'target', __( 'A short link cannot lead to itself.', 'clean-short-links' ) );
+	}
 
 	$now = time();
 	$row = array(
@@ -372,7 +394,7 @@ function save_link( array $data ) {
 		'post_id'    => target_post_id( $target ),
 		'slug'       => $slug,
 		'qr_slug'    => $qr_slug,
-		'kind'       => in_array( $data['kind'] ?? '', array( 'random', 'memorable', 'title', 'custom' ), true ) ? $data['kind'] : 'custom',
+		'kind'       => in_array( $data['kind'] ?? '', array( 'random', 'memorable', 'title', 'custom', 'invite' ), true ) ? $data['kind'] : 'custom',
 		'root'       => empty( $data['root'] ) ? 0 : 1,
 		'start_mode' => in_array( $data['start_mode'] ?? '', array( 'date', 'publish' ), true ) ? $data['start_mode'] : '',
 		'starts_at'  => (int) ( $data['starts_at'] ?? 0 ),
@@ -381,6 +403,7 @@ function save_link( array $data ) {
 		'rules'      => wp_json_encode( clean_rules( $data['rules'] ?? array() ) ),
 		'qr'         => wp_json_encode( is_array( $data['qr'] ?? null ) ? $data['qr'] : ( $old['qr'] ?? new \stdClass() ) ),
 		'status'     => 'paused' === ( $data['status'] ?? '' ) ? 'paused' : 'active',
+		'max_clicks' => max( 0, (int) ( $data['max_clicks'] ?? 0 ) ),
 		'updated_at' => $now,
 	);
 	if ( 'date' !== $row['start_mode'] ) {
@@ -392,6 +415,7 @@ function save_link( array $data ) {
 	} else {
 		$row['author']     = get_current_user_id();
 		$row['created_at'] = $now;
+		$row['parent_id']  = (int) ( $data['parent_id'] ?? 0 );
 		$wpdb->insert( $t['links'], $row );
 		$id = (int) $wpdb->insert_id;
 		if ( ! $id ) {
@@ -457,6 +481,9 @@ function save_qr_design( $id, array $design ) {
 function delete_link( $id, $retire = true ) {
 	global $wpdb;
 	$t = tables();
+	foreach ( child_ids( $id ) as $child ) {
+		delete_link( $child, $retire );
+	}
 	$wpdb->delete( $t['links'], array( 'id' => (int) $id ) );
 	$wpdb->delete( $t['clicks'], array( 'link_id' => (int) $id ) );
 	if ( $retire ) {
@@ -491,7 +518,7 @@ function delete_alias( $id, $slug ) {
 /**
  * Lists links.
  *
- * @param array $args search, state (waiting|expired|paused|scheduled), paged, per_page.
+ * @param array $args search, state (waiting|expired|exhausted|paused|scheduled|broken), paged, per_page.
  * @return array{items:array,total:int}
  */
 function list_links( array $args = array() ) {
@@ -504,8 +531,8 @@ function list_links( array $args = array() ) {
 	$state    = (string) ( $args['state'] ?? '' );
 	$now      = time();
 	// Fixed queries: every filter is switched on or off by its parameter.
-	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]')", $t['links'], $search, $like, $like, $like, $state, $state, $now, $state, $now, $state ) );
-	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]') ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d", $t['links'], $search, $like, $like, $like, $state, $state, $now, $state, $now, $state, $per_page, ( $paged - 1 ) * $per_page ) );
+	$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE parent_id = 0 AND (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]') AND (%s <> 'exhausted' OR (max_clicks > 0 AND clicks >= max_clicks)) AND (%s <> 'broken' OR check_status IN ('broken','warning'))", $t['links'], $search, $like, $like, $like, $state, $state, $now, $state, $now, $state, $state, $state ) );
+	$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE parent_id = 0 AND (%s = '' OR title LIKE %s OR slug LIKE %s OR target LIKE %s) AND (%s <> 'paused' OR status = 'paused') AND (%s <> 'waiting' OR (status = 'active' AND starts_at > %d)) AND (%s <> 'expired' OR (status = 'active' AND ends_at > 0 AND ends_at <= %d)) AND (%s <> 'scheduled' OR rules <> '[]') AND (%s <> 'exhausted' OR (max_clicks > 0 AND clicks >= max_clicks)) AND (%s <> 'broken' OR check_status IN ('broken','warning')) ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d", $t['links'], $search, $like, $like, $like, $state, $state, $now, $state, $now, $state, $state, $state, $per_page, ( $paged - 1 ) * $per_page ) );
 	return array(
 		'items' => array_map( __NAMESPACE__ . '\\row_to_link', $rows ),
 		'total' => $total,
@@ -519,7 +546,139 @@ function list_links( array $args = array() ) {
  */
 function count_links() {
 	global $wpdb;
-	return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', tables()['links'] ) );
+	return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE parent_id = 0', tables()['links'] ) );
+}
+
+/**
+ * IDs of the invitations of a link.
+ *
+ * @param int $id Link ID.
+ * @return int[]
+ */
+function child_ids( $id ) {
+	global $wpdb;
+	return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT id FROM %i WHERE parent_id = %d', tables()['links'], $id ) ) );
+}
+
+/**
+ * The invitations of a link, oldest first.
+ *
+ * @param int $id Link ID.
+ * @return array[]
+ */
+function invites( $id ) {
+	global $wpdb;
+	return array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE parent_id = %d ORDER BY title, id', tables()['links'], $id ) ) );
+}
+
+/**
+ * Number of invitations per link.
+ *
+ * @param int[] $ids Link IDs.
+ * @return array<int,int>
+ */
+function invite_counts( array $ids ) {
+	global $wpdb;
+	$out  = array();
+	$want = array_flip( array_map( 'intval', $ids ) );
+	foreach ( $wpdb->get_results( $wpdb->prepare( 'SELECT parent_id, COUNT(*) AS n FROM %i WHERE parent_id > 0 GROUP BY parent_id', tables()['links'] ) ) as $r ) {
+		if ( isset( $want[ (int) $r->parent_id ] ) ) {
+			$out[ (int) $r->parent_id ] = (int) $r->n;
+		}
+	}
+	return $out;
+}
+
+/**
+ * Creates invitations for a link: each gets a random, hard-to-guess short address.
+ *
+ * @param array  $parent     Main link.
+ * @param string $group      Group name, e.g. "Family".
+ * @param int    $count      How many.
+ * @param int    $max_clicks Uses per invitation, 0 for unlimited.
+ * @param int    $ends_at    Expiry (Unix time), 0 for that of the main link.
+ * @return int Number created.
+ */
+function create_invites( array $parent, $group, $count, $max_clicks, $ends_at ) {
+	$n = 0;
+	for ( $i = 0; $i < min( 500, max( 1, (int) $count ) ); $i++ ) {
+		$id = save_link(
+			array(
+				'title'      => sanitize_text_field( $group ),
+				'target'     => $parent['target'],
+				'slug'       => unique_random_slug( 8 ),
+				'kind'       => 'invite',
+				'max_clicks' => max( 0, (int) $max_clicks ),
+				'ends_at'    => (int) $ends_at,
+				'parent_id'  => (int) $parent['id'],
+			)
+		);
+		if ( ! is_wp_error( $id ) ) {
+			++$n;
+		}
+	}
+	return $n;
+}
+
+/**
+ * Counts a use towards the click limit.
+ *
+ * @param int $id Link ID.
+ */
+function add_click( $id ) {
+	global $wpdb;
+	$wpdb->query( $wpdb->prepare( 'UPDATE %i SET clicks = clicks + 1 WHERE id = %d', tables()['links'], $id ) );
+}
+
+/**
+ * Sets the click counter of a link back to zero.
+ *
+ * @param int $id Link ID.
+ */
+function reset_clicks( $id ) {
+	global $wpdb;
+	$wpdb->update( tables()['links'], array( 'clicks' => 0 ), array( 'id' => (int) $id ) );
+}
+
+/**
+ * Stores the result of a link check.
+ *
+ * @param int    $id     Link ID.
+ * @param string $status ok, warning or broken.
+ * @param array  $items  Single results.
+ */
+function save_check( $id, $status, array $items ) {
+	global $wpdb;
+	$wpdb->update(
+		tables()['links'],
+		array(
+			'check_status' => $status,
+			'check_info'   => wp_json_encode( $items ),
+			'checked_at'   => time(),
+		),
+		array( 'id' => (int) $id )
+	);
+}
+
+/**
+ * Main links that were checked longest ago.
+ *
+ * @param int $limit How many.
+ * @return array[]
+ */
+function links_to_check( $limit = 20 ) {
+	global $wpdb;
+	return array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE parent_id = 0 ORDER BY checked_at ASC, id ASC LIMIT %d', tables()['links'], $limit ) ) );
+}
+
+/**
+ * Number of main links whose last check found a problem.
+ *
+ * @return int
+ */
+function count_problems() {
+	global $wpdb;
+	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE parent_id = 0 AND check_status = 'broken'", tables()['links'] ) );
 }
 
 /**
@@ -528,7 +687,24 @@ function count_links() {
  * @param string $target Target.
  * @return string|null
  */
-function target_url( $target ) {
+function target_url( $target, $depth = 0 ) {
+	if ( 'home' === $target ) {
+		return home_url( '/' );
+	}
+	$link_id = target_link_id( $target );
+	if ( $link_id ) {
+		$link = $depth < 3 ? link_by_id( $link_id ) : null;
+		if ( ! $link ) {
+			return null;
+		}
+		$result = resolve(
+			$link,
+			new \DateTimeImmutable( 'now', wp_timezone() ),
+			fn( $t ) => target_url( $t, $depth + 1 ),
+			__NAMESPACE__ . '\\target_published'
+		);
+		return 302 === $result['status'] ? $result['url'] : null;
+	}
 	$post_id = target_post_id( $target );
 	if ( $post_id ) {
 		$post = get_post( $post_id );
@@ -563,6 +739,19 @@ function target_published( $target ) {
  * @return string
  */
 function target_label( $target ) {
+	if ( 'home' === $target ) {
+		return __( 'Home page', 'clean-short-links' );
+	}
+	$link_id = target_link_id( $target );
+	if ( $link_id ) {
+		$link = link_by_id( $link_id );
+		if ( ! $link ) {
+			return __( '(deleted short link)', 'clean-short-links' );
+		}
+		list( $p ) = prefixes();
+		/* translators: 1: title of the short link, 2: its short address */
+		return sprintf( __( 'Short link %1$s (/%2$s)', 'clean-short-links' ), '' !== $link['title'] ? '“' . $link['title'] . '”' : '', $p . '/' . $link['slug'] );
+	}
 	$post_id = target_post_id( $target );
 	if ( $post_id ) {
 		$post = get_post( $post_id );

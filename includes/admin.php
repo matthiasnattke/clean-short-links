@@ -86,6 +86,8 @@ function admin_js_data() {
 			'compact'     => __( 'compact mode (capitals)', 'clean-short-links' ),
 			'tooLong'     => __( 'The address is too long for a QR code.', 'clean-short-links' ),
 			'removeRule'  => __( 'Remove this rule?', 'clean-short-links' ),
+			'shortLink'   => __( 'Short link', 'clean-short-links' ),
+			'homePage'    => __( 'Home page', 'clean-short-links' ),
 		),
 	);
 }
@@ -112,7 +114,8 @@ function state_label( $state ) {
 		'active'  => __( 'Active', 'clean-short-links' ),
 		'waiting' => __( 'Starts later', 'clean-short-links' ),
 		'expired' => __( 'Expired', 'clean-short-links' ),
-		'paused'  => __( 'Paused', 'clean-short-links' ),
+		'paused'    => __( 'Paused', 'clean-short-links' ),
+		'exhausted' => __( 'Limit reached', 'clean-short-links' ),
 	);
 	return $labels[ $state ] ?? $state;
 }
@@ -147,9 +150,15 @@ function action_notice() {
 		'deleted'  => __( 'Short link deleted.', 'clean-short-links' ),
 		'settings' => __( 'Settings saved.', 'clean-short-links' ),
 		'alias'    => __( 'Short address removed.', 'clean-short-links' ),
+		'checked'  => __( 'Link check done.', 'clean-short-links' ),
 	);
 	if ( isset( $messages[ $msg ] ) ) {
 		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $msg ] ) );
+	}
+	if ( 'invites' === $msg ) {
+		$n = isset( $_GET['csl-n'] ) ? absint( $_GET['csl-n'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only shows a number.
+		/* translators: %d: number of invitation links */
+		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( sprintf( _n( '%d invitation link created.', '%d invitation links created.', $n, 'clean-short-links' ), $n ) ) );
 	}
 	if ( 'bulk' === $msg || 'import' === $msg ) {
 		$n = isset( $_GET['csl-n'] ) ? absint( $_GET['csl-n'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only shows a number.
@@ -184,6 +193,7 @@ function page_list() {
 		)
 	);
 	$ids    = wp_list_pluck( $list['items'], 'id' );
+	$inv    = invite_counts( $ids );
 	$v30    = totals( $ids, 30 );
 	$vall   = totals( $ids, 0 );
 	$now    = time();
@@ -193,7 +203,9 @@ function page_list() {
 		'waiting'   => __( 'Starts later', 'clean-short-links' ),
 		'expired'   => __( 'Expired', 'clean-short-links' ),
 		'paused'    => __( 'Paused', 'clean-short-links' ),
+		'exhausted' => __( 'Limit reached', 'clean-short-links' ),
 		'scheduled' => __( 'With rules', 'clean-short-links' ),
+		'broken'    => __( 'Problems', 'clean-short-links' ),
 	);
 	$counts = array();
 	foreach ( array_keys( $states ) as $key ) {
@@ -215,6 +227,7 @@ function page_list() {
 			function () {
 				?>
 				<a class="button button-primary csl-btn" href="<?php echo esc_url( admin_page_url( 'edit' ) ); ?>"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'New short link', 'clean-short-links' ); ?></a>
+				<a class="button csl-btn" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_check&id=0' ), 'clean_short_links_check_0' ) ); ?>"><?php the_icon( 'shield' ); ?><?php esc_html_e( 'Check links', 'clean-short-links' ); ?></a>
 				<a class="button csl-btn" href="<?php echo esc_url( admin_page_url( 'settings' ) ); ?>"><?php the_icon( 'gear' ); ?><?php esc_html_e( 'Settings', 'clean-short-links' ); ?></a>
 				<?php
 			},
@@ -223,6 +236,9 @@ function page_list() {
 				stat( $counts[''], __( 'Short links', 'clean-short-links' ) );
 				stat( site_total( 30 ), __( 'Visits in 30 days', 'clean-short-links' ), 'is-blue' );
 				stat( $counts['scheduled'], __( 'With rules', 'clean-short-links' ) );
+				if ( $counts['broken'] ) {
+					stat( $counts['broken'], __( 'Problems', 'clean-short-links' ), 'is-warn' );
+				}
 				echo '</div>';
 			}
 		);
@@ -295,6 +311,13 @@ function page_list() {
 				<article class="csl-link csl-link-<?php echo esc_attr( $st ); ?>">
 					<div class="csl-link-top">
 						<span class="csl-badge csl-badge-<?php echo esc_attr( $st ); ?>"><span class="csl-dot" aria-hidden="true"></span><?php echo esc_html( state_label( $st ) ); ?></span>
+						<?php if ( in_array( $l['check']['status'], array( 'broken', 'warning' ), true ) ) : ?>
+							<span class="csl-badge csl-badge-<?php echo esc_attr( 'broken' === $l['check']['status'] ? 'paused' : 'waiting' ); ?>" title="<?php esc_attr_e( 'Link check', 'clean-short-links' ); ?>"><?php the_icon( 'shield' ); ?><?php echo esc_html( 'broken' === $l['check']['status'] ? __( 'Target unreachable', 'clean-short-links' ) : __( 'Check', 'clean-short-links' ) ); ?></span>
+						<?php endif; ?>
+						<?php if ( ! empty( $inv[ $l['id'] ] ) ) : ?>
+							<?php /* translators: %d: number of invitation links */ ?>
+							<span class="csl-badge csl-badge-soft"><?php the_icon( 'tag' ); ?><?php echo esc_html( sprintf( _n( '%d invitation', '%d invitations', $inv[ $l['id'] ], 'clean-short-links' ), $inv[ $l['id'] ] ) ); ?></span>
+						<?php endif; ?>
 						<?php if ( $l['rules'] ) : ?>
 							<span class="csl-badge csl-badge-soft"><?php the_icon( 'split' ); ?><?php /* translators: %d: number of rules */ echo esc_html( sprintf( _n( '%d rule', '%d rules', count( $l['rules'] ), 'clean-short-links' ), count( $l['rules'] ) ) ); ?></span>
 						<?php endif; ?>
@@ -353,12 +376,18 @@ function page_list() {
 function target_picker( $name, $target, $id, $required = false ) {
 	$label = '' !== $target ? target_label( $target ) : '';
 	$kind  = target_post_id( $target ) ? get_post_type( target_post_id( $target ) ) : ( '' !== $target ? 'url' : '' );
-	$pto   = $kind && 'url' !== $kind ? get_post_type_object( $kind ) : null;
+	$kind  = target_link_id( $target ) ? 'link' : ( 'home' === $target ? 'home' : $kind );
+	$pto   = $kind && ! in_array( $kind, array( 'url', 'link', 'home' ), true ) ? get_post_type_object( $kind ) : null;
+	$names = array(
+		'url'  => __( 'URL', 'clean-short-links' ),
+		'link' => __( 'Short link', 'clean-short-links' ),
+		'home' => __( 'Home page', 'clean-short-links' ),
+	);
 	?>
 	<div class="csl-picker">
 		<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $target ); ?>" class="csl-picker-value">
-		<input type="search" id="<?php echo esc_attr( $id ); ?>" class="regular-text csl-picker-input" autocomplete="off" value="<?php echo esc_attr( target_post_id( $target ) ? $label : $target ); ?>" placeholder="<?php esc_attr_e( 'Search posts and pages or paste a URL', 'clean-short-links' ); ?>"<?php echo $required ? ' required' : ''; ?>>
-		<span class="csl-picker-kind"><?php echo esc_html( $pto ? $pto->labels->singular_name : ( 'url' === $kind ? __( 'URL', 'clean-short-links' ) : '' ) ); ?></span>
+		<input type="search" id="<?php echo esc_attr( $id ); ?>" class="regular-text csl-picker-input" autocomplete="off" value="<?php echo esc_attr( preg_match( '/^https?:/', $target ) ? $target : $label ); ?>" placeholder="<?php esc_attr_e( 'Search posts and pages or paste a URL', 'clean-short-links' ); ?>"<?php echo $required ? ' required' : ''; ?>>
+		<span class="csl-picker-kind"><?php echo esc_html( $pto ? $pto->labels->singular_name : ( $names[ $kind ] ?? '' ) ); ?></span>
 		<ul class="csl-picker-results" hidden></ul>
 	</div>
 	<?php
@@ -425,6 +454,97 @@ function qr_segment( $key, array $options ) {
 }
 
 /**
+ * Result of the last link check, for the header of the edit screen.
+ *
+ * @param array $link Link.
+ */
+function check_line( array $link ) {
+	$c     = $link['check'];
+	$check = wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_check&id=' . $link['id'] ), 'clean_short_links_check_' . $link['id'] );
+	$names = array(
+		'ok'      => __( 'Link check: everything reachable', 'clean-short-links' ),
+		'warning' => __( 'Link check: please have a look', 'clean-short-links' ),
+		'broken'  => __( 'Link check: a target is not reachable', 'clean-short-links' ),
+		''        => __( 'Not checked yet', 'clean-short-links' ),
+	);
+	echo '<div class="csl-check-line csl-check-' . esc_attr( '' !== $c['status'] ? $c['status'] : 'none' ) . '">';
+	echo '<span class="csl-badge csl-badge-check">' . icon( 'shield' ) . esc_html( $names[ $c['status'] ] ?? $names[''] ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
+	if ( $c['at'] ) {
+		/* translators: %s: time span, e.g. "3 hours" */
+		echo ' <small>' . esc_html( sprintf( __( '%s ago', 'clean-short-links' ), human_time_diff( $c['at'] ) ) ) . '</small>';
+	}
+	echo ' <a class="csl-link-ext" href="' . esc_url( $check ) . '">' . esc_html__( 'Check now', 'clean-short-links' ) . '</a>';
+	$problems = array_filter( $c['items'], fn( $i ) => 'ok' !== ( $i['status'] ?? 'ok' ) );
+	if ( $problems ) {
+		echo '<ul class="csl-check-list">';
+		foreach ( $problems as $item ) {
+			$what = 'self' === $item['role'] ? __( 'Short link', 'clean-short-links' ) : ( 'main' === $item['role'] ? __( 'Target', 'clean-short-links' ) : ( 'fallback' === $item['role'] ? __( 'Fallback', 'clean-short-links' ) : $item['role'] ) );
+			$why  = '' !== $item['message'] ? $item['message'] : ( $item['code'] ? 'HTTP ' . $item['code'] : '' );
+			echo '<li><strong>' . esc_html( $what ) . ':</strong> ' . esc_html( 'self' === $item['role'] ? preg_replace( '#^https?://#', '', $item['target'] ) : target_label( $item['target'] ) ) . ' – ' . esc_html( $why ) . '</li>';
+		}
+		echo '</ul>';
+	}
+	echo '</div>';
+}
+
+/**
+ * The invitation links of a main link: generator and list.
+ *
+ * @param array $link Main link.
+ */
+function invites_card( array $link ) {
+	$all    = invites( $link['id'] );
+	$groups = array();
+	foreach ( $all as $inv ) {
+		$groups[ $inv['title'] ][] = $inv;
+	}
+	$now = time();
+	card_open( 'csl-sec-invites', 'tag', __( 'Invitation links', 'clean-short-links' ), __( 'Personal links that lead where this short link leads – each with its own hard-to-guess address, an optional limit and expiry. Create them group by group, e.g. 10 links for the family with one visit each.', 'clean-short-links' ) );
+	?>
+		<div class="csl-invite-gen">
+			<label class="csl-field"><span><?php esc_html_e( 'Group', 'clean-short-links' ); ?></span><input type="text" name="invite_group" placeholder="<?php esc_attr_e( 'e.g. Family', 'clean-short-links' ); ?>"></label>
+			<label class="csl-field"><span><?php esc_html_e( 'How many', 'clean-short-links' ); ?></span><input type="number" name="invite_count" min="1" max="500" value="10" class="csl-num-input"></label>
+			<label class="csl-field"><span><?php esc_html_e( 'Visits each', 'clean-short-links' ); ?></span><input type="number" name="invite_clicks" min="0" value="1" class="csl-num-input"></label>
+			<label class="csl-field"><span><?php esc_html_e( 'Expires', 'clean-short-links' ); ?></span><input type="datetime-local" name="invite_ends"></label>
+			<button type="submit" name="invite_generate" value="1" class="button csl-btn"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Create invitation links', 'clean-short-links' ); ?></button>
+		</div>
+		<span class="csl-help"><?php esc_html_e( '0 visits = unlimited. Without an expiry the invitations end with this short link. Creating them also saves the short link.', 'clean-short-links' ); ?></span>
+		<?php if ( $all ) : ?>
+			<?php foreach ( $groups as $group => $list ) : ?>
+				<?php
+				$used = count( array_filter( $list, fn( $i ) => $i['clicks'] > 0 ) );
+				$urls = array_map( fn( $i ) => short_urls( $i )['link'], $list );
+				?>
+				<div class="csl-invite-group">
+					<div class="csl-invite-head">
+						<h3><?php echo esc_html( $group ); ?></h3>
+						<?php /* translators: 1: number used, 2: number of invitations */ ?>
+						<span class="csl-badge csl-badge-soft"><?php echo esc_html( sprintf( __( '%1$d of %2$d used', 'clean-short-links' ), $used, count( $list ) ) ); ?></span>
+						<button type="button" class="button csl-btn csl-copy-btn" data-copy="<?php echo esc_attr( implode( "\n", $urls ) ); ?>"><?php the_icon( 'copy' ); ?><?php esc_html_e( 'Copy all', 'clean-short-links' ); ?></button>
+					</div>
+					<table class="csl-invites">
+						<tbody>
+						<?php foreach ( $list as $inv ) : ?>
+							<?php $ist = link_state( $inv, $now ); ?>
+							<tr>
+								<td><?php copy_field( short_urls( $inv )['link'] ); ?></td>
+								<td class="csl-num"><?php echo esc_html( $inv['max_clicks'] ? $inv['clicks'] . ' / ' . $inv['max_clicks'] : (string) $inv['clicks'] ); ?></td>
+								<td><span class="csl-badge csl-badge-<?php echo esc_attr( $ist ); ?>"><?php echo esc_html( state_label( $ist ) ); ?></span></td>
+								<td><?php echo esc_html( $inv['ends_at'] ? wp_date( get_option( 'date_format' ), $inv['ends_at'] ) : '' ); ?></td>
+								<td><a class="csl-icon-link csl-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_delete&id=' . $inv['id'] ), 'clean_short_links_delete_' . $inv['id'] ) ); ?>" title="<?php esc_attr_e( 'Delete', 'clean-short-links' ); ?>"><?php the_icon( 'trash' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Delete', 'clean-short-links' ); ?></span></a></td>
+							</tr>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			<?php endforeach; ?>
+			<p><a class="csl-link-ext" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_invites_csv&id=' . $link['id'] ), 'clean_short_links_invites_' . $link['id'] ) ); ?>"><?php the_icon( 'download' ); ?><?php esc_html_e( 'Export all invitations as CSV', 'clean-short-links' ); ?></a></p>
+		<?php endif; ?>
+	<?php
+	card_close();
+}
+
+/**
  * Add or edit a short link.
  */
 function page_edit() {
@@ -432,6 +552,10 @@ function page_edit() {
 	$link = $id ? link_by_id( $id ) : null;
 	if ( $id && ! $link ) {
 		echo '<div class="wrap csl-wrap"><h1>' . esc_html__( 'Short links', 'clean-short-links' ) . '</h1><p>' . esc_html__( 'This short link no longer exists.', 'clean-short-links' ) . '</p></div>';
+		return;
+	}
+	if ( $link && $link['parent_id'] ) {
+		echo '<div class="wrap csl-wrap"><h1>' . esc_html__( 'Invitation link', 'clean-short-links' ) . '</h1><p>' . esc_html__( 'Invitation links are managed with their main link.', 'clean-short-links' ) . ' <a href="' . esc_url( admin_page_url( 'edit', array( 'id' => $link['parent_id'] ) ) . '#csl-sec-invites' ) . '">' . esc_html__( 'Go to the main link', 'clean-short-links' ) . '</a></p></div>';
 		return;
 	}
 	$for_post = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Prefills the target.
@@ -451,6 +575,14 @@ function page_edit() {
 		'rules'      => array(),
 		'qr'         => array(),
 		'status'     => 'active',
+		'max_clicks' => 0,
+		'clicks'     => 0,
+		'parent_id'  => 0,
+		'check'      => array(
+			'status' => '',
+			'items'  => array(),
+			'at'     => 0,
+		),
 	);
 	$urls          = $link['id'] ? short_urls( $link ) : null;
 	list( $p, $q ) = prefixes();
@@ -466,7 +598,8 @@ function page_edit() {
 		'csl-sec-rules'  => __( 'Rules', 'clean-short-links' ),
 	);
 	if ( $link['id'] ) {
-		$sections['csl-sec-qr']    = __( 'QR code', 'clean-short-links' );
+		$sections['csl-sec-invites'] = __( 'Invitations', 'clean-short-links' );
+		$sections['csl-sec-qr']      = __( 'QR code', 'clean-short-links' );
 		$sections['csl-sec-stats'] = __( 'Visits', 'clean-short-links' );
 	}
 	?>
@@ -488,7 +621,7 @@ function page_edit() {
 				<a class="button csl-btn" href="<?php echo esc_url( admin_page_url( '' ) ); ?>"><?php esc_html_e( 'All short links', 'clean-short-links' ); ?></a>
 				<?php
 			},
-			function () use ( $urls, $now_result ) {
+			function () use ( $urls, $now_result, $link ) {
 				if ( ! $urls ) {
 					return;
 				}
@@ -507,6 +640,7 @@ function page_edit() {
 					/* translators: %d: HTTP status */
 					echo '<p class="csl-now">' . icon( 'target' ) . esc_html( sprintf( __( 'Right now it answers with status %d.', 'clean-short-links' ), $now_result['status'] ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
 				}
+				check_line( $link );
 			}
 		);
 		action_notice();
@@ -514,6 +648,8 @@ function page_edit() {
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="csl-layout" id="csl-form">
 			<?php wp_nonce_field( 'clean_short_links_save' ); ?>
+			<?php // Pressing Enter in a field saves – it must not create invitations. ?>
+			<button type="submit" class="csl-default-submit" tabindex="-1" aria-hidden="true"></button>
 			<input type="hidden" name="action" value="clean_short_links_save">
 			<input type="hidden" name="id" value="<?php echo esc_attr( (string) $link['id'] ); ?>">
 			<input type="hidden" name="qr_design" id="csl-qr-design" value="<?php echo esc_attr( wp_json_encode( $link['qr'] ? $link['qr'] : new \stdClass() ) ); ?>">
@@ -607,6 +743,19 @@ function page_edit() {
 						<?php target_picker( 'fallback', $link['fallback'], 'csl-fallback' ); ?>
 						<span class="csl-help"><?php /* translators: %s: time zone */ echo esc_html( sprintf( __( 'Empty = “not found” before the start and “gone” after expiry. Times in the site’s time zone (%s).', 'clean-short-links' ), wp_timezone_string() ) ); ?></span>
 					</div>
+					<div class="csl-sub">
+						<label class="csl-field" for="csl-max"><span><?php esc_html_e( 'Maximum number of visits', 'clean-short-links' ); ?></span></label>
+						<div class="csl-inline">
+							<input type="number" id="csl-max" name="max_clicks" min="0" step="1" class="csl-num-input" value="<?php echo esc_attr( $link['max_clicks'] ? (string) $link['max_clicks'] : '' ); ?>" placeholder="∞">
+							<?php if ( $link['id'] ) : ?>
+								<span class="csl-badge <?php echo limit_reached( $link ) ? 'csl-badge-exhausted' : 'csl-badge-soft'; ?>"><?php /* translators: %s: number of visits so far */ echo esc_html( sprintf( __( '%s so far', 'clean-short-links' ), number_format_i18n( $link['clicks'] ) ) ); ?></span>
+								<?php if ( $link['clicks'] ) : ?>
+									<label class="csl-check"><input type="checkbox" name="reset_clicks" value="1"> <?php esc_html_e( 'Reset counter', 'clean-short-links' ); ?></label>
+								<?php endif; ?>
+							<?php endif; ?>
+						</div>
+						<span class="csl-help"><?php esc_html_e( 'Empty = no limit. Once reached, the link behaves as if it had expired. Bots, link previews and logged-in editors do not count.', 'clean-short-links' ); ?></span>
+					</div>
 				<?php card_close(); ?>
 
 				<?php card_open( 'csl-sec-rules', 'split', __( 'Different targets by date and time', 'clean-short-links' ), __( 'The first rule that fits right now decides where the link leads. If none fits, the target above applies. Example: during the festival to the programme, in the evening to the stage plan.', 'clean-short-links' ) ); ?>
@@ -620,6 +769,12 @@ function page_edit() {
 					<template id="csl-rule-template"><?php rule_row( '__i__', array() ); ?></template>
 					<button type="button" class="button csl-btn csl-rule-add"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Add rule', 'clean-short-links' ); ?></button>
 				<?php card_close(); ?>
+
+				<?php
+				if ( $link['id'] ) {
+					invites_card( $link );
+				}
+				?>
 
 				<?php if ( $urls ) : ?>
 					<?php card_open( 'csl-sec-qr', 'qr', __( 'QR code', 'clean-short-links' ), __( 'The QR code contains the short link – time window and rules also apply to printed codes.', 'clean-short-links' ) ); ?>
@@ -826,6 +981,7 @@ add_action(
 			'qr'         => clean_qr_design( $p['qr_design'] ?? '' ),
 			'status'     => empty( $p['paused'] ) ? 'active' : 'paused',
 			'old_slug'   => 'retire' === ( $p['old_slug'] ?? '' ) ? 'retire' : 'alias',
+			'max_clicks' => absint( $p['max_clicks'] ?? 0 ),
 		);
 		if ( 'date' === $data['start_mode'] && ! $starts ) {
 			$data['start_mode'] = '';
@@ -839,7 +995,67 @@ add_action(
 			wp_safe_redirect( admin_page_url( 'edit', array_filter( array( 'id' => $id, 'csl-error' => $result->get_error_message() ) ) ) );
 			exit;
 		}
-		wp_safe_redirect( admin_page_url( 'edit', array( 'id' => $result, 'csl-msg' => 'saved' ) ) );
+		if ( ! empty( $p['reset_clicks'] ) ) {
+			reset_clicks( $result );
+		}
+		$msg = array(
+			'id'      => $result,
+			'csl-msg' => 'saved',
+		);
+		if ( ! empty( $p['invite_generate'] ) ) {
+			$ends     = local_to_timestamp( sanitize_text_field( $p['invite_ends'] ?? '' ) );
+			$group    = sanitize_text_field( $p['invite_group'] ?? '' );
+			$msg['csl-msg'] = 'invites';
+			$msg['csl-n']   = create_invites( link_by_id( $result ), '' !== $group ? $group : __( 'Invitations', 'clean-short-links' ), absint( $p['invite_count'] ?? 1 ), absint( $p['invite_clicks'] ?? 1 ), $ends ? $ends : 0 );
+			wp_safe_redirect( admin_page_url( 'edit', $msg ) . '#csl-sec-invites' );
+			exit;
+		}
+		wp_safe_redirect( admin_page_url( 'edit', $msg ) );
+		exit;
+	}
+);
+
+add_action(
+	'admin_post_clean_short_links_check',
+	function () {
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
+		if ( ! current_user_can( capability() ) ) {
+			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
+		}
+		check_admin_referer( 'clean_short_links_check_' . $id );
+		if ( $id ) {
+			$link = link_by_id( $id );
+			if ( $link ) {
+				check_link( $link );
+			}
+			wp_safe_redirect( admin_page_url( 'edit', array( 'id' => $id, 'csl-msg' => 'checked' ) ) );
+			exit;
+		}
+		foreach ( links_to_check( 25 ) as $link ) {
+			check_link( $link );
+		}
+		wp_safe_redirect( admin_page_url( '', array( 'csl-msg' => 'checked' ) ) );
+		exit;
+	}
+);
+
+add_action(
+	'admin_post_clean_short_links_invites_csv',
+	function () {
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
+		if ( ! current_user_can( capability() ) ) {
+			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
+		}
+		check_admin_referer( 'clean_short_links_invites_' . $id );
+		$link = link_by_id( $id );
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="invitations-' . sanitize_file_name( $link ? $link['slug'] : (string) $id ) . '.csv"' );
+		$out = "group,link,qr,uses,limit,expires,state\n";
+		foreach ( invites( $id ) as $inv ) {
+			$urls = short_urls( $inv );
+			$out .= sprintf( "%s,%s,%s,%d,%d,%s,%s\n", str_replace( ',', ' ', $inv['title'] ), $urls['link'], $urls['qr'], $inv['clicks'], $inv['max_clicks'], $inv['ends_at'] ? wp_date( 'Y-m-d H:i', $inv['ends_at'] ) : '', link_state( $inv, time() ) );
+		}
+		echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV download of addresses and numbers.
 		exit;
 	}
 );
@@ -852,7 +1068,12 @@ add_action(
 			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
 		}
 		check_admin_referer( 'clean_short_links_delete_' . $id );
+		$link = link_by_id( $id );
 		delete_link( $id, true );
+		if ( $link && $link['parent_id'] ) {
+			wp_safe_redirect( admin_page_url( 'edit', array( 'id' => $link['parent_id'], 'csl-msg' => 'deleted' ) ) . '#csl-sec-invites' );
+			exit;
+		}
 		wp_safe_redirect( admin_page_url( '', array( 'csl-msg' => 'deleted' ) ) );
 		exit;
 	}
@@ -911,7 +1132,9 @@ function page_settings() {
 	);
 	$sections      = array(
 		'csl-sec-addr'   => __( 'Addresses', 'clean-short-links' ),
+		'csl-sec-default' => __( 'Default target', 'clean-short-links' ),
 		'csl-sec-auto'   => __( 'Create automatically', 'clean-short-links' ),
+		'csl-sec-check'  => __( 'Link check', 'clean-short-links' ),
 		'csl-sec-stat'   => __( 'Statistics', 'clean-short-links' ),
 		'csl-sec-bulk'   => __( 'Existing content', 'clean-short-links' ),
 		'csl-sec-import' => __( 'Import', 'clean-short-links' ),
@@ -964,6 +1187,22 @@ function page_settings() {
 						<div class="csl-sub"><?php toggle( 'pass_query', ! empty( $s['pass_query'] ), __( 'Pass parameters such as ?utm_source=… on to the target', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
+					<?php card_open( 'csl-sec-default', 'target', __( 'Default target', 'clean-short-links' ), __( 'Where visitors go when a short link does not lead anywhere – instead of a “not found” page.', 'clean-short-links' ) ); ?>
+						<div class="csl-tiles csl-tiles-3">
+							<?php
+							tile( 'default_mode', '', '' === $s['default_mode'], 'page', __( 'None', 'clean-short-links' ), __( '“Not found” or “gone” as usual.', 'clean-short-links' ) );
+							tile( 'default_mode', 'home', 'home' === $s['default_mode'], 'logo', __( 'Home page', 'clean-short-links' ), __( 'Visitors land on the home page.', 'clean-short-links' ) );
+							tile( 'default_mode', 'custom', 'custom' === $s['default_mode'], 'target', __( 'My choice', 'clean-short-links' ), __( 'A page, a post, a short link or a URL.', 'clean-short-links' ), 'csl-tile-default-custom' );
+							?>
+						</div>
+						<div class="csl-sub csl-default-custom">
+							<label class="csl-field" for="csl-default-url"><span><?php esc_html_e( 'Default target', 'clean-short-links' ); ?></span></label>
+							<?php target_picker( 'default_url', $s['default_url'], 'csl-default-url' ); ?>
+						</div>
+						<div class="csl-sub"><?php toggle( 'default_unknown', ! empty( $s['default_unknown'] ), __( 'For unknown short addresses', 'clean-short-links' ), __( 'e.g. a mistyped example.com/s/…', 'clean-short-links' ) ); ?></div>
+						<div class="csl-sub"><?php toggle( 'default_inactive', ! empty( $s['default_inactive'] ), __( 'For short links that do not lead anywhere right now', 'clean-short-links' ), __( 'Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own.', 'clean-short-links' ) ); ?></div>
+					<?php card_close(); ?>
+
 					<?php card_open( 'csl-sec-auto', 'bolt', __( 'Create automatically', 'clean-short-links' ), __( 'When something of these types is published for the first time it gets a short link that starts with the publication.', 'clean-short-links' ) ); ?>
 						<div class="csl-chips">
 							<?php foreach ( $types as $type ) : ?>
@@ -980,6 +1219,10 @@ function page_settings() {
 								?>
 							</div>
 						</div>
+					<?php card_close(); ?>
+
+					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
+						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first.', 'clean-short-links' ) ); ?>
 					<?php card_close(); ?>
 
 					<?php card_open( 'csl-sec-stat', 'chart', __( 'Statistics', 'clean-short-links' ), __( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ) ); ?>
@@ -1050,7 +1293,15 @@ add_action(
 			'root_default'  => empty( $p['root_default'] ) ? 0 : 1,
 			'count_editors' => empty( $p['count_editors'] ) ? 0 : 1,
 			'pass_query'    => empty( $p['pass_query'] ) ? 0 : 1,
+			'default_mode'  => in_array( $p['default_mode'] ?? '', array( 'home', 'custom' ), true ) ? $p['default_mode'] : '',
+			'default_url'   => clean_target( sanitize_text_field( $p['default_url'] ?? '' ) ),
+			'default_unknown'  => empty( $p['default_unknown'] ) ? 0 : 1,
+			'default_inactive' => empty( $p['default_inactive'] ) ? 0 : 1,
+			'auto_check'    => empty( $p['auto_check'] ) ? 0 : 1,
 		);
+		if ( 'custom' === $new['default_mode'] && '' === $new['default_url'] ) {
+			$new['default_mode'] = '';
+		}
 		if ( is_multisite() && empty( network_settings()['site_prefix'] ) ) {
 			$new['prefix']    = $s['prefix'];
 			$new['qr_prefix'] = $s['qr_prefix'];

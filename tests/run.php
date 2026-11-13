@@ -252,6 +252,59 @@ test( 'List state', function () {
 	same( 'expired', link_state( link( array( 'ends_at' => $now ) ), $now ) );
 } );
 
+test( 'Click limit: used up links behave like expired ones', function () {
+	$l = link( array( 'max_clicks' => 3, 'clicks' => 2 ) );
+	same( 302, go( $l, '2026-06-01 12:00' )['status'] );
+	$l['clicks'] = 3;
+	same( 410, go( $l, '2026-06-01 12:00' )['status'] );
+	same( 'exhausted', go( $l, '2026-06-01 12:00' )['state'] );
+	same( 'exhausted', link_state( $l, time() ) );
+	$l['fallback'] = 'https://example.com/sold-out/';
+	same( 'https://example.com/sold-out/', go( $l, '2026-06-01 12:00' )['url'] );
+	same( false, limit_reached( link( array( 'max_clicks' => 0, 'clicks' => 99 ) ) ) );
+} );
+
+test( 'Targets: other short links and the home page', function () {
+	same( 'link:7', clean_target( 'link:7' ) );
+	same( 'home', clean_target( 'home' ) );
+	same( '', clean_target( 'link:0' ) );
+	same( 7, target_link_id( 'link:7' ) );
+	same( 0, target_link_id( 'post:7' ) );
+} );
+
+test( 'Invitations follow their main link but keep limit, counter and expiry', function () {
+	$parent = link( array( 'id' => 1, 'target' => 'https://example.com/party/', 'rules' => array( array( 'target' => 'https://example.com/x/' ) ), 'ends_at' => 2000 ) );
+	$invite = array( 'id' => 9, 'slug' => 'k7mq4abc', 'title' => 'Family', 'parent_id' => 1, 'max_clicks' => 1, 'clicks' => 0, 'status' => 'active', 'ends_at' => 1500, 'target' => 'https://old.example/' );
+	$m = merge_parent( $invite, $parent );
+	same( 9, $m['id'] );
+	same( 'https://example.com/party/', $m['target'] );
+	same( 1, count( $m['rules'] ) );
+	same( 1500, $m['ends_at'], 'earlier expiry of the invitation wins' );
+	same( 1, $m['max_clicks'] );
+	$invite['ends_at'] = 3000;
+	same( 2000, merge_parent( $invite, $parent )['ends_at'], 'the main link ends them all' );
+	$parent['status'] = 'paused';
+	same( 'paused', merge_parent( $invite, $parent )['status'] );
+} );
+
+echo "\nLink check\n";
+
+test( 'Answers are classified', function () {
+	same( 'ok', classify_response( 200 ) );
+	same( 'ok', classify_response( 301 ) );
+	same( 'warning', classify_response( 403 ) );
+	same( 'warning', classify_response( 429 ) );
+	same( 'broken', classify_response( 404 ) );
+	same( 'broken', classify_response( 500 ) );
+	same( 'broken', classify_response( 0, true ) );
+} );
+
+test( 'The worse result wins', function () {
+	same( 'warning', worse( 'ok', 'warning' ) );
+	same( 'broken', worse( 'broken', 'ok' ) );
+	same( 'ok', worse( '', 'ok' ) );
+} );
+
 echo "\nVisits\n";
 
 test( 'Bots, previews and tools are not counted', function () {

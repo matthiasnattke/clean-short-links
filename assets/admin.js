@@ -83,7 +83,23 @@
 			}
 			list.hidden = false;
 			list.innerHTML = '<li class="csl-picker-note">' + T.searching + '</li>';
-			api( { path: '/wp/v2/search?type=post&per_page=8&search=' + encodeURIComponent( q ) } ).then( function ( rows ) {
+			var form = document.getElementById( 'csl-form' ), self = form ? ( parseInt( ( form.querySelector( 'input[name="id"]' ) || {} ).value, 10 ) || 0 ) : 0;
+			Promise.all( [
+				api( { path: '/wp/v2/search?type=post&per_page=8&search=' + encodeURIComponent( q ) } ).catch( function () {
+					return [];
+				} ),
+				api( { path: '/clean-short-links/v1/links?exclude=' + self + '&search=' + encodeURIComponent( q ) } ).catch( function () {
+					return [];
+				} ),
+			] ).then( function ( res ) {
+				var rows = res[ 0 ].map( function ( r ) {
+					return { value: 'post:' + r.id, label: r.title || r.url, kind: r.subtype };
+				} ).concat( res[ 1 ].map( function ( r ) {
+					return { value: 'link:' + r.id, label: r.title + ' (/' + D.prefix + '/' + r.slug + ')', kind: T.shortLink };
+				} ) );
+				if ( T.homePage.toLowerCase().indexOf( q.toLowerCase() ) === 0 || 'home'.indexOf( q.toLowerCase() ) === 0 ) {
+					rows.unshift( { value: 'home', label: T.homePage, kind: '' } );
+				}
 				list.innerHTML = '';
 				if ( ! rows.length ) {
 					list.innerHTML = '<li class="csl-picker-note">' + T.noResults + '</li>';
@@ -92,21 +108,21 @@
 				rows.forEach( function ( r ) {
 					var li = document.createElement( 'li' ), b = document.createElement( 'button' );
 					b.type = 'button';
-					b.textContent = r.title || r.url;
+					b.textContent = r.label;
 					var small = document.createElement( 'small' );
-					small.textContent = ' ' + r.subtype;
+					small.textContent = r.kind ? ' ' + r.kind : '';
 					b.appendChild( small );
 					b.addEventListener( 'click', function () {
-						value.value = 'post:' + r.id;
-						input.value = r.title || r.url;
-						kind.textContent = r.subtype;
+						value.value = r.value;
+						input.value = r.label;
+						kind.textContent = r.kind || r.label;
 						close();
 						input.dispatchEvent( new Event( 'csl-target', { bubbles: true } ) );
 					} );
 					li.appendChild( b );
 					list.appendChild( li );
 				} );
-			} ).catch( close );
+			} );
 		}, 250 );
 		input.addEventListener( 'input', function () {
 			if ( '' === input.value.trim() ) {

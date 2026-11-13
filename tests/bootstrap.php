@@ -40,3 +40,4 @@ function wp_json_encode( $v ) { return json_encode( $v ); }
 
 define( 'CLEAN_SHORT_LINKS_FILE', dirname( __DIR__ ) . '/clean-short-links.php' );
 require dirname( __DIR__ ) . '/includes/core.php';
+require dirname( __DIR__ ) . '/includes/checker.php';

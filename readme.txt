@@ -26,6 +26,19 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 * Start at a date or with the publication of the content, expire at a date. Before and after, the link leads to a fallback page of your choice – or answers "not found" and "gone".
 * Rules send the same link to different targets by date range, weekday and time of day – e.g. during the festival to the programme, in the evening to the stage plan and afterwards to the review. The first matching rule wins.
 * Redirects are temporary and never cached, so schedules work reliably – even for printed QR codes.
+* A click limit ends a link after a number of visits – bots, link previews and logged-in editors do not count.
+* A default target per site – the home page, a page, a post, another short link or a URL – catches mistyped short addresses and links that have run out.
+
+**Invitation links**
+
+* Create personal links for a short link, group by group – e.g. 10 links for the family with one visit each, 5 for clubs with 20 visits each.
+* Each has its own hard-to-guess address, optional expiry and limit, and follows target, rules and time window of the main link.
+* See which ones were used, copy them all at once or export them as CSV.
+
+**Link check**
+
+* Checks once a day – or at the push of a button – whether each short link answers and whether all its targets (main target, rule targets, fallback) can still be reached.
+* Problems show up on the short link's card and in a filter of their own.
 
 **QR codes**
 
@@ -71,6 +84,10 @@ Yes. Under **Settings → Import** add one line per link: `short address ; targe
 = Does it work with page caches? =
 
 Short-link redirects send no-cache headers. If your cache ignores them, exclude the paths `/s/` and `/q/`.
+
+= Does the plugin contact other servers? =
+
+Only for the link check: it requests the target addresses of your own short links (a HEAD request, with a small GET as fallback) to see whether they can be reached. Nothing else is sent, local and private network addresses are never contacted, and the automatic daily check can be switched off in the settings. QR codes are created in the browser.
 
 = Is it GDPR-friendly? =
 

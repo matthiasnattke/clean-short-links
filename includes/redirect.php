@@ -53,7 +53,12 @@ add_action(
 		}
 		$found = find_slug( $req[1] );
 		if ( ! $found ) {
-			return; // Unknown – WordPress shows its normal 404 page.
+			// Unknown short address: the default target of the site, if set – otherwise WordPress' 404 page.
+			$default = default_target_url( 'unknown' );
+			if ( $default ) {
+				go_to( $default, null, $req[0], false );
+			}
+			return;
 		}
 		$result = handle( $found, $req[0] );
 		if ( $result ) {
@@ -100,7 +105,30 @@ add_filter(
 );
 
 /**
+ * The site's default target as URL, if it applies to this case.
+ *
+ * @param string $case unknown (no such short link) or inactive (not started, expired, used up, paused, retired).
+ * @return string|null
+ */
+function default_target_url( $case ) {
+	$s = site_settings();
+	if ( empty( $s[ 'default_' . $case ] ) ) {
+		return null;
+	}
+	if ( 'home' === $s['default_mode'] ) {
+		return home_url( '/' );
+	}
+	if ( 'custom' === $s['default_mode'] && '' !== $s['default_url'] ) {
+		return target_url( $s['default_url'] );
+	}
+	return null;
+}
+
+/**
  * Redirects or prepares the dead-link page.
+ *
+ * Invitations follow their main link: target, rules, time window and fallback come from
+ * there, their own click limit and expiry still apply.
  *
  * @param array $found  Result of find_slug().
  * @param int   $source Where the visit came from.
@@ -108,10 +136,12 @@ add_filter(
  */
 function handle( array $found, $source ) {
 	list( $link, $kind ) = $found;
+	if ( $link && ! empty( $link['parent_id'] ) ) {
+		$parent = link_by_id( $link['parent_id'] );
+		$link   = $parent ? merge_parent( $link, $parent ) : null;
+	}
 	if ( 'retired' === $kind || ! $link ) {
-		$GLOBALS['clean_short_links_status'] = 410;
-		nocache_headers();
-		return 410;
+		return dead_end( 410, $link, $source );
 	}
 	if ( 'qr' === $kind ) {
 		$source = SOURCE_QR;
@@ -123,21 +153,53 @@ function handle( array $found, $source ) {
 		__NAMESPACE__ . '\\target_published'
 	);
 	if ( 302 !== $result['status'] ) {
-		$GLOBALS['clean_short_links_status'] = $result['status'];
-		nocache_headers();
-		return $result['status'];
+		return dead_end( $result['status'], $link, $source );
 	}
-	count_visit( $link, $source );
-	$url = $result['url'];
+	// Only real uses count – not the way to the fallback page of an expired link.
+	$used = 'default' === $result['state'] || 0 === strpos( $result['state'], 'rule-' );
+	go_to( $result['url'], $link, $source, $used );
+	return 0;
+}
+
+/**
+ * A link that does not lead anywhere right now: the site's default target, or 404/410.
+ *
+ * @param int        $status 404 or 410.
+ * @param array|null $link   Link.
+ * @param int        $source Source.
+ * @return int Status (only when not redirected).
+ */
+function dead_end( $status, $link, $source ) {
+	$default = default_target_url( 'inactive' );
+	if ( $default ) {
+		go_to( $default, $link, $source, false );
+	}
+	$GLOBALS['clean_short_links_status'] = $status;
+	nocache_headers();
+	return $status;
+}
+
+/**
+ * Sends the visitor on. Never returns.
+ *
+ * @param string     $url    Target URL.
+ * @param array|null $link   Link.
+ * @param int        $source Source.
+ * @param bool       $count  Count the visit.
+ */
+function go_to( $url, $link, $source, $count ) {
+	if ( $count && $link ) {
+		count_visit( $link, $source );
+	}
 	if ( ! empty( site_settings()['pass_query'] ) && ! empty( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
 		$url = add_query_arg( map_deep( wp_unslash( $_GET ), 'rawurlencode' ), $url ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 	/**
 	 * Filters the address a short link leads to right now.
 	 *
-	 * @param string $url    Target URL.
-	 * @param array  $link   The link.
-	 * @param int    $source 0 link, 1 QR code, 2 short form on the main address.
+	 * @param string     $url    Target URL.
+	 * @param array|null $link   The link, null for an unknown short address.
+	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address.
 	 */
 	$url = apply_filters( 'clean_short_links_redirect', $url, $link, $source );
 	nocache_headers();
@@ -164,4 +226,5 @@ function count_visit( array $link, $source ) {
 	}
 	$ref = isset( $_SERVER['HTTP_REFERER'] ) ? referrer_host( esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) ) : '';
 	record_click( $link['id'], $source, device_class( $ua ), $ref );
+	add_click( $link['id'] );
 }

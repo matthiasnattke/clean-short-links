@@ -316,3 +316,30 @@ textarea.csl-wide { max-width: none; }
 	.csl-pill-active .csl-dot { animation: none; }
 	.csl-link, .csl-site { transition: none; }
 }
+
+/* Link check, limit, invitations, default target */
+.csl-default-submit { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.csl-stat.is-warn { background: #fcf0f1; border-color: #f2c4c7; }
+.csl-stat.is-warn strong { color: #b32d2e; }
+.csl-badge-exhausted { background: #fcf0e8; color: #a8430c; }
+.csl-pill-exhausted { background: #fcf0e8; border-color: #f0c8ad; color: #a8430c; }
+.csl-link-exhausted::before { background: var(--csl-accent); }
+.csl-check-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; }
+.csl-check-line small { color: var(--csl-muted); }
+.csl-badge-check { background: #edfaef; color: #00701c; }
+.csl-check-warning .csl-badge-check { background: #fff4d6; color: #7a5800; }
+.csl-check-broken .csl-badge-check { background: #fcf0f1; color: #8a2424; }
+.csl-check-none .csl-badge-check { background: #f0f0f1; color: var(--csl-muted); }
+.csl-check-list { flex-basis: 100%; margin: 4px 0 0 2px; color: #8a2424; font-size: 13px; }
+.csl-check-list li { margin: 2px 0; }
+.csl-wrap input.csl-num-input { width: 7em; }
+.csl-invite-gen { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
+.csl-invite-gen .csl-field { margin: 0; }
+.csl-invite-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f1; }
+.csl-invite-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+.csl-invite-head h3 { margin: 0; text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--csl-ink); }
+.csl-invite-head .csl-copy-btn { margin-left: auto; }
+.csl-invites { width: 100%; border-collapse: collapse; }
+.csl-invites td { padding: 6px 8px 6px 0; border-bottom: 1px solid #f6f7f7; vertical-align: middle; }
+.csl-invites td:last-child { width: 30px; }
+#csl-sec-default:not(:has(.csl-tile-default-custom input:checked)) .csl-default-custom { display: none; }
