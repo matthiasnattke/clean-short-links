@@ -20,8 +20,8 @@ add_action(
 	'admin_enqueue_scripts',
 	function ( $hook ) {
 		if ( false !== strpos( (string) $hook, 'clean-short-links-network' ) ) {
-			wp_enqueue_style( 'clean-short-links-admin', plugins_url( 'assets/admin.css', CLEAN_SHORT_LINKS_FILE ), array(), CLEAN_SHORT_LINKS_VERSION );
-			wp_enqueue_script( 'clean-short-links-admin', plugins_url( 'assets/admin.js', CLEAN_SHORT_LINKS_FILE ), array( 'wp-api-fetch' ), CLEAN_SHORT_LINKS_VERSION, true );
+			wp_enqueue_style( 'clean-short-links-admin', plugins_url( 'assets/admin.css', CLEAN_SHORT_LINKS_FILE ), array(), asset_ver( 'admin.css' ) );
+			wp_enqueue_script( 'clean-short-links-admin', plugins_url( 'assets/admin.js', CLEAN_SHORT_LINKS_FILE ), array( 'wp-api-fetch' ), asset_ver( 'admin.js' ), true );
 			wp_localize_script( 'clean-short-links-admin', 'CleanShortLinksAdmin', admin_js_data() );
 		}
 	}

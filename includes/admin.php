@@ -27,13 +27,13 @@ add_action(
 			return;
 		}
 		$url = plugins_url( 'assets/', CLEAN_SHORT_LINKS_FILE );
-		wp_enqueue_style( 'clean-short-links-admin', $url . 'admin.css', array(), CLEAN_SHORT_LINKS_VERSION );
-		wp_enqueue_script( 'clean-short-links-admin', $url . 'admin.js', array( 'wp-api-fetch' ), CLEAN_SHORT_LINKS_VERSION, true );
+		wp_enqueue_style( 'clean-short-links-admin', $url . 'admin.css', array(), asset_ver( 'admin.css' ) );
+		wp_enqueue_script( 'clean-short-links-admin', $url . 'admin.js', array( 'wp-api-fetch' ), asset_ver( 'admin.js' ), true );
 		wp_localize_script( 'clean-short-links-admin', 'CleanShortLinksAdmin', admin_js_data() );
 		if ( false !== strpos( (string) $hook, 'clean-short-links-edit' ) ) {
 			wp_enqueue_media();
-			wp_enqueue_script( 'clean-short-links-qr', $url . 'qr.js', array(), CLEAN_SHORT_LINKS_VERSION, true );
-			wp_enqueue_script( 'clean-short-links-designer', $url . 'qr-designer.js', array( 'clean-short-links-qr', 'wp-api-fetch' ), CLEAN_SHORT_LINKS_VERSION, true );
+			wp_enqueue_script( 'clean-short-links-qr', $url . 'qr.js', array(), asset_ver( 'qr.js' ), true );
+			wp_enqueue_script( 'clean-short-links-designer', $url . 'qr-designer.js', array( 'clean-short-links-qr', 'wp-api-fetch' ), asset_ver( 'qr-designer.js' ), true );
 		}
 	}
 );

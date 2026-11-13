@@ -182,7 +182,7 @@ add_action(
 			return;
 		}
 		$url = plugins_url( 'assets/', CLEAN_SHORT_LINKS_FILE );
-		wp_enqueue_script( 'clean-short-links-editor', $url . 'editor.js', array( 'wp-plugins', 'wp-editor', 'wp-element', 'wp-components', 'wp-data', 'wp-api-fetch' ), CLEAN_SHORT_LINKS_VERSION, true );
+		wp_enqueue_script( 'clean-short-links-editor', $url . 'editor.js', array( 'wp-plugins', 'wp-editor', 'wp-element', 'wp-components', 'wp-data', 'wp-api-fetch' ), asset_ver( 'editor.js' ), true );
 		wp_localize_script(
 			'clean-short-links-editor',
 			'CleanShortLinksEditor',

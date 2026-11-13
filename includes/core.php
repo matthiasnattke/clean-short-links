@@ -570,6 +570,18 @@ function timestamp_to_local( $ts ) {
 }
 
 /**
+ * Version of an asset file: plugin version plus modification time, so browsers load a
+ * changed file right away.
+ *
+ * @param string $file File name in assets/.
+ * @return string
+ */
+function asset_ver( $file ) {
+	$path = dirname( CLEAN_SHORT_LINKS_FILE ) . '/assets/' . $file;
+	return CLEAN_SHORT_LINKS_VERSION . '.' . ( file_exists( $path ) ? filemtime( $path ) : 0 );
+}
+
+/**
  * Who may manage short links.
  *
  * @return string Capability.
