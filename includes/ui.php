@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function icon( $name ) {
 	$paths = array(
-		'logo'     => '<path d="M5 10.5v3a5.5 5.5 0 0 0 11 0v-3"/><ellipse cx="10.5" cy="10.5" rx="5.5" ry="1.7"/><path d="M16 11.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8.6 14.4h-.8a1.2 1.2 0 0 0 0 2.4h.8M12.4 14.4h.8a1.2 1.2 0 0 1 0 2.4h-.8M8.8 15.6h3.4"/><path d="M7.8 7.6c0-2 1.6-3.5 3.6-3.5h2.8M13 2.7l1.6 1.4L13 5.5"/><path d="M4 21h14"/>',
+		'logo'     => '<path d="M4.5 11v2.6a6 6 0 0 0 12 0V11"/><ellipse cx="10.5" cy="11" rx="6" ry="2.6"/><path d="M16.5 12.2h1a2.5 2.5 0 0 1 0 5h-1.4"/><path d="M9.3 10.1h-.9a.9.9 0 0 0 0 1.8h.9M11.7 10.1h.9a.9.9 0 0 1 0 1.8h-.9M9.4 11h2.2"/><path d="M7.8 7.4c0-2 1.6-3.5 3.6-3.5h2.8M13 2.5l1.6 1.4L13 5.3"/><path d="M4 21h13"/>',
 		'link'     => '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
 		'target'   => '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',
 		'tag'      => '<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
@@ -72,7 +72,7 @@ function the_icon( $name ) {
 function hero( $title, $pill = '', $state = '', $actions = null, $extra = null ) {
 	?>
 	<header class="csl-hero">
-		<span class="csl-hero-icon"><?php the_icon( 'logo' ); ?></span>
+		<span class="csl-hero-icon"><img src="<?php echo esc_url( plugins_url( 'assets/icon.svg', CLEAN_SHORT_LINKS_FILE ) . '?ver=' . asset_ver( 'icon.svg' ) ); ?>" width="64" height="64" alt=""></span>
 		<div class="csl-hero-text">
 			<p class="csl-eyebrow">Clean Short Links</p>
 			<p class="csl-hero-title"><?php echo esc_html( $title ); ?></p>
