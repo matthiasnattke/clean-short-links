@@ -1,13 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1544 500" width="1544" height="500">
   <rect width="1544" height="500" fill="#BFE1FF"/>
   <g transform="translate(150 70) scale(1.4)">
-<g fill="none" stroke="#E2611B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-<path d="M96 90c0-22 18-36 40-36h30"/><path d="M150 38l18 16-18 16"/></g>
-<path d="M190 120h8a23 23 0 0 1 0 46h-14" fill="none" stroke="#0E2440" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M62 104h132v40c0 36-29 62-66 62s-66-26-66-62z" fill="#FFFFFF" stroke="#0E2440" stroke-width="10" stroke-linejoin="round"/>
-<g fill="none" stroke="#0E2440" stroke-width="9" stroke-linecap="round">
-<path d="M118 140h-10a12 12 0 0 0 0 24h10"/><path d="M138 140h10a12 12 0 0 1 0 24h-10"/><path d="M116 152h24"/></g>
-<path d="M44 220h168" stroke="#0E2440" stroke-width="10" stroke-linecap="round"/>
+
+<g fill="none" stroke="#E2611B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M100 82c0-22 18-36 40-36h26"/><path d="M152 30l18 16-18 16"/></g>
+<path d="M190 124h8a23 23 0 0 1 0 46h-14" fill="none" stroke="#0E2440" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M62 106v40c0 36 29 62 66 62s66-26 66-62v-40" fill="#FFFFFF" stroke="#0E2440" stroke-width="10" stroke-linejoin="round"/>
+<ellipse cx="128" cy="106" rx="66" ry="18" fill="#C98A5A" stroke="#0E2440" stroke-width="10"/>
+<g fill="#FFF6EC"><rect x="92" y="96" width="16" height="9" rx="2.5"/><rect x="148" y="96" width="16" height="9" rx="2.5"/><rect x="114" y="109" width="16" height="9" rx="2.5"/><rect x="136" y="110" width="7" height="5" rx="1.5"/></g>
+<g transform="translate(128 162)" stroke="#0E2440"><g fill="none" stroke-linecap="round" stroke-width="9"><path d="M-10 -12h-10a12 12 0 0 0 0 24h10"/><path d="M10 -12h10a12 12 0 0 1 0 24h-10"/><path d="M-12 0h24"/></g></g>
+<path d="M44 222h168" stroke="#0E2440" stroke-width="10" stroke-linecap="round"/>
+
   </g>
   <text x="560" y="232" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="96" letter-spacing="-3" fill="#0E2440">Clean Short Links</text>
   <text x="564" y="300" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-weight="500" font-size="36" fill="#1F6AAF">Short links, QR codes and statistics – on your own domain.</text>
