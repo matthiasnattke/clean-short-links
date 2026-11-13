@@ -255,3 +255,99 @@ add_action(
 		);
 	}
 );
+
+/* ---------------------------------------------------------------------------
+ * Link search while writing
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Short links matching a search, as suggestions for the link search of the editors.
+ *
+ * @param string $search Search term.
+ * @param int    $limit  How many.
+ * @return array[] Each with id, title, url and label.
+ */
+function link_suggestions( $search, $limit = 6 ) {
+	$search = trim( (string) $search );
+	if ( '' === $search || ! current_user_can( 'edit_posts' ) ) {
+		return array();
+	}
+	$out = array();
+	foreach ( list_links(
+		array(
+			'search'   => $search,
+			'per_page' => $limit,
+		)
+	)['items'] as $l ) {
+		if ( 'active' !== $l['status'] ) {
+			continue;
+		}
+		$name  = '' !== $l['title'] ? $l['title'] : bio_label( $l );
+		$out[] = array(
+			'id'    => $l['id'],
+			/* translators: 1: title of the short link, 2: its address without https:// */
+			'title' => sprintf( __( '%1$s – %2$s', 'clean-short-links' ), $name, preg_replace( '#^https?://#', '', short_urls( $l )['link'] ) ),
+			'url'   => short_urls( $l )['link'],
+		);
+	}
+	return $out;
+}
+
+/*
+ * Block editor: the link search (paragraphs, buttons, navigation, images …) asks
+ * /wp/v2/search. Short links are added to the first page of results for posts, labelled
+ * "Short link"; inserting one inserts the short address.
+ */
+add_filter(
+	'rest_post_dispatch',
+	function ( $response, $server, $request ) {
+		if ( '/wp/v2/search' !== $request->get_route() || ! ( $response instanceof \WP_REST_Response ) || $response->is_error() ) {
+			return $response;
+		}
+		$type = (string) $request->get_param( 'type' );
+		if ( $request->get_param( 'csl_skip' ) || (int) $request->get_param( 'page' ) > 1 || ( '' !== $type && 'post' !== $type ) ) {
+			return $response;
+		}
+		$items = link_suggestions( (string) $request->get_param( 'search' ) );
+		if ( ! $items ) {
+			return $response;
+		}
+		$data = (array) $response->get_data();
+		foreach ( $items as $i ) {
+			$data[] = array(
+				'id'      => 'clean-short-link-' . $i['id'],
+				'title'   => $i['title'],
+				'url'     => $i['url'],
+				'type'    => 'post',
+				'subtype' => __( 'Short link', 'clean-short-links' ),
+			);
+		}
+		$response->set_data( $data );
+		return $response;
+	},
+	10,
+	3
+);
+
+/*
+ * Classic editor: the "Insert/edit link" dialog.
+ */
+add_filter(
+	'wp_link_query',
+	function ( $results, $query ) {
+		if ( ! empty( $query['offset'] ) || empty( $query['s'] ) ) {
+			return $results;
+		}
+		foreach ( link_suggestions( $query['s'] ) as $i ) {
+			$results[] = array(
+				'ID'        => 0,
+				'title'     => $i['title'],
+				'permalink' => $i['url'],
+				'info'      => __( 'Short link', 'clean-short-links' ),
+			);
+		}
+		return $results;
+	},
+	10,
+	2
+);

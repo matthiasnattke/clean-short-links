@@ -85,7 +85,7 @@
 			list.innerHTML = '<li class="csl-picker-note">' + T.searching + '</li>';
 			var form = document.getElementById( 'csl-form' ), self = form ? ( parseInt( ( form.querySelector( 'input[name="id"]' ) || {} ).value, 10 ) || 0 ) : 0;
 			Promise.all( [
-				api( { path: '/wp/v2/search?type=post&per_page=8&search=' + encodeURIComponent( q ) } ).catch( function () {
+				api( { path: '/wp/v2/search?type=post&csl_skip=1&per_page=8&search=' + encodeURIComponent( q ) } ).catch( function () {
 					return [];
 				} ),
 				api( { path: '/clean-short-links/v1/links?skip=' + self + '&search=' + encodeURIComponent( q ) } ).catch( function () {

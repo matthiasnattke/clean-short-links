@@ -124,7 +124,7 @@ msgstr ""
 msgid "Remove this rule?"
 msgstr ""
 
-#: includes/admin.php:89 includes/admin.php:386 includes/admin.php:491 includes/admin.php:1671 includes/rest.php:232
+#: includes/admin.php:89 includes/admin.php:386 includes/admin.php:491 includes/admin.php:1671 includes/rest.php:232 includes/rest.php:322 includes/rest.php:346
 msgid "Short link"
 msgstr ""
 
@@ -1406,6 +1406,12 @@ msgstr ""
 
 #: includes/rest.php:252
 msgid "The short link could not be created."
+msgstr ""
+
+#. translators: 1: title of the short link, 2: its address without https://
+#: includes/rest.php:289
+#, php-format
+msgid "%1$s – %2$s"
 msgstr ""
 
 #. translators: 1: date, 2: number of visits

@@ -129,6 +129,10 @@ Exceptions of the maintenance mode (slugs, addresses, access pass) still apply: 
 
 **Network admin → Short links** lists every site with its prefixes, number of links, visits and most visited link, and holds the network-wide settings: prefixes for links and QR codes, whether sites may choose their own, whether the short form is allowed, how long statistics are kept and reserved words.
 
+## Link search while writing
+
+When you add a link in the block editor – in a paragraph, button, navigation, image and so on – or in the classic editor's link dialog, matching short links appear among the suggestions, marked “Short link”, with their title and short address. Choosing one inserts the short link. Only active short links are suggested, and only to people who may write posts.
+
 ## Block editor
 
 The document sidebar has a *Short link* panel: copy the link and short form, open the QR designer, see the visits of the last 30 days – or create a link with one click.

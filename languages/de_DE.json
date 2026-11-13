@@ -363,5 +363,6 @@
 	"For targets that are only temporarily unreachable.": "Bei Zielen, die nur vorübergehend nicht erreichbar sind.",
 	"Always the maintenance page": "Immer die Wartungsseite",
 	"Instead of every error page – also without maintenance mode.": "Statt jeder Fehlerseite – auch ohne Wartungsmodus.",
-	"A fallback of the short link and the default target always come first.": "Ein Ersatzziel des Kurzlinks und das Standard-Ziel haben immer Vorrang."
+	"A fallback of the short link and the default target always come first.": "Ein Ersatzziel des Kurzlinks und das Standard-Ziel haben immer Vorrang.",
+	"%1$s – %2$s": "%1$s – %2$s"
 }
