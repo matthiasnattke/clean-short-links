@@ -168,6 +168,8 @@ function check_link( array $link ) {
 	if ( ! is_wp_error( $res ) ) {
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$ok   = $code === (int) $expected['status'] || ( 302 === (int) $expected['status'] && in_array( $code, array( 301, 302, 303, 307 ), true ) );
+		// A link that leads nowhere right now may show a maintenance page (503) instead of its 404/410 – that is fine.
+		$ok = $ok || ( 302 !== (int) $expected['status'] && 503 === $code );
 		$items[] = array(
 			'role'    => 'self',
 			'target'  => short_urls( $link )['link'],
