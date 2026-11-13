@@ -1234,7 +1234,7 @@ msgid "Newsletter"
 msgstr ""
 
 #. translators: E-mail share option
-#: includes/core.php:421 includes/social.php:142
+#: includes/core.php:421 includes/social.php:145
 msgid "E-mail"
 msgstr ""
 
