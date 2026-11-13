@@ -126,9 +126,9 @@
 			var mg = 1.5, fw = 1, gap = 2;
 			ox = mg + fw + gap;
 			W = n + 2 * ox;
-			var fs = n + 2 * gap + fw;
-			frame = { x: mg + fw / 2, y: mg + fw / 2, w: fs, h: fs, sw: fw };
-			pill = { cy: frame.y + fs };
+			var fs = n + 2 * gap + fw, fh = fs + ph / 2;
+			frame = { x: mg + fw / 2, y: mg + fw / 2, w: fs, h: fh, sw: fw };
+			pill = { cy: frame.y + fh };
 			H = pill.cy + ph / 2 + mg;
 		} else if ( 'pill' === design.cta ) {
 			pill = { cy: ox + n + 2 + ph / 2 };
