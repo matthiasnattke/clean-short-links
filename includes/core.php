@@ -79,6 +79,7 @@ function site_defaults() {
 		'default_inactive' => 1,
 		'auto_check'    => 1,
 		'skip_broken'   => 1,
+		'gone_days'     => 30,
 	);
 }
 
@@ -380,6 +381,23 @@ function target_broken( array $link, $target ) {
 }
 
 /**
+ * How unreachable is a link's target? Temporarily at first, permanently once it has been
+ * unreachable without a break for the given number of days.
+ *
+ * @param array $link Link with its check results.
+ * @param int   $now  Unix time.
+ * @param int   $days Days after which "temporarily" becomes "permanently".
+ * @return string '' (reachable or unknown), temporary or gone.
+ */
+function unreachable( array $link, $now, $days = 30 ) {
+	$since = (int) ( $link['check']['since'] ?? 0 );
+	if ( ! $since ) {
+		return '';
+	}
+	return $now - $since >= max( 1, (int) $days ) * DAY_IN_SECONDS ? 'gone' : 'temporary';
+}
+
+/**
  * Has a link used up its click limit?
  *
  * @param array $link Link.
@@ -555,15 +573,20 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 }
 
 /**
- * State of a link for lists: active, waiting, expired, exhausted, paused.
+ * State of a link for lists: active, waiting, expired, exhausted, unreachable, gone, paused.
  *
- * @param array $link Link.
- * @param int   $now  Unix time.
+ * @param array $link      Link.
+ * @param int   $now       Unix time.
+ * @param int   $gone_days Days after which an unreachable target counts as gone.
  * @return string
  */
-function link_state( array $link, $now ) {
+function link_state( array $link, $now, $gone_days = 30 ) {
 	if ( 'active' !== ( $link['status'] ?? 'active' ) ) {
 		return 'paused';
+	}
+	$u = unreachable( $link, $now, $gone_days );
+	if ( '' !== $u ) {
+		return 'gone' === $u ? 'gone' : 'unreachable';
 	}
 	if ( ! empty( $link['starts_at'] ) && $now < (int) $link['starts_at'] ) {
 		return 'waiting';

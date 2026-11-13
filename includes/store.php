@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery -- Custom tables of this plugin; there is no WordPress API for them.
 
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 /**
  * Table names of the current site.
@@ -66,6 +66,7 @@ function install() {
   check_status varchar(12) NOT NULL DEFAULT '',
   check_info text NULL,
   checked_at bigint(20) unsigned NOT NULL DEFAULT 0,
+  broken_since bigint(20) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY  (id),
   KEY post_id (post_id),
   KEY slug (slug),
@@ -152,6 +153,7 @@ function row_to_link( $row ) {
 			'status' => (string) ( $row['check_status'] ?? '' ),
 			'items'  => is_array( $check ) ? $check : array(),
 			'at'     => (int) ( $row['checked_at'] ?? 0 ),
+			'since'  => (int) ( $row['broken_since'] ?? 0 ),
 		),
 	);
 }
@@ -415,6 +417,7 @@ function save_link( array $data ) {
 		$row['check_status'] = '';
 		$row['check_info']   = '[]';
 		$row['checked_at']   = 0;
+		$row['broken_since'] = 0;
 	}
 	if ( $old ) {
 		$wpdb->update( $t['links'], $row, array( 'id' => $id ) );
@@ -652,8 +655,9 @@ function reset_clicks( $id ) {
  * @param int    $id     Link ID.
  * @param string $status ok, warning or broken.
  * @param array  $items  Single results.
+ * @param int    $broken_since Since when a target has been unreachable without a break, 0 if none is.
  */
-function save_check( $id, $status, array $items ) {
+function save_check( $id, $status, array $items, $broken_since = 0 ) {
 	global $wpdb;
 	$wpdb->update(
 		tables()['links'],
@@ -661,6 +665,7 @@ function save_check( $id, $status, array $items ) {
 			'check_status' => $status,
 			'check_info'   => wp_json_encode( $items ),
 			'checked_at'   => time(),
+			'broken_since' => (int) $broken_since,
 		),
 		array( 'id' => (int) $id )
 	);
@@ -674,7 +679,8 @@ function save_check( $id, $status, array $items ) {
  */
 function links_to_check( $limit = 20 ) {
 	global $wpdb;
-	return array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE parent_id = 0 ORDER BY checked_at ASC, id ASC LIMIT %d', tables()['links'], $limit ) ) );
+	// Unreachable targets first, so links come back soon after their target does.
+	return array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE parent_id = 0 ORDER BY broken_since = 0, checked_at ASC, id ASC LIMIT %d', tables()['links'], $limit ) ) );
 }
 
 /**

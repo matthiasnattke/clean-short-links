@@ -98,6 +98,10 @@ add_filter(
 		if ( 404 === (int) $code && 410 === $status ) {
 			return $protocol . ' 410 Gone';
 		}
+		if ( 404 === (int) $code && 503 === $status ) {
+			header( 'Retry-After: 3600' );
+			return $protocol . ' 503 Service Unavailable';
+		}
 		return $header;
 	},
 	10,
@@ -161,7 +165,8 @@ function handle( array $found, $source ) {
 		$fallback = $link['fallback'] ?? '';
 		$url      = '' !== $fallback && $fallback !== $result['target'] && ! target_broken( $link, $fallback ) ? target_url( $fallback ) : null;
 		if ( ! $url ) {
-			return dead_end( 404, $link, $source );
+			// Temporarily: "try again later" (503). Unreachable for too long: "gone" (410).
+			return dead_end( 'gone' === unreachable( $link, time(), site_settings()['gone_days'] ) ? 410 : 503, $link, $source );
 		}
 		$result = array(
 			'status' => 302,
@@ -179,7 +184,7 @@ function handle( array $found, $source ) {
 /**
  * A link that does not lead anywhere right now: the site's default target, or 404/410.
  *
- * @param int        $status 404 or 410.
+ * @param int        $status 404, 410 or 503.
  * @param array|null $link   Link.
  * @param int        $source Source.
  * @return int Status (only when not redirected).

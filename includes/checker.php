@@ -155,7 +155,16 @@ function check_link( array $link ) {
 		$overall         = worse( $overall, $r['status'] );
 	}
 
-	// The short link itself: does the site answer the way it should right now?
+	// Since when has a target been unreachable? Kept across checks until it answers again.
+	$target_broken = 'broken' === $overall;
+	$since         = $target_broken ? ( ! empty( $link['check']['since'] ) ? (int) $link['check']['since'] : time() ) : 0;
+
+	// The short link itself: does the site answer the way it should right now? Skipped
+	// when a target is unreachable – then the link deliberately leads elsewhere.
+	if ( $target_broken ) {
+		save_check( $link['id'], $overall, $items, $since );
+		return $overall;
+	}
 	$expected = resolve( $link, new \DateTimeImmutable( 'now', wp_timezone() ), __NAMESPACE__ . '\\target_url', __NAMESPACE__ . '\\target_published' );
 	$res      = wp_safe_remote_head( // Link check: the plugin's own feature, see readme.
 		short_urls( $link )['link'],
@@ -180,7 +189,7 @@ function check_link( array $link ) {
 		);
 		$overall = worse( $overall, $ok ? 'ok' : 'warning' );
 	}
-	save_check( $link['id'], $overall, $items );
+	save_check( $link['id'], $overall, $items, 0 );
 	return $overall;
 }
 

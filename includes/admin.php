@@ -115,7 +115,9 @@ function state_label( $state ) {
 		'waiting' => __( 'Starts later', 'clean-short-links' ),
 		'expired' => __( 'Expired', 'clean-short-links' ),
 		'paused'    => __( 'Paused', 'clean-short-links' ),
-		'exhausted' => __( 'Limit reached', 'clean-short-links' ),
+		'exhausted'   => __( 'Limit reached', 'clean-short-links' ),
+		'unreachable' => __( 'Temporarily unreachable', 'clean-short-links' ),
+		'gone'        => __( 'Permanently unreachable', 'clean-short-links' ),
 	);
 	return $labels[ $state ] ?? $state;
 }
@@ -303,7 +305,7 @@ function page_list() {
 			<?php
 			foreach ( $list['items'] as $l ) :
 				$urls  = short_urls( $l );
-				$st    = link_state( $l, $now );
+				$st    = link_state( $l, $now, site_settings()['gone_days'] );
 				$edit  = admin_page_url( 'edit', array( 'id' => $l['id'] ) );
 				$del   = wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_delete&id=' . $l['id'] ), 'clean_short_links_delete_' . $l['id'] );
 				$label = '' !== $l['title'] ? $l['title'] : target_label( $l['target'] );
@@ -473,6 +475,13 @@ function check_line( array $link ) {
 		/* translators: %s: time span, e.g. "3 hours" */
 		echo ' <small>' . esc_html( sprintf( __( '%s ago', 'clean-short-links' ), human_time_diff( $c['at'] ) ) ) . '</small>';
 	}
+	if ( ! empty( $c['since'] ) ) {
+		$days = (int) site_settings()['gone_days'];
+		$gone = 'gone' === unreachable( $link, time(), $days );
+		/* translators: 1: time span, e.g. "3 days", 2: number of days */
+		$text = $gone ? sprintf( __( 'Unreachable for %1$s – that is %2$d days or more, so the link counts as permanently unreachable and answers “gone”.', 'clean-short-links' ), human_time_diff( $c['since'] ), $days ) : sprintf( __( 'Unreachable for %1$s – visitors get “temporarily unavailable” or the fallback; after %2$d days without a break it counts as permanently unreachable.', 'clean-short-links' ), human_time_diff( $c['since'] ), $days );
+		echo '<span class="csl-check-since">' . esc_html( $text ) . '</span>';
+	}
 	echo ' <a class="csl-link-ext" href="' . esc_url( $check ) . '">' . esc_html__( 'Check now', 'clean-short-links' ) . '</a>';
 	$problems = array_filter( $c['items'], fn( $i ) => 'ok' !== ( $i['status'] ?? 'ok' ) );
 	if ( $problems ) {
@@ -587,7 +596,7 @@ function page_edit() {
 	$urls          = $link['id'] ? short_urls( $link ) : null;
 	list( $p, $q ) = prefixes();
 	$home          = preg_replace( '#^https?://#', '', home_url( '/' ) );
-	$st            = $link['id'] ? link_state( $link, time() ) : '';
+	$st            = $link['id'] ? link_state( $link, time(), $s['gone_days'] ) : '';
 	$now_result    = $link['id'] ? resolve( $link, new \DateTimeImmutable( 'now', wp_timezone() ), __NAMESPACE__ . '\\target_url', __NAMESPACE__ . '\\target_published' ) : null;
 	$title         = $link['id'] ? ( '' !== $link['title'] ? $link['title'] : $link['slug'] ) : __( 'New short link', 'clean-short-links' );
 
@@ -1228,6 +1237,11 @@ function page_settings() {
 
 					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
 						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.', 'clean-short-links' ) ); ?>
+						<div class="csl-sub">
+							<label class="csl-field" for="csl-gone-days"><span><?php esc_html_e( 'Permanently unreachable after', 'clean-short-links' ); ?></span></label>
+							<div class="csl-inline"><input type="number" id="csl-gone-days" name="gone_days" min="1" max="365" class="csl-num-input" value="<?php echo esc_attr( (string) $s['gone_days'] ); ?>"> <?php esc_html_e( 'days', 'clean-short-links' ); ?></div>
+							<span class="csl-help"><?php esc_html_e( 'Until then an unreachable target counts as temporarily unreachable: “try again later” (503). Afterwards: “gone” (410). If the target answers again, the link works again.', 'clean-short-links' ); ?></span>
+						</div>
 						<div class="csl-sub"><?php toggle( 'skip_broken', ! empty( $s['skip_broken'] ), __( 'Do not send visitors to unreachable targets', 'clean-short-links' ), __( 'If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
@@ -1305,6 +1319,7 @@ add_action(
 			'default_inactive' => empty( $p['default_inactive'] ) ? 0 : 1,
 			'auto_check'    => empty( $p['auto_check'] ) ? 0 : 1,
 			'skip_broken'   => empty( $p['skip_broken'] ) ? 0 : 1,
+			'gone_days'     => min( 365, max( 1, absint( $p['gone_days'] ?? 30 ) ) ),
 		);
 		if ( 'custom' === $new['default_mode'] && '' === $new['default_url'] ) {
 			$new['default_mode'] = '';

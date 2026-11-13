@@ -307,6 +307,18 @@ test( 'Unreachable targets are recognised from the last check', function () {
 	same( false, target_broken( link(), 'post:1' ), 'not checked yet' );
 } );
 
+test( 'Unreachable targets: temporarily first, permanently after N days', function () {
+	$now = 1800000000;
+	$l   = link( array( 'check' => array( 'since' => $now - 5 * DAY_IN_SECONDS ) ) );
+	same( 'temporary', unreachable( $l, $now, 30 ) );
+	same( 'unreachable', link_state( $l, $now, 30 ) );
+	$l['check']['since'] = $now - 30 * DAY_IN_SECONDS;
+	same( 'gone', unreachable( $l, $now, 30 ) );
+	same( 'gone', link_state( $l, $now, 30 ) );
+	same( '', unreachable( link(), $now, 30 ), 'reachable or not checked' );
+	same( 'paused', link_state( array_merge( $l, array( 'status' => 'paused' ) ), $now, 30 ) );
+} );
+
 test( 'Answers are classified', function () {
 	same( 'ok', classify_response( 200 ) );
 	same( 'ok', classify_response( 301 ) );

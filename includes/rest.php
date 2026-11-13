@@ -86,7 +86,7 @@ function link_for_js( $link ) {
 		'id'     => $link['id'],
 		'slug'   => $link['slug'],
 		'urls'   => $urls,
-		'state'  => link_state( $link, time() ),
+		'state'  => link_state( $link, time(), site_settings()['gone_days'] ),
 		'rules'  => count( $link['rules'] ),
 		'visits' => totals( array( $link['id'] ), 30 )[ $link['id'] ] ?? 0,
 		'edit'   => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] ),
