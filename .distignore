@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.gitattributes
+.distignore
+.wordpress-org
+README.md
+CONTRIBUTING.md
+tests
+tools
+languages/*.json

@@ -1,0 +1,90 @@
+# Runs when a version tag is pushed, e.g. v0.5.0 (release) or v0.5.0-beta.1 (pre-release).
+#
+# 1. The tag must match the version in clean-short-links.php, the constant and readme.txt.
+# 2. Tests and translation checks run.
+# 3. The package is checked against the WordPress.org plugin guidelines and with Plugin Check.
+#    Nothing is released if one of these checks fails.
+# 4. A GitHub release with the installable ZIP is created.
+# 5. For final versions (no "-" in the tag) the plugin is deployed to WordPress.org –
+#    only once the repository secrets SVN_USERNAME and SVN_PASSWORD are set.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Tag matches the plugin version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          BASE="${TAG%%-*}"
+          HEADER=$(sed -n 's/^ \* Version:[[:space:]]*//p' clean-short-links.php)
+          STABLE=$(sed -n 's/^Stable tag:[[:space:]]*//p' readme.txt)
+          echo "Tag $TAG, header $HEADER, readme $STABLE"
+          test "$BASE" = "$HEADER" || { echo "::error::Tag $TAG does not match plugin version $HEADER"; exit 1; }
+          test "$BASE" = "$STABLE" || { echo "::error::Tag $TAG does not match readme Stable tag $STABLE"; exit 1; }
+          if [ "$BASE" = "$TAG" ]; then
+            git fetch --depth=1 origin main
+            git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::Final versions are tagged on main"; exit 1; }
+          fi
+
+      - name: Tests
+        run: php tests/run.php
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: QR encoder tests
+        run: node tests/qr.test.js
+
+      - name: Translations
+        run: node tools/i18n.js check
+
+      - name: Build the plugin as it is shipped
+        run: |
+          mkdir -p build
+          git archive --format=tar --prefix=clean-short-links/ HEAD | tar -x -C build
+
+      - name: Plugin guidelines (detailed-plugin-guidelines)
+        run: node tools/guidelines.js build/clean-short-links --online
+
+      - name: WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: build/clean-short-links
+
+      - name: Build ZIP
+        run: |
+          git archive --format=zip --prefix=clean-short-links/ -o "clean-short-links-${GITHUB_REF_NAME#v}.zip" HEAD
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          FLAGS=""
+          case "$GITHUB_REF_NAME" in *-*) FLAGS="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" "clean-short-links-${GITHUB_REF_NAME#v}.zip" \
+            --title "Clean Short Links ${GITHUB_REF_NAME#v}" --generate-notes $FLAGS
+
+      - name: Deploy to WordPress.org
+        if: ${{ !contains(github.ref_name, '-') && env.SVN_USERNAME != '' }}
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SLUG: clean-short-links
+          ASSETS_DIR: .wordpress-org

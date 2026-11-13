@@ -1,0 +1,861 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Clean Short Links\n"
+"Report-Msgid-Bugs-To: https://github.com/matthiasnattke/clean-short-links/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: clean-short-links\n"
+
+#: includes/admin.php:16 includes/admin.php:16 includes/admin.php:184 includes/admin.php:383 includes/network.php:15 includes/network.php:15 includes/network.php:83
+msgid "Short links"
+msgstr "Kurzlinks"
+
+#: includes/admin.php:17 includes/admin.php:17
+msgid "All short links"
+msgstr "Alle Kurzlinks"
+
+#: includes/admin.php:18 includes/admin.php:409
+msgid "Add short link"
+msgstr "Kurzlink hinzufügen"
+
+#: includes/admin.php:18 includes/admin.php:185
+msgid "Add new"
+msgstr "Neu hinzufügen"
+
+#: includes/admin.php:19 includes/admin.php:790
+msgid "Short link settings"
+msgstr "Kurzlink-Einstellungen"
+
+#: includes/admin.php:19
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: includes/admin.php:54 includes/rest.php:201
+msgid "Copied"
+msgstr "Kopiert"
+
+#: includes/admin.php:55
+msgid "Checking …"
+msgstr "Wird geprüft …"
+
+#: includes/admin.php:56
+msgid "Available."
+msgstr "Frei."
+
+#: includes/admin.php:57
+msgid "Available with prefix – as a reserved word it cannot be used as a short form."
+msgstr "Mit Präfix frei – als reserviertes Wort aber nicht als Kurzform nutzbar."
+
+#. translators: %s: title of the content at that address
+#: includes/admin.php:59
+#, php-format
+msgid "The short form is taken by %s – only the link with prefix works."
+msgstr "Die Kurzform ist durch %s belegt – nur der Link mit Präfix funktioniert."
+
+#. translators: %s: title of the content at that address
+#: includes/admin.php:60
+msgid "Searching …"
+msgstr "Suche …"
+
+#. translators: %s: title of the content at that address
+#: includes/admin.php:61
+msgid "Nothing found. You can also paste a URL."
+msgstr "Nichts gefunden. Du kannst auch eine URL einfügen."
+
+#. translators: %s: title of the content at that address
+#: includes/admin.php:62 includes/admin.php:329
+msgid "URL"
+msgstr "URL"
+
+#: includes/admin.php:63
+msgid "Delete this short link? Its short addresses stay blocked so they are never handed out again."
+msgstr "Diesen Kurzlink löschen? Seine Kurzadressen bleiben gesperrt und werden nie wieder vergeben."
+
+#: includes/admin.php:64
+msgid "Low contrast – scanners may fail. Use a dark colour on a light background."
+msgstr "Wenig Kontrast – Scanner könnten scheitern. Besser eine dunkle Farbe auf hellem Grund."
+
+#: includes/admin.php:65
+msgid "Light codes on a dark background are not read by every scanner."
+msgstr "Helle Codes auf dunklem Grund liest nicht jeder Scanner."
+
+#: includes/admin.php:66
+msgid "Choose logo or symbol"
+msgstr "Logo oder Symbol wählen"
+
+#: includes/admin.php:67
+msgid "Use"
+msgstr "Verwenden"
+
+#: includes/admin.php:68
+msgid "Saved to the media library."
+msgstr "In der Mediathek gespeichert."
+
+#: includes/admin.php:69
+msgid "Could not save to the media library."
+msgstr "Speichern in der Mediathek hat nicht geklappt."
+
+#. translators: 1: QR version, 2: error correction level, 3: number of modules per side
+#: includes/admin.php:71
+#, php-format
+msgid "Version %1$s · error correction %2$s · %3$s × %3$s modules"
+msgstr "Version %1$s · Fehlerkorrektur %2$s · %3$s × %3$s Module"
+
+#. translators: 1: QR version, 2: error correction level, 3: number of modules per side
+#: includes/admin.php:72
+msgid "compact mode (capitals)"
+msgstr "kompakter Modus (Großbuchstaben)"
+
+#. translators: 1: QR version, 2: error correction level, 3: number of modules per side
+#: includes/admin.php:73
+msgid "The address is too long for a QR code."
+msgstr "Die Adresse ist zu lang für einen QR-Code."
+
+#. translators: 1: QR version, 2: error correction level, 3: number of modules per side
+#: includes/admin.php:74
+msgid "Remove this rule?"
+msgstr "Diese Regel entfernen?"
+
+#: includes/admin.php:98
+msgid "Active"
+msgstr "Aktiv"
+
+#. translators: %d: number of visits
+#: includes/admin.php:99 includes/admin.php:177 includes/rest.php:207
+msgid "Starts later"
+msgstr "Startet später"
+
+#. translators: %d: number of visits
+#: includes/admin.php:100 includes/admin.php:178 includes/rest.php:208
+msgid "Expired"
+msgstr "Abgelaufen"
+
+#. translators: %d: number of visits
+#: includes/admin.php:101 includes/admin.php:179 includes/admin.php:511 includes/rest.php:209
+msgid "Paused"
+msgstr "Pausiert"
+
+#: includes/admin.php:121 includes/rest.php:200
+msgid "Copy"
+msgstr "Kopieren"
+
+#: includes/admin.php:132
+msgid "Short link saved."
+msgstr "Kurzlink gespeichert."
+
+#: includes/admin.php:133
+msgid "Short link deleted."
+msgstr "Kurzlink gelöscht."
+
+#: includes/admin.php:134 includes/network.php:74
+msgid "Settings saved."
+msgstr "Einstellungen gespeichert."
+
+#: includes/admin.php:135
+msgid "Short address removed."
+msgstr "Kurzadresse entfernt."
+
+#. translators: %d: number of short links
+#: includes/admin.php:143
+#, php-format
+msgid "%d short link created."
+msgid_plural "%d short links created."
+msgstr[0] "%d Kurzlink angelegt."
+msgstr[1] "%d Kurzlinks angelegt."
+
+#: includes/admin.php:176
+msgid "All"
+msgstr "Alle"
+
+#: includes/admin.php:180
+msgid "With rules"
+msgstr "Mit Regeln"
+
+#: includes/admin.php:191
+msgid "Visits in the last 30 days"
+msgstr "Aufrufe der letzten 30 Tage"
+
+#: includes/admin.php:196 includes/network.php:85
+msgid "Most visited"
+msgstr "Meistbesucht"
+
+#: includes/admin.php:198
+msgid "No visits yet."
+msgstr "Noch keine Aufrufe."
+
+#: includes/admin.php:229
+msgid "Search short links"
+msgstr "Kurzlinks durchsuchen"
+
+#: includes/admin.php:231
+msgid "Search"
+msgstr "Suchen"
+
+#: includes/admin.php:237
+msgid "Title and target"
+msgstr "Titel und Ziel"
+
+#: includes/admin.php:238 includes/admin.php:522 includes/admin.php:1066 includes/rest.php:193
+msgid "Short link"
+msgstr "Kurzlink"
+
+#: includes/admin.php:239
+msgid "State"
+msgstr "Status"
+
+#: includes/admin.php:240
+msgid "30 days"
+msgstr "30 Tage"
+
+#: includes/admin.php:241
+msgid "Total"
+msgstr "Gesamt"
+
+#: includes/admin.php:247
+msgid "No short links yet."
+msgstr "Noch keine Kurzlinks."
+
+#: includes/admin.php:248
+msgid "Create the first one"
+msgstr "Den ersten anlegen"
+
+#: includes/admin.php:264
+#, php-format
+msgid "+%d rule"
+msgid_plural "+%d rules"
+msgstr[0] "+%d Regel"
+msgstr[1] "+%d Regeln"
+
+#. translators: %d: number of rules
+#: includes/admin.php:268
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: includes/admin.php:269 includes/admin.php:553 includes/admin.php:603 includes/rest.php:203
+msgid "QR code"
+msgstr "QR-Code"
+
+#: includes/admin.php:270
+msgid "Delete"
+msgstr "Löschen"
+
+#: includes/admin.php:279
+#, php-format
+msgid "until %s"
+msgstr "bis %s"
+
+#: includes/admin.php:328
+msgid "Search posts and pages or paste a URL"
+msgstr "Beiträge und Seiten suchen oder URL einfügen"
+
+#: includes/admin.php:346
+msgid "Rule"
+msgstr "Regel"
+
+#: includes/admin.php:349
+msgid "Name, e.g. “Festival weekend”"
+msgstr "Name, z. B. „Festwochenende“"
+
+#: includes/admin.php:350
+msgid "Move up"
+msgstr "Nach oben"
+
+#: includes/admin.php:351
+msgid "Remove rule"
+msgstr "Regel entfernen"
+
+#: includes/admin.php:354
+msgid "From"
+msgstr "Ab"
+
+#: includes/admin.php:355
+msgid "Until"
+msgstr "Bis"
+
+#: includes/admin.php:356
+msgid "Daily from"
+msgstr "Täglich ab"
+
+#: includes/admin.php:357
+msgid "Daily until"
+msgstr "Täglich bis"
+
+#: includes/admin.php:359
+msgid "Weekdays"
+msgstr "Wochentage"
+
+#: includes/admin.php:366
+msgid "None ticked = every day"
+msgstr "Keiner angehakt = jeden Tag"
+
+#: includes/admin.php:369 includes/admin.php:427
+msgid "Leads to"
+msgstr "Führt zu"
+
+#: includes/admin.php:383 includes/store.php:347
+msgid "This short link no longer exists."
+msgstr "Diesen Kurzlink gibt es nicht mehr."
+
+#: includes/admin.php:409
+msgid "Edit short link"
+msgstr "Kurzlink bearbeiten"
+
+#: includes/admin.php:422
+msgid "Target"
+msgstr "Ziel"
+
+#: includes/admin.php:424
+msgid "Title"
+msgstr "Titel"
+
+#: includes/admin.php:425
+msgid "Only for you, e.g. “Poster 725 years”"
+msgstr "Nur für dich, z. B. „Plakat 725 Jahre“"
+
+#: includes/admin.php:429
+msgid "Posts and pages are followed by ID – the short link keeps working when their address changes."
+msgstr "Beiträge und Seiten werden über ihre ID verfolgt – der Kurzlink funktioniert weiter, auch wenn sich ihre Adresse ändert."
+
+#: includes/admin.php:433 includes/admin.php:449
+msgid "Short address"
+msgstr "Kurzadresse"
+
+#: includes/admin.php:434 includes/admin.php:817
+msgid "Kind of short address"
+msgstr "Art der Kurzadresse"
+
+#: includes/admin.php:437 includes/admin.php:819 includes/rest.php:196
+msgid "Random"
+msgstr "Zufällig"
+
+#: includes/admin.php:438 includes/admin.php:820 includes/rest.php:197
+msgid "Memorable"
+msgstr "Gut merkbar"
+
+#: includes/admin.php:439 includes/admin.php:821 includes/rest.php:198
+msgid "From the title"
+msgstr "Aus dem Titel"
+
+#: includes/admin.php:440
+msgid "My own"
+msgstr "Selbst vergeben"
+
+#: includes/admin.php:446
+msgid "New suggestion"
+msgstr "Neuer Vorschlag"
+
+#: includes/admin.php:455
+#, php-format
+msgid "What happens to the old short address “%s”?"
+msgstr "Was passiert mit der alten Kurzadresse „%s“?"
+
+#. translators: %s: old short address
+#: includes/admin.php:456
+msgid "Keep it working as an additional address"
+msgstr "Weiter als zusätzliche Adresse nutzen"
+
+#. translators: %s: old short address
+#: includes/admin.php:457
+msgid "Retire it – it then answers “gone” (410) and is never handed out again"
+msgstr "Stilllegen – sie meldet dann „nicht mehr vorhanden“ (410) und wird nie wieder vergeben"
+
+#: includes/admin.php:463
+#, php-format
+msgid "Also as short form %s"
+msgstr "Auch als Kurzform %s"
+
+#. translators: %s: example of the short form
+#: includes/admin.php:464
+msgid "Only works as long as the site has no content at that address – existing pages always win, the link with prefix keeps working."
+msgstr "Funktioniert nur, solange die Website unter dieser Adresse keinen Inhalt hat – bestehende Seiten haben immer Vorrang, der Link mit Präfix funktioniert weiter."
+
+#: includes/admin.php:470
+#, php-format
+msgid "QR code uses the same short address (/%s/…)"
+msgstr "QR-Code nutzt dieselbe Kurzadresse (/%s/…)"
+
+#: includes/admin.php:478
+msgid "Time window"
+msgstr "Zeitfenster"
+
+#: includes/admin.php:480
+msgid "Start"
+msgstr "Start"
+
+#: includes/admin.php:481
+msgid "Right away"
+msgstr "Sofort"
+
+#: includes/admin.php:482
+msgid "At"
+msgstr "Am"
+
+#: includes/admin.php:484
+msgid "When the content is published"
+msgstr "Mit der Veröffentlichung des Inhalts"
+
+#: includes/admin.php:487
+msgid "Expires"
+msgstr "Läuft ab"
+
+#: includes/admin.php:489
+msgid "Empty = never"
+msgstr "Leer = nie"
+
+#: includes/admin.php:491
+msgid "Before the start and after expiry lead to"
+msgstr "Vor dem Start und nach dem Ablauf führen zu"
+
+#: includes/admin.php:493
+#, php-format
+msgid "Empty = “not found” before the start and “gone” after expiry. Times in the site’s time zone (%s)."
+msgstr "Leer = „nicht gefunden“ vor dem Start und „nicht mehr vorhanden“ nach dem Ablauf. Zeiten in der Zeitzone der Website (%s)."
+
+#. translators: %s: time zone
+#: includes/admin.php:497
+msgid "Different targets by date and time"
+msgstr "Unterschiedliche Ziele nach Datum und Uhrzeit"
+
+#: includes/admin.php:498
+msgid "The first rule that fits right now decides where the link leads. If none fits, the target above applies. Example: during the festival to the programme, in the evening to the stage plan."
+msgstr "Die erste Regel, die gerade passt, bestimmt das Ziel. Passt keine, gilt das Ziel oben. Beispiel: während des Festes zum Programm, abends zum Bühnenplan."
+
+#: includes/admin.php:507
+msgid "Add rule"
+msgstr "Regel hinzufügen"
+
+#: includes/admin.php:512
+msgid "Save short link"
+msgstr "Kurzlink speichern"
+
+#: includes/admin.php:512 includes/admin.php:1068 includes/rest.php:199
+msgid "Create short link"
+msgstr "Kurzlink anlegen"
+
+#: includes/admin.php:525 includes/admin.php:603 includes/admin.php:828 includes/admin.php:834 includes/rest.php:202
+msgid "Short form"
+msgstr "Kurzform"
+
+#: includes/admin.php:529
+msgid "Right now it leads to"
+msgstr "Gerade führt er zu"
+
+#: includes/admin.php:532
+#, php-format
+msgid "rule %s"
+msgstr "Regel %s"
+
+#. translators: %s: number of the rule
+#: includes/admin.php:535
+#, php-format
+msgid "Right now it answers with status %d."
+msgstr "Gerade antwortet er mit Status %d."
+
+#: includes/admin.php:542
+msgid "Earlier short addresses"
+msgstr "Frühere Kurzadressen"
+
+#: includes/admin.php:545
+msgid "still works"
+msgstr "funktioniert weiter"
+
+#: includes/admin.php:545
+msgid "retired"
+msgstr "stillgelegt"
+
+#: includes/admin.php:546
+msgid "Release"
+msgstr "Freigeben"
+
+#: includes/admin.php:555
+msgid "The QR code contains the short link – time window and rules also apply to printed codes."
+msgstr "Der QR-Code enthält den Kurzlink – Zeitfenster und Regeln gelten auch für gedruckte Codes."
+
+#: includes/admin.php:556
+msgid "Create QR code"
+msgstr "QR-Code erstellen"
+
+#: includes/admin.php:561
+msgid "Colour"
+msgstr "Farbe"
+
+#: includes/admin.php:562
+msgid "Background"
+msgstr "Hintergrund"
+
+#: includes/admin.php:563 includes/admin.php:567
+msgid "Dots"
+msgstr "Punkte"
+
+#: includes/admin.php:565
+msgid "Squares"
+msgstr "Quadrate"
+
+#: includes/admin.php:566 includes/admin.php:573
+msgid "Rounded"
+msgstr "Abgerundet"
+
+#: includes/admin.php:570
+msgid "Corners"
+msgstr "Ecken"
+
+#: includes/admin.php:572
+msgid "Square"
+msgstr "Eckig"
+
+#: includes/admin.php:577
+msgid "Logo or symbol …"
+msgstr "Logo oder Symbol …"
+
+#: includes/admin.php:578
+msgid "Remove logo"
+msgstr "Logo entfernen"
+
+#: includes/admin.php:579
+msgid "Size"
+msgstr "Größe"
+
+#: includes/admin.php:581
+msgid "Compact code (address in capitals)"
+msgstr "Kompakter Code (Adresse in Großbuchstaben)"
+
+#: includes/admin.php:585
+msgid "Download SVG"
+msgstr "SVG herunterladen"
+
+#: includes/admin.php:586
+msgid "PNG size"
+msgstr "PNG-Größe"
+
+#: includes/admin.php:588
+msgid "Download PNG"
+msgstr "PNG herunterladen"
+
+#: includes/admin.php:589
+msgid "Save to media library"
+msgstr "In Mediathek speichern"
+
+#: includes/admin.php:590
+msgid "The design is stored with the short link when you save it."
+msgstr "Die Gestaltung wird beim Speichern mit dem Kurzlink gesichert."
+
+#: includes/admin.php:603
+msgid "Link"
+msgstr "Link"
+
+#: includes/admin.php:604
+msgid "Desktop"
+msgstr "Desktop"
+
+#: includes/admin.php:604
+msgid "Mobile"
+msgstr "Handy"
+
+#: includes/admin.php:604
+msgid "Tablet"
+msgstr "Tablet"
+
+#: includes/admin.php:607
+msgid "Visits"
+msgstr "Aufrufe"
+
+#: includes/admin.php:610
+#, php-format
+msgid "%d days"
+msgstr "%d Tage"
+
+#: includes/admin.php:619
+msgid "Source"
+msgstr "Quelle"
+
+#: includes/admin.php:620
+msgid "Device"
+msgstr "Gerät"
+
+#: includes/admin.php:621
+msgid "Referring sites"
+msgstr "Verweisende Seiten"
+
+#: includes/admin.php:632
+msgid "direct or app"
+msgstr "direkt oder App"
+
+#: includes/admin.php:639
+msgid "Export as CSV"
+msgstr "Als CSV exportieren"
+
+#: includes/admin.php:640
+msgid "Counted without IP addresses or cookies. Bots and link previews are left out."
+msgstr "Gezählt ohne IP-Adressen und Cookies. Bots und Link-Vorschauen bleiben außen vor."
+
+#: includes/admin.php:644
+msgid "QR code and statistics"
+msgstr "QR-Code und Statistik"
+
+#: includes/admin.php:645
+msgid "Available once the short link is created."
+msgstr "Verfügbar, sobald der Kurzlink angelegt ist."
+
+#: includes/admin.php:652
+msgid "Delete short link"
+msgstr "Kurzlink löschen"
+
+#: includes/admin.php:684 includes/admin.php:735 includes/admin.php:749 includes/admin.php:763 includes/admin.php:900 includes/admin.php:938 includes/admin.php:998 includes/network.php:163
+msgid "You are not allowed to do this."
+msgstr "Dazu fehlt dir die Berechtigung."
+
+#: includes/admin.php:797
+msgid "Addresses"
+msgstr "Adressen"
+
+#: includes/admin.php:800
+msgid "Links"
+msgstr "Links"
+
+#: includes/admin.php:801
+msgid "QR codes"
+msgstr "QR-Codes"
+
+#: includes/admin.php:802
+msgid "Changing a prefix changes all short links – printed QR codes then stop working. Best decide once."
+msgstr "Ein neues Präfix ändert alle Kurzlinks – gedruckte QR-Codes funktionieren dann nicht mehr. Am besten einmal festlegen."
+
+#: includes/admin.php:805
+msgid "Set for the whole network."
+msgstr "Für das ganze Netzwerk festgelegt."
+
+#: includes/admin.php:810
+msgid "Create automatically"
+msgstr "Automatisch anlegen"
+
+#: includes/admin.php:815
+msgid "When something of these types is published for the first time it gets a short link that starts with the publication."
+msgstr "Wird etwas dieser Art zum ersten Mal veröffentlicht, bekommt es einen Kurzlink, der mit der Veröffentlichung startet."
+
+#: includes/admin.php:829
+msgid "New memorable and own short addresses also get the short form without prefix"
+msgstr "Neue merkbare und selbst vergebene Kurzadressen bekommen auch die Kurzform ohne Präfix"
+
+#: includes/admin.php:835 includes/network.php:126
+msgid "Allow the short form without prefix (example.com/slug) – only used where the site has no content"
+msgstr "Kurzform ohne Präfix erlauben (example.com/kurz) – greift nur, wo die Website keinen Inhalt hat"
+
+#: includes/admin.php:839
+msgid "Statistics"
+msgstr "Statistik"
+
+#: includes/admin.php:840
+msgid "Also count visits of logged-in authors and editors"
+msgstr "Auch Aufrufe angemeldeter Autoren und Redakteure zählen"
+
+#: includes/admin.php:842 includes/network.php:130
+msgid "Keep statistics"
+msgstr "Statistik aufbewahren"
+
+#: includes/admin.php:846 includes/network.php:135
+msgid "3 months"
+msgstr "3 Monate"
+
+#: includes/admin.php:847 includes/network.php:136
+msgid "1 year"
+msgstr "1 Jahr"
+
+#: includes/admin.php:848 includes/network.php:137
+msgid "2 years"
+msgstr "2 Jahre"
+
+#: includes/admin.php:849 includes/network.php:138
+msgid "Forever"
+msgstr "Für immer"
+
+#: includes/admin.php:859
+msgid "Parameters"
+msgstr "Parameter"
+
+#: includes/admin.php:860
+msgid "Pass parameters such as ?utm_source=… on to the target"
+msgstr "Parameter wie ?utm_source=… an das Ziel weitergeben"
+
+#: includes/admin.php:867
+msgid "Short links for existing content"
+msgstr "Kurzlinks für vorhandene Inhalte"
+
+#: includes/admin.php:872
+msgid "Create a short link for every published"
+msgstr "Einen Kurzlink anlegen für jede(n) veröffentlichte(n)"
+
+#: includes/admin.php:878
+msgid "that has none yet."
+msgstr "ohne Kurzlink."
+
+#: includes/admin.php:879
+msgid "Create"
+msgstr "Anlegen"
+
+#: includes/admin.php:884 includes/admin.php:890
+msgid "Import"
+msgstr "Importieren"
+
+#: includes/admin.php:888
+msgid "One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working."
+msgstr "Ein Kurzlink pro Zeile: Kurzadresse ; Ziel ; Titel – getrennt durch Semikolon oder Tabulator. Ziele auf dieser Website werden als Beiträge und Seiten erkannt. Importierte Links bekommen auch die Kurzform ohne Präfix, damit bestehende Kurzlinks wie example.com/abc weiter funktionieren."
+
+#: includes/network.php:72
+msgid "Short links in the network"
+msgstr "Kurzlinks im Netzwerk"
+
+#: includes/network.php:76
+msgid "Every site has its own short links and statistics. Here you see them all and set what applies everywhere."
+msgstr "Jede Website hat ihre eigenen Kurzlinks und Statistiken. Hier siehst du alle auf einen Blick und legst fest, was überall gilt."
+
+#: includes/network.php:81
+msgid "Site"
+msgstr "Website"
+
+#: includes/network.php:82
+msgid "Prefixes"
+msgstr "Präfixe"
+
+#: includes/network.php:84
+msgid "Visits (30 days)"
+msgstr "Aufrufe (30 Tage)"
+
+#: includes/network.php:101
+msgid "All sites"
+msgstr "Alle Websites"
+
+#: includes/network.php:109
+msgid "Settings for the whole network"
+msgstr "Einstellungen für das ganze Netzwerk"
+
+#: includes/network.php:114
+msgid "Prefix for links"
+msgstr "Präfix für Links"
+
+#: includes/network.php:118
+msgid "Prefix for QR codes"
+msgstr "Präfix für QR-Codes"
+
+#: includes/network.php:120
+msgid "QR codes lead through their own prefix, so the statistics can tell scans from clicks. Letters and digits only keep the compact QR mode."
+msgstr "QR-Codes laufen über ein eigenes Präfix, damit die Statistik Scans von Klicks unterscheiden kann. Nur Buchstaben und Ziffern erhalten den kompakten QR-Modus."
+
+#: includes/network.php:123
+msgid "Sites"
+msgstr "Websites"
+
+#: includes/network.php:125
+msgid "Sites may choose their own prefixes"
+msgstr "Websites dürfen eigene Präfixe wählen"
+
+#: includes/network.php:144
+msgid "Only daily totals are stored – no IP addresses, no cookies."
+msgstr "Gespeichert werden nur Tagessummen – keine IP-Adressen, keine Cookies."
+
+#: includes/network.php:148
+msgid "Reserved words"
+msgstr "Reservierte Wörter"
+
+#: includes/network.php:150
+msgid "Never used as a short form on any site, separated by spaces or commas. WordPress’ own paths like wp-admin, login and feed are always reserved."
+msgstr "Werden auf keiner Website als Kurzform vergeben, getrennt durch Leerzeichen oder Kommas. WordPress-eigene Pfade wie wp-admin, login und feed sind immer reserviert."
+
+#: includes/rest.php:23
+msgid "This content does not exist."
+msgstr "Diesen Inhalt gibt es nicht."
+
+#: includes/rest.php:194
+msgid "This content has no short link yet."
+msgstr "Dieser Inhalt hat noch keinen Kurzlink."
+
+#: includes/rest.php:195
+msgid "Ask an editor to create a short link."
+msgstr "Bitte eine Redakteurin oder einen Redakteur, einen Kurzlink anzulegen."
+
+#: includes/rest.php:204
+msgid "Edit, schedule, statistics"
+msgstr "Bearbeiten, Zeitplan, Statistik"
+
+#. translators: %d: number of visits
+#: includes/rest.php:206
+#, php-format
+msgid "%d visits in the last 30 days"
+msgstr "%d Aufrufe in den letzten 30 Tagen"
+
+#: includes/rest.php:210
+msgid "Changes its target by date and time"
+msgstr "Wechselt das Ziel nach Datum und Uhrzeit"
+
+#: includes/rest.php:211
+msgid "Save the content once to create a short link."
+msgstr "Inhalt einmal speichern, um einen Kurzlink anzulegen."
+
+#: includes/rest.php:212
+msgid "The short form is covered by this content’s own address and does not work – the link with prefix always does."
+msgstr "Die Kurzform wird von der Adresse eines Inhalts verdeckt und funktioniert nicht – der Link mit Präfix funktioniert immer."
+
+#: includes/rest.php:213
+msgid "The short link could not be created."
+msgstr "Der Kurzlink konnte nicht angelegt werden."
+
+#. translators: 1: date, 2: number of visits
+#: includes/stats.php:192
+#, php-format
+msgid "%1$s: %2$d visit"
+msgid_plural "%1$s: %2$d visits"
+msgstr[0] "%1$s: %2$d Aufruf"
+msgstr[1] "%1$s: %2$d Aufrufe"
+
+#: includes/stats.php:207
+msgid "Visits per day"
+msgstr "Aufrufe pro Tag"
+
+#: includes/store.php:292
+msgid "Use letters, digits and dashes only."
+msgstr "Bitte nur Buchstaben, Ziffern und Bindestriche."
+
+#: includes/store.php:301
+msgid "This short address was used before and is retired."
+msgstr "Diese Kurzadresse war schon vergeben und ist stillgelegt."
+
+#: includes/store.php:301 includes/store.php:355
+msgid "This short address is already taken."
+msgstr "Diese Kurzadresse ist schon vergeben."
+
+#: includes/store.php:320
+msgid "a reserved word"
+msgstr "ein reserviertes Wort"
+
+#. translators: %s: title of the page or post
+#: includes/store.php:325 includes/store.php:330
+#, php-format
+msgid "“%s”"
+msgstr "„%s“"
+
+#: includes/store.php:352
+msgid "The short address is not valid."
+msgstr "Die Kurzadresse ist ungültig."
+
+#: includes/store.php:361
+msgid "The QR short address is already taken."
+msgstr "Die QR-Kurzadresse ist schon vergeben."
+
+#: includes/store.php:365
+msgid "Please choose a target – a post, a page or a URL."
+msgstr "Bitte ein Ziel wählen – einen Beitrag, eine Seite oder eine URL."
+
+#: includes/store.php:398
+msgid "The short link could not be saved."
+msgstr "Der Kurzlink konnte nicht gespeichert werden."
+
+#: includes/store.php:596
+msgid "(deleted content)"
+msgstr "(gelöschter Inhalt)"
+
+#: includes/store.php:599
+msgid "(no title)"
+msgstr "(ohne Titel)"
+
