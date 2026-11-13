@@ -130,7 +130,7 @@ add_action(
 						'type'    => 'string',
 						'default' => '',
 					),
-					'exclude' => array(
+					'skip'    => array(
 						'type'    => 'integer',
 						'default' => 0,
 					),
@@ -143,7 +143,7 @@ add_action(
 							'per_page' => 8,
 						)
 					)['items'] as $l ) {
-						if ( (int) $l['id'] === (int) $r['exclude'] ) {
+						if ( (int) $l['id'] === (int) $r['skip'] ) {
 							continue;
 						}
 						$out[] = array(

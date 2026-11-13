@@ -168,12 +168,12 @@ function check_link( array $link ) {
 	if ( ! is_wp_error( $res ) ) {
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$ok   = $code === (int) $expected['status'] || ( 302 === (int) $expected['status'] && in_array( $code, array( 301, 302, 303, 307 ), true ) );
-		/* translators: 1: HTTP status received, 2: HTTP status expected */
 		$items[] = array(
 			'role'    => 'self',
 			'target'  => short_urls( $link )['link'],
 			'status'  => $ok ? 'ok' : 'warning',
 			'code'    => $code,
+			/* translators: 1: HTTP status received, 2: HTTP status expected */
 			'message' => $ok ? '' : sprintf( __( 'Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way.', 'clean-short-links' ), $code, $expected['status'] ),
 		);
 		$overall = worse( $overall, $ok ? 'ok' : 'warning' );

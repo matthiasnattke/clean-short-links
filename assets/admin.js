@@ -88,7 +88,7 @@
 				api( { path: '/wp/v2/search?type=post&per_page=8&search=' + encodeURIComponent( q ) } ).catch( function () {
 					return [];
 				} ),
-				api( { path: '/clean-short-links/v1/links?exclude=' + self + '&search=' + encodeURIComponent( q ) } ).catch( function () {
+				api( { path: '/clean-short-links/v1/links?skip=' + self + '&search=' + encodeURIComponent( q ) } ).catch( function () {
 					return [];
 				} ),
 			] ).then( function ( res ) {

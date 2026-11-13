@@ -1036,6 +1036,7 @@ msgstr ""
 msgid "Rule %d"
 msgstr ""
 
+#. translators: 1: HTTP status received, 2: HTTP status expected
 #: includes/checker.php:177
 #, php-format
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
