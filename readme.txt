@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.3.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,7 +111,7 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 
 == Changelog ==
 
-= 0.3.0 =
+= 0.2.1 =
 * Link check: once a day, when saving and at the push of a button – does each short link answer, and can its targets still be reached? Problems show on the card, as a key figure and in a filter.
 * Unreachable targets are skipped: fallback, default target, otherwise “temporarily unavailable” (503) and after 30 days without a break “gone” (410). Once the target is back, the link works again.
 * Click limit: a link ends after a number of real visits.
