@@ -25,6 +25,9 @@ const DEVICE_DESKTOP = 0;
 const DEVICE_MOBILE  = 1;
 const DEVICE_TABLET  = 2;
 
+// Operating systems a variant can ask for.
+const OS_KEYS = array( 'ios', 'android', 'windows', 'macos', 'linux' );
+
 add_action(
 	'init',
 	function () {
@@ -49,6 +52,8 @@ function network_defaults() {
 		'allow_root'     => 1,
 		'retention_days' => 730,
 		'reserved'       => '',
+		'short_sites'    => array(),
+		'referrers'      => 1,
 	);
 }
 
@@ -457,6 +462,9 @@ function clean_meta( $meta ) {
 		'ical_at'      => (int) ( $meta['ical_at'] ?? 0 ),
 		'ical_error'   => substr( sanitize_text_field( $meta['ical_error'] ?? '' ), 0, 200 ),
 		'ical_count'   => (int) ( $meta['ical_count'] ?? 0 ),
+		// Other targets by device, operating system or screen width, and further domains.
+		'variants'     => clean_variants( $meta['variants'] ?? array() ),
+		'hosts'        => clean_hosts( $meta['hosts'] ?? array() ),
 	);
 }
 
@@ -563,7 +571,8 @@ function permanent_allowed( array $link ) {
 		// Starting with the publication is fine: once published, the target stays the same.
 		&& empty( $link['starts_at'] ) && in_array( $link['start_mode'] ?? '', array( '', 'publish' ), true )
 		&& empty( $link['ends_at'] )
-		&& empty( $link['max_clicks'] );
+		&& empty( $link['max_clicks'] )
+		&& empty( $link['meta']['variants'] );
 }
 
 /**
@@ -919,4 +928,159 @@ function asset_ver( $file ) {
  */
 function capability() {
 	return apply_filters( 'clean_short_links_capability', 'edit_others_posts' );
+}
+
+/* ---------------------------------------------------------------------------
+ * Variants by device, operating system and screen width
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Device class as a word.
+ *
+ * @param int $device DEVICE_* constant.
+ * @return string desktop, mobile or tablet.
+ */
+function device_key( $device ) {
+	return DEVICE_MOBILE === (int) $device ? 'mobile' : ( DEVICE_TABLET === (int) $device ? 'tablet' : 'desktop' );
+}
+
+/**
+ * Operating system of the visitor – from the client hint browsers send anyway
+ * (Sec-CH-UA-Platform), otherwise from the user agent. Nothing of it is stored.
+ *
+ * @param string $ua       User agent.
+ * @param string $platform Value of Sec-CH-UA-Platform, e.g. "Android" with quotes.
+ * @return string One of OS_KEYS or "other".
+ */
+function os_class( $ua, $platform = '' ) {
+	$platform = strtolower( trim( (string) $platform, " \t\"" ) );
+	$map      = array(
+		'android'  => 'android',
+		'ios'      => 'ios',
+		'windows'  => 'windows',
+		'macos'    => 'macos',
+		'linux'    => 'linux',
+		'chrome os' => 'linux',
+		'chromeos' => 'linux',
+	);
+	if ( isset( $map[ $platform ] ) ) {
+		return $map[ $platform ];
+	}
+	$ua = (string) $ua;
+	if ( preg_match( '/iphone|ipad|ipod/i', $ua ) ) {
+		return 'ios';
+	}
+	if ( preg_match( '/android/i', $ua ) ) {
+		return 'android';
+	}
+	if ( preg_match( '/windows/i', $ua ) ) {
+		return 'windows';
+	}
+	if ( preg_match( '/mac os x|macintosh/i', $ua ) ) {
+		return 'macos';
+	}
+	if ( preg_match( '/linux|cros|x11/i', $ua ) ) {
+		return 'linux';
+	}
+	return 'other';
+}
+
+/**
+ * Cleans the variants of a link: each with an optional device, operating system and
+ * screen width range, and a target. At most 20.
+ *
+ * @param mixed $in Raw value.
+ * @return array[] Each {device, os, min_w, max_w, target}.
+ */
+function clean_variants( $in ) {
+	$out = array();
+	foreach ( is_array( $in ) ? $in : array() as $v ) {
+		if ( ! is_array( $v ) ) {
+			continue;
+		}
+		$target = clean_target( $v['target'] ?? '' );
+		if ( '' === $target ) {
+			continue;
+		}
+		$device = in_array( $v['device'] ?? '', array( 'mobile', 'tablet', 'desktop' ), true ) ? $v['device'] : '';
+		$os     = in_array( $v['os'] ?? '', OS_KEYS, true ) ? $v['os'] : '';
+		$min    = min( 10000, absint( $v['min_w'] ?? 0 ) );
+		$max    = min( 10000, absint( $v['max_w'] ?? 0 ) );
+		if ( $max && $min > $max ) {
+			list( $min, $max ) = array( $max, $min );
+		}
+		if ( '' === $device && '' === $os && ! $min && ! $max ) {
+			continue; // A variant without a condition would hide the main target.
+		}
+		$out[] = array(
+			'device' => $device,
+			'os'     => $os,
+			'min_w'  => $min,
+			'max_w'  => $max,
+			'target' => $target,
+		);
+		if ( count( $out ) >= 20 ) {
+			break;
+		}
+	}
+	return $out;
+}
+
+/**
+ * Which variant applies? Device and operating system are known on the server; screen
+ * widths only in the browser.
+ *
+ * @param array[] $variants Clean variants.
+ * @param string  $device   desktop, mobile or tablet.
+ * @param string  $os       One of OS_KEYS or "other".
+ * @return array|null Null: the normal target. {target}: this variant. {screen: [[min, max,
+ *                    target], …], fallback: target|null}: the browser decides by its width,
+ *                    in this order; fallback when none fits (null = the normal target).
+ */
+function variant_plan( array $variants, $device, $os ) {
+	$screen = array();
+	foreach ( $variants as $v ) {
+		if ( ( '' !== $v['device'] && $v['device'] !== $device ) || ( '' !== $v['os'] && $v['os'] !== $os ) ) {
+			continue;
+		}
+		if ( ! $v['min_w'] && ! $v['max_w'] ) {
+			if ( ! $screen ) {
+				return array( 'target' => $v['target'] );
+			}
+			return array(
+				'screen'   => $screen,
+				'fallback' => $v['target'],
+			);
+		}
+		$screen[] = array( $v['min_w'], $v['max_w'], $v['target'] );
+	}
+	return $screen ? array(
+		'screen'   => $screen,
+		'fallback' => null,
+	) : null;
+}
+
+/* ---------------------------------------------------------------------------
+ * Further domains
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Cleans a list of host names (domains and subdomains, lower case, without scheme or path).
+ *
+ * @param mixed $in List or text.
+ * @return string[]
+ */
+function clean_hosts( $in ) {
+	$list = is_array( $in ) ? $in : preg_split( '/[\s,]+/', (string) $in );
+	$out  = array();
+	foreach ( $list as $h ) {
+		$h = strtolower( trim( (string) $h ) );
+		$h = preg_replace( '#^[a-z][a-z0-9+.-]*://#', '', $h );
+		$h = preg_replace( '#[/?\#:].*$#', '', $h );
+		$h = rtrim( $h, '.' );
+		if ( '' !== $h && strlen( $h ) <= 190 && preg_match( '/^(?=.{1,190}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}$/', $h ) ) {
+			$out[ $h ] = $h;
+		}
+	}
+	return array_values( $out );
 }

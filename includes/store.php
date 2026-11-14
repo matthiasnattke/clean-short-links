@@ -18,6 +18,9 @@ defined( 'ABSPATH' ) || exit;
 
 const DB_VERSION = 4;
 
+// Version of the network-wide routes table (further domains).
+const ROUTES_VERSION = 1;
+
 /**
  * Table names of the current site.
  *
@@ -111,8 +114,241 @@ add_action(
 		if ( (int) get_option( 'clean_short_links_db' ) !== DB_VERSION ) {
 			install();
 		}
-	}
+		if ( (int) ( is_multisite() ? get_site_option( 'clean_short_links_routes_db' ) : get_option( 'clean_short_links_routes_db' ) ) !== ROUTES_VERSION ) {
+			install_routes();
+		}
+	},
+	5
 );
+
+/**
+ * The network-wide table of further domains: which link of which site answers on which
+ * host under which short address.
+ *
+ * @return string
+ */
+function routes_table() {
+	global $wpdb;
+	return $wpdb->base_prefix . 'cleansl_routes';
+}
+
+/**
+ * Creates or updates the routes table.
+ */
+function install_routes() {
+	global $wpdb;
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	$t       = routes_table();
+	$charset = $wpdb->get_charset_collate();
+	dbDelta(
+		"CREATE TABLE {$t} (
+  host varchar(190) NOT NULL,
+  slug varchar(64) NOT NULL,
+  blog_id bigint(20) unsigned NOT NULL DEFAULT 0,
+  link_id bigint(20) unsigned NOT NULL DEFAULT 0,
+  kind varchar(10) NOT NULL DEFAULT 'main',
+  PRIMARY KEY  (host,slug),
+  KEY link (blog_id,link_id)
+) $charset;"
+	);
+	if ( is_multisite() ) {
+		update_site_option( 'clean_short_links_routes_db', ROUTES_VERSION );
+	} else {
+		update_option( 'clean_short_links_routes_db', ROUTES_VERSION );
+	}
+}
+
+/**
+ * Host of a URL, lower case.
+ *
+ * @param string $url URL.
+ * @return string
+ */
+function url_host( $url ) {
+	return strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) );
+}
+
+/**
+ * Hosts a link may additionally be offered on: the other sites of the network.
+ *
+ * @return array<string,array{name:string,blog_id:int,short:bool}> Host => site.
+ */
+function offer_hosts() {
+	$out = array();
+	if ( ! is_multisite() ) {
+		return $out;
+	}
+	$own   = url_host( home_url( '/' ) );
+	$short = array_map( 'intval', (array) network_settings()['short_sites'] );
+	foreach ( get_sites(
+		array(
+			'number'   => 200,
+			'deleted'  => 0,
+			'archived' => 0,
+			'spam'     => 0,
+		)
+	) as $site ) {
+		$host = strtolower( $site->domain );
+		if ( $host === $own || '/' !== $site->path ) {
+			continue; // Sites in a subdirectory share the host of the main site.
+		}
+		$details      = get_blog_details( (int) $site->blog_id );
+		$out[ $host ] = array(
+			'name'    => $details && '' !== $details->blogname ? $details->blogname : $host,
+			'blog_id' => (int) $site->blog_id,
+			'short'   => in_array( (int) $site->blog_id, $short, true ),
+		);
+	}
+	uasort(
+		$out,
+		function ( $a, $b ) {
+			return (int) $b['short'] <=> (int) $a['short'];
+		}
+	);
+	return $out;
+}
+
+/**
+ * Is a short address free on another host – on that site and among the routes?
+ *
+ * @param string $host    Host.
+ * @param string $slug    Short address.
+ * @param int    $link_id Link that wants it.
+ * @return bool
+ */
+function route_free( $host, $slug, $link_id ) {
+	global $wpdb;
+	$blog = get_current_blog_id();
+	$row  = $wpdb->get_row( $wpdb->prepare( 'SELECT blog_id, link_id FROM %i WHERE host = %s AND slug = %s', routes_table(), $host, $slug ) );
+	if ( $row && ( (int) $row->blog_id !== $blog || (int) $row->link_id !== (int) $link_id ) ) {
+		return false;
+	}
+	$hosts = offer_hosts();
+	if ( isset( $hosts[ $host ] ) && is_multisite() ) {
+		switch_to_blog( $hosts[ $host ]['blog_id'] );
+		$taken = (int) get_option( 'clean_short_links_db' ) === DB_VERSION && null !== slug_owner( $slug );
+		restore_current_blog();
+		if ( $taken ) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * Writes the routes of a link for its further domains.
+ *
+ * @param array $link Link.
+ */
+function sync_routes( array $link ) {
+	global $wpdb;
+	$blog = get_current_blog_id();
+	$wpdb->delete(
+		routes_table(),
+		array(
+			'blog_id' => $blog,
+			'link_id' => (int) $link['id'],
+		)
+	);
+	foreach ( $link['meta']['hosts'] as $host ) {
+		$slugs = array( $link['slug'] => 'main' );
+		if ( '' !== $link['qr_slug'] ) {
+			$slugs[ $link['qr_slug'] ] = 'qr';
+		}
+		foreach ( $slugs as $slug => $kind ) {
+			if ( route_free( $host, $slug, $link['id'] ) ) {
+				$wpdb->replace(
+					routes_table(),
+					array(
+						'host'    => $host,
+						'slug'    => $slug,
+						'blog_id' => $blog,
+						'link_id' => (int) $link['id'],
+						'kind'    => $kind,
+					)
+				);
+			}
+		}
+	}
+	forget_links();
+}
+
+/**
+ * Removes all routes of a link.
+ *
+ * @param int $id Link ID.
+ */
+function drop_routes( $id ) {
+	global $wpdb;
+	$wpdb->delete(
+		routes_table(),
+		array(
+			'blog_id' => get_current_blog_id(),
+			'link_id' => (int) $id,
+		)
+	);
+}
+
+/**
+ * A short address on this host that belongs to another site.
+ *
+ * @param string $host Host.
+ * @param string $slug Short address.
+ * @return array{blog_id:int,link_id:int,kind:string}|null
+ */
+function find_route( $host, $slug ) {
+	global $wpdb;
+	$key = 'route:' . routes_gen() . ':' . $host . '/' . $slug;
+	$hit = wp_cache_get( $key, 'clean_short_links_routes' );
+	if ( false !== $hit ) {
+		return $hit ? $hit : null;
+	}
+	$row = $wpdb->get_row( $wpdb->prepare( 'SELECT blog_id, link_id, kind FROM %i WHERE host = %s AND slug = %s', routes_table(), $host, $slug ) );
+	$out = $row ? array(
+		'blog_id' => (int) $row->blog_id,
+		'link_id' => (int) $row->link_id,
+		'kind'    => (string) $row->kind,
+	) : null;
+	wp_cache_set( $key, $out ? $out : 0, 'clean_short_links_routes', 300 );
+	return $out;
+}
+
+/**
+ * Cache generation of the routes, raised on every change.
+ *
+ * @return int
+ */
+function routes_gen() {
+	$gen = wp_cache_get( 'gen', 'clean_short_links_routes' );
+	if ( false === $gen ) {
+		$gen = time();
+		wp_cache_set( 'gen', $gen, 'clean_short_links_routes' );
+	}
+	return (int) $gen;
+}
+
+/**
+ * Cache generation of the links of this site, raised on every change – so cached
+ * lookups never outlive an edit.
+ *
+ * @return int
+ */
+function links_gen() {
+	$gen = wp_cache_get( 'gen', 'clean_short_links' );
+	if ( false === $gen ) {
+		$gen = time();
+		wp_cache_set( 'gen', $gen, 'clean_short_links' );
+	}
+	return (int) $gen;
+}
+
+/**
+ * Forgets cached lookups after a change.
+ */
+function forget_links() {
+	wp_cache_set( 'gen', links_gen() + 1, 'clean_short_links' );
+	wp_cache_set( 'gen', routes_gen() + 1, 'clean_short_links_routes' );
+}
 
 /**
  * Turns a database row into a link array.
@@ -191,16 +427,26 @@ function get_link_for_post( $post_id ) {
  */
 function find_slug( $slug ) {
 	global $wpdb;
+	// The answer is kept in the object cache (if the site has a persistent one) until the
+	// next change – links with a click limit are always read fresh.
+	$key = 'slug:' . links_gen() . ':' . $slug;
+	$hit = wp_cache_get( $key, 'clean_short_links' );
+	if ( false !== $hit ) {
+		return $hit ? $hit : null;
+	}
 	$t   = tables();
 	$row = $wpdb->get_row( $wpdb->prepare( 'SELECT link_id, kind FROM %i WHERE slug = %s', $t['slugs'], $slug ) );
-	if ( ! $row ) {
-		return null;
+	$out = null;
+	if ( $row && 'retired' === $row->kind ) {
+		$out = array( null, 'retired' );
+	} elseif ( $row ) {
+		$link = link_by_id( (int) $row->link_id );
+		$out  = $link ? array( $link, $row->kind ) : null;
 	}
-	if ( 'retired' === $row->kind ) {
-		return array( null, 'retired' );
+	if ( ! $out || ( empty( $out[0]['max_clicks'] ) && empty( $out[0]['parent_id'] ) ) ) {
+		wp_cache_set( $key, $out ? $out : 0, 'clean_short_links', $out ? 600 : 60 );
 	}
-	$link = link_by_id( (int) $row->link_id );
-	return $link ? array( $link, $row->kind ) : null;
+	return $out;
 }
 
 /**
@@ -223,7 +469,12 @@ function slug_owner( $slug ) {
  */
 function slug_available( $slug, $link_id = 0 ) {
 	$owner = slug_owner( $slug );
-	return ! $owner || ( $link_id && (int) $owner->link_id === (int) $link_id && 'retired' !== $owner->kind );
+	if ( $owner ) {
+		return $link_id && (int) $owner->link_id === (int) $link_id && 'retired' !== $owner->kind;
+	}
+	// Another site of the network may already offer this short address on this host.
+	$route = is_multisite() && (int) ( get_site_option( 'clean_short_links_routes_db' ) ) === ROUTES_VERSION ? find_route( url_host( home_url( '/' ) ), $slug ) : null;
+	return ! $route || ( $route['blog_id'] === get_current_blog_id() && $route['link_id'] === (int) $link_id );
 }
 
 /**
@@ -493,6 +744,11 @@ function save_link( array $data ) {
 		);
 	}
 	sync_channel_slugs( $id, $slug, clean_meta( json_decode( $row['meta'], true ) )['channels'], $old ? $old['slug'] : '' );
+	forget_links();
+	$saved = link_by_id( $id );
+	if ( $saved && ( $saved['meta']['hosts'] || ( $old && $old['meta']['hosts'] ) ) ) {
+		sync_routes( $saved );
+	}
 	return $id;
 }
 
@@ -571,6 +827,7 @@ function bio_links() {
 function save_qr_design( $id, array $design ) {
 	global $wpdb;
 	$wpdb->update( tables()['links'], array( 'qr' => wp_json_encode( $design ) ), array( 'id' => (int) $id ) );
+	forget_links();
 }
 
 /**
@@ -592,6 +849,8 @@ function delete_link( $id, $retire = true ) {
 	} else {
 		$wpdb->delete( $t['slugs'], array( 'link_id' => (int) $id ) );
 	}
+	drop_routes( $id );
+	forget_links();
 }
 
 /**
@@ -750,6 +1009,7 @@ function update_rules( $id, array $rules ) {
 		),
 		array( 'id' => (int) $id )
 	);
+	forget_links();
 }
 
 /**
@@ -761,6 +1021,7 @@ function update_rules( $id, array $rules ) {
 function update_meta( $id, array $meta ) {
 	global $wpdb;
 	$wpdb->update( tables()['links'], array( 'meta' => wp_json_encode( clean_meta( $meta ) ) ), array( 'id' => (int) $id ) );
+	forget_links();
 }
 
 /**
@@ -781,6 +1042,7 @@ function links_with_calendar() {
 function reset_clicks( $id ) {
 	global $wpdb;
 	$wpdb->update( tables()['links'], array( 'clicks' => 0 ), array( 'id' => (int) $id ) );
+	forget_links();
 }
 
 /**
@@ -803,6 +1065,7 @@ function save_check( $id, $status, array $items, $broken_since = 0 ) {
 		),
 		array( 'id' => (int) $id )
 	);
+	forget_links();
 }
 
 /**
@@ -920,11 +1183,16 @@ function short_urls( array $link ) {
 	list( $p, $q ) = prefixes();
 	$qr_slug       = '' !== ( $link['qr_slug'] ?? '' ) ? $link['qr_slug'] : $link['slug'];
 	$qr            = home_url( '/' . $q . '/' . $qr_slug );
+	$hosts = array();
+	foreach ( (array) ( $link['meta']['hosts'] ?? array() ) as $host ) {
+		$hosts[ $host ] = 'https://' . $host . '/' . $p . '/' . $link['slug'];
+	}
 	return array(
 		'link'     => home_url( '/' . $p . '/' . $link['slug'] ),
 		'qr'       => $qr,
 		'root'     => ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '',
 		'qr_upper' => qr_uppercase( $qr ),
+		'hosts'    => $hosts,
 	);
 }
 

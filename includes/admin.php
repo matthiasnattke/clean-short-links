@@ -522,6 +522,134 @@ function rule_row( $i, array $rule ) {
 }
 
 /**
+ * One variant: device, operating system, screen width and target.
+ *
+ * @param int|string $i Index.
+ * @param array      $v Variant.
+ */
+function variant_row( $i, array $v ) {
+	$n       = 'meta[variants][' . $i . ']';
+	$devices = array(
+		''        => __( 'Any device', 'clean-short-links' ),
+		'mobile'  => __( 'Phone', 'clean-short-links' ),
+		'tablet'  => __( 'Tablet', 'clean-short-links' ),
+		'desktop' => __( 'Computer', 'clean-short-links' ),
+	);
+	$systems = array(
+		''        => __( 'Any system', 'clean-short-links' ),
+		'ios'     => 'iOS / iPadOS',
+		'android' => 'Android',
+		'windows' => 'Windows',
+		'macos'   => 'macOS',
+		'linux'   => __( 'Linux / ChromeOS', 'clean-short-links' ),
+	);
+	?>
+	<fieldset class="csl-rule csl-variant">
+		<legend class="screen-reader-text"><?php esc_html_e( 'Variant', 'clean-short-links' ); ?></legend>
+		<div class="csl-rule-head">
+			<span class="csl-rule-no"></span>
+			<strong class="csl-variant-title"><?php esc_html_e( 'When', 'clean-short-links' ); ?></strong>
+			<button type="button" class="csl-icon-link csl-variant-up" title="<?php esc_attr_e( 'Move up', 'clean-short-links' ); ?>"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span><span class="screen-reader-text"><?php esc_html_e( 'Move up', 'clean-short-links' ); ?></span></button>
+			<button type="button" class="csl-icon-link csl-variant-remove" title="<?php esc_attr_e( 'Remove variant', 'clean-short-links' ); ?>"><?php the_icon( 'trash' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Remove variant', 'clean-short-links' ); ?></span></button>
+		</div>
+		<div class="csl-rule-grid">
+			<label class="csl-field"><span><?php esc_html_e( 'Device', 'clean-short-links' ); ?></span>
+				<select name="<?php echo esc_attr( $n ); ?>[device]">
+					<?php foreach ( $devices as $k => $label ) : ?>
+						<option value="<?php echo esc_attr( $k ); ?>" <?php selected( $v['device'] ?? '', $k ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select></label>
+			<label class="csl-field"><span><?php esc_html_e( 'Operating system', 'clean-short-links' ); ?></span>
+				<select name="<?php echo esc_attr( $n ); ?>[os]">
+					<?php foreach ( $systems as $k => $label ) : ?>
+						<option value="<?php echo esc_attr( $k ); ?>" <?php selected( $v['os'] ?? '', $k ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select></label>
+			<label class="csl-field"><span><?php esc_html_e( 'Screen from (px)', 'clean-short-links' ); ?></span><input type="number" min="0" max="10000" step="1" name="<?php echo esc_attr( $n ); ?>[min_w]" value="<?php echo esc_attr( ! empty( $v['min_w'] ) ? (string) $v['min_w'] : '' ); ?>" placeholder="–"></label>
+			<label class="csl-field"><span><?php esc_html_e( 'Screen up to (px)', 'clean-short-links' ); ?></span><input type="number" min="0" max="10000" step="1" name="<?php echo esc_attr( $n ); ?>[max_w]" value="<?php echo esc_attr( ! empty( $v['max_w'] ) ? (string) $v['max_w'] : '' ); ?>" placeholder="–"></label>
+		</div>
+		<div class="csl-rule-target">
+			<span class="csl-field-label"><?php esc_html_e( 'Leads to', 'clean-short-links' ); ?></span>
+			<?php target_picker( $n . '[target]', $v['target'] ?? '', 'csl-variant-target-' . $i ); ?>
+		</div>
+	</fieldset>
+	<?php
+}
+
+/**
+ * Card: other targets by device, operating system and screen width.
+ *
+ * @param array $link Link.
+ */
+function variants_card( array $link ) {
+	card_open( 'csl-sec-variants', 'split', __( 'Different targets by device and screen', 'clean-short-links' ), __( 'The first variant that fits the visitor decides – for the main target; rules by date and time come first. Device and system are recognised on the server and never stored. Screen widths are only known to the browser: such links show a tiny page that forwards at once.', 'clean-short-links' ) );
+	?>
+	<div class="csl-variants">
+		<?php
+		foreach ( $link['meta']['variants'] as $i => $v ) {
+			variant_row( $i, $v );
+		}
+		?>
+	</div>
+	<template id="csl-variant-template"><?php variant_row( '__i__', array() ); ?></template>
+	<button type="button" class="button csl-btn csl-variant-add"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Add variant', 'clean-short-links' ); ?></button>
+	<p class="csl-help"><?php esc_html_e( 'Examples: phones with iOS to the App Store, Android to Google Play; screens up to 600 px to the mobile page.', 'clean-short-links' ); ?></p>
+	<?php
+	card_close();
+}
+
+/**
+ * Card: further domains of the network the link is also offered on.
+ *
+ * @param array $link Link.
+ */
+function hosts_card( array $link ) {
+	$hosts = offer_hosts();
+	if ( ! $hosts ) {
+		return;
+	}
+	global $wpdb;
+	$routed = array();
+	if ( $link['id'] ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Routes table of this plugin.
+		foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT host FROM %i WHERE blog_id = %d AND link_id = %d AND kind = 'main'", routes_table(), get_current_blog_id(), $link['id'] ) ) as $h ) {
+			$routed[ $h ] = true;
+		}
+	}
+	list( $p ) = prefixes();
+	card_open( 'csl-sec-hosts', 'network', __( 'Further domains', 'clean-short-links' ), __( 'Offer the same short link on other domains of the network – for example on a short domain. Visits are counted here, on this site.', 'clean-short-links' ) );
+	?>
+	<div class="csl-hosts">
+		<?php foreach ( $hosts as $host => $h ) : ?>
+			<?php
+			$on    = in_array( $host, $link['meta']['hosts'], true );
+			$taken = $on && $link['id'] && empty( $routed[ $host ] );
+			?>
+			<label class="csl-host<?php echo $taken ? ' is-taken' : ''; ?>">
+				<input type="checkbox" name="meta[hosts][]" value="<?php echo esc_attr( $host ); ?>" <?php checked( $on ); ?>>
+				<span class="csl-host-text">
+					<strong><?php echo esc_html( $host . '/' . $p . '/' . ( '' !== $link['slug'] ? $link['slug'] : '…' ) ); ?></strong>
+					<small>
+						<?php echo esc_html( $h['name'] ); ?>
+						<?php if ( $h['short'] ) : ?>
+							<span class="csl-badge csl-badge-soft"><?php esc_html_e( 'Short domain', 'clean-short-links' ); ?></span>
+						<?php endif; ?>
+						<?php if ( $taken ) : ?>
+							<span class="csl-host-warn"><?php esc_html_e( 'This short address is already taken there – please choose another one.', 'clean-short-links' ); ?></span>
+						<?php endif; ?>
+					</small>
+				</span>
+			</label>
+		<?php endforeach; ?>
+	</div>
+	<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
+		<p class="csl-help"><?php esc_html_e( 'A short domain is a site of the network with its own short domain. Mark it in the network settings of the short links.', 'clean-short-links' ); ?></p>
+	<?php endif; ?>
+	<?php
+	card_close();
+}
+
+/**
  * Radio buttons as a segmented control for the QR designer.
  *
  * @param string $key     Design key.
@@ -902,6 +1030,9 @@ function page_edit() {
 				echo '<div class="csl-hero-urls">';
 				copy_field( $urls['link'] );
 				copy_field( $urls['root'], __( 'Short form', 'clean-short-links' ) );
+				foreach ( $urls['hosts'] as $host_url ) {
+					copy_field( $host_url );
+				}
 				echo '</div>';
 				if ( $now_result && 302 === $now_result['status'] ) {
 					echo '<p class="csl-now">' . icon( 'target' ) . esc_html__( 'Right now it leads to', 'clean-short-links' ) . ' <a href="' . esc_url( $now_result['url'] ) . '" target="_blank" rel="noopener">' . esc_html( preg_replace( '#^https?://#', '', $now_result['url'] ) ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
@@ -1044,6 +1175,11 @@ function page_edit() {
 					<button type="button" class="button csl-btn csl-rule-add"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Add rule', 'clean-short-links' ); ?></button>
 					<?php calendar_box( $link ); ?>
 				<?php card_close(); ?>
+
+				<?php
+				variants_card( $link );
+				hosts_card( $link );
+				?>
 
 				<?php
 				social_card( $link );

@@ -44,6 +44,18 @@ Example for a festival poster:
 
 Redirects are always temporary (302) and sent with no-cache headers, so browsers never remember an old target.
 
+## Different targets by device and screen
+
+Under *Different targets by device and screen* a short link can lead elsewhere depending on the visitor: by device (phone, tablet, computer), operating system (iOS/iPadOS, Android, Windows, macOS, Linux/ChromeOS) and screen width in pixels. The first variant that fits decides; rules by date and time come first, variants apply to the main target. Typical: one QR code that sends iPhones to the App Store, Android phones to Google Play and everyone else to the website.
+
+Device and system are recognised on the server, nothing of it is stored. Screen widths are only known to the browser, so links with such variants show a tiny page (about 1 KB, no external files) that forwards at once; without JavaScript it leads to the normal target.
+
+## Further domains and short domains
+
+In a network a short link can also be offered on the domains of other sites, e.g. `kuroikizu.couch-blog.de/s/sommer` – tick them under *Further domains*. Visits are still counted on the site the link belongs to. If the short address is already taken on another domain, that domain is marked and left out.
+
+For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there, also as short form without prefix (`short.de/sommer`); the home page of the short domain leads to the main site.
+
 ## Rules from a calendar
 
 Below the rules, *Rules from a calendar* takes an iCal file (.ics, imported once) or a calendar address (also `webcal://`, fetched again twice a day – e.g. the public iCal address of a Google, Apple, Nextcloud or Outlook calendar).
@@ -136,7 +148,7 @@ Exceptions of the maintenance mode (slugs, addresses, access pass) still apply: 
 
 ## Network (multisite)
 
-**Network admin → Short links** lists every site with its prefixes, number of links, visits and most visited link, and holds the network-wide settings: prefixes for links and QR codes, whether sites may choose their own, whether the short form is allowed, how long statistics are kept and reserved words.
+**Network admin → Short links** lists every site with its prefixes, number of links, visits and most visited link. A search finds short links on all sites at once – by title, short address or target – and leads straight to their edit screen. It also holds the network-wide settings: prefixes for links and QR codes, whether sites may choose their own, whether the short form is allowed, short domains, whether referring websites are stored, how long statistics are kept and reserved words.
 
 ## Dashboard
 

@@ -381,6 +381,7 @@ textarea.csl-wide { max-width: none; }
 .csl-widget-list li { display: flex; align-items: center; gap: 10px; margin: 0; padding: 8px 0; border-top: 1px solid #f0f0f1; }
 .csl-widget .csl-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; }
 .csl-dot-bad { background: #d63638; }
+.csl-dot-ok { background: #00a32a; }
 .csl-dot-warn { background: #dba617; }
 .csl-widget-link { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .csl-widget-link a { font-weight: 600; text-decoration: none; }
@@ -436,3 +437,29 @@ textarea.csl-wide { max-width: none; }
 	.csl-savebar-delete { font-size: 0; gap: 0; padding: 6px; }
 	.csl-savebar-delete .csl-ico { width: 20px; height: 20px; }
 }
+
+/* Variants by device and screen. */
+.csl-variant { border-left-color: #6b4fbb; }
+.csl-variant .csl-rule-no { background: #6b4fbb; }
+.csl-variant-title { flex: 1; }
+.csl-variant select, .csl-variant input[type="number"] { width: 100%; }
+
+/* Further domains. */
+.csl-hosts { display: grid; gap: 8px; }
+.csl-host { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--csl-line); border-radius: 12px; background: #fff; cursor: pointer; }
+.csl-host input { margin-top: 3px; }
+.csl-host-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.csl-host-text small { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--csl-muted); }
+.csl-host.is-taken { border-color: #f2c4c7; background: #fcf0f1; }
+.csl-host-warn { color: #b32d2e; font-weight: 600; }
+
+/* Network: search across all sites. */
+.csl-net-search { margin: 0 0 20px; }
+.csl-net-search-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.csl-net-search-row .csl-search { flex: 1 1 260px; }
+.csl-net-search-row .csl-search input { width: 100%; }
+.csl-net-results { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.csl-net-results li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--csl-soft); }
+.csl-net-results .csl-dot { margin-top: 7px; }
+.csl-net-result { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.csl-net-result small { color: var(--csl-muted); }

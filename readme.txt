@@ -111,6 +111,13 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 
 == Changelog ==
 
+= Unreleased =
+* Faster redirects with less server load: answered before the theme and init, short addresses kept in the object cache, the visit counted after the visitor already has the redirect; prefetching and HEAD requests are not counted.
+* Different targets by device, operating system and screen width – e.g. one QR code for the App Store, Google Play and the website. Screen widths are decided in the browser by a tiny page with a strict content security policy.
+* Further domains: offer a short link on other domains of the network and on short domains (an empty site with a short domain); the short domain's home page leads to the main site.
+* Network admin: find short links on all sites.
+* More privacy: the network can stop storing referring websites; visitors with Global Privacy Control or Do Not Track are counted without it; redirects send a strict referrer policy.
+
 = 0.2.3 =
 * Posts and pages get their short address from the title by default (the plain title, without “Private:”), all other targets a random or memorable one – both can be set in the settings.
 * Editor sidebar: the link starts with the publication of the content, also a scheduled one; it has no end field.

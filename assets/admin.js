@@ -319,4 +319,38 @@
 		}
 	} );
 	number();
+
+	/* ---- Variants by device and screen ---- */
+	var variants = $( '.csl-variants' ), vtpl = $( '#csl-variant-template' ), vnext = $$( '.csl-variant', variants ).length + 100;
+	function vnumber() {
+		$$( '.csl-variant', variants ).forEach( function ( r, i ) {
+			$( '.csl-rule-no', r ).textContent = String( i + 1 );
+		} );
+	}
+	if ( variants && vtpl ) {
+		$( '.csl-variant-add' ).addEventListener( 'click', function () {
+			var wrap = document.createElement( 'div' );
+			wrap.innerHTML = vtpl.innerHTML.replace( /__i__/g, String( vnext++ ) );
+			var row = wrap.firstElementChild;
+			variants.appendChild( row );
+			$$( '.csl-picker', row ).forEach( initPicker );
+			vnumber();
+			$( 'select', row ).focus();
+		} );
+		variants.addEventListener( 'click', function ( e ) {
+			var row = e.target.closest( '.csl-variant' );
+			if ( ! row ) {
+				return;
+			}
+			if ( e.target.closest( '.csl-variant-remove' ) ) {
+				row.remove();
+				vnumber();
+			}
+			if ( e.target.closest( '.csl-variant-up' ) && row.previousElementSibling ) {
+				variants.insertBefore( row, row.previousElementSibling );
+				vnumber();
+			}
+		} );
+		vnumber();
+	}
 } )();

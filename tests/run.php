@@ -530,6 +530,87 @@ test( 'Changes from the editor sidebar touch only what it shows', function () {
 	same( 'publish', editor_changes( $old, array( 'start_mode' => 'publish' ) )['start_mode'] );
 } );
 
+echo "\nVariants and domains\n";
+
+test( 'Operating system from client hint or user agent', function () {
+	same( 'android', os_class( 'whatever', '"Android"' ) );
+	same( 'windows', os_class( '', '"Windows"' ) );
+	same( 'linux', os_class( '', '"Chrome OS"' ) );
+	same( 'ios', os_class( 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' ) );
+	same( 'ios', os_class( 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)' ) );
+	same( 'android', os_class( 'Mozilla/5.0 (Linux; Android 14; Pixel 8)' ) );
+	same( 'macos', os_class( 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)' ) );
+	same( 'windows', os_class( 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' ) );
+	same( 'linux', os_class( 'Mozilla/5.0 (X11; Linux x86_64)' ) );
+	same( 'other', os_class( '' ) );
+	same( 'mobile', device_key( DEVICE_MOBILE ) );
+	same( 'desktop', device_key( DEVICE_DESKTOP ) );
+} );
+
+test( 'Variants are cleaned', function () {
+	$v = clean_variants(
+		array(
+			array( 'device' => 'mobile', 'os' => 'ios', 'target' => 'https://apps.apple.com/x' ),
+			array( 'device' => '', 'os' => '', 'target' => 'https://example.org/' ),
+			array( 'device' => 'phone', 'os' => 'beos', 'min_w' => 900, 'max_w' => 300, 'target' => 'https://example.org/s' ),
+			array( 'os' => 'android' ),
+		)
+	);
+	same( 2, count( $v ), 'without condition or target dropped' );
+	same( 'ios', $v[0]['os'] );
+	same( '', $v[1]['device'], 'unknown device ignored' );
+	same( array( 300, 900 ), array( $v[1]['min_w'], $v[1]['max_w'] ), 'range swapped' );
+} );
+
+test( 'Which variant applies', function () {
+	$v = clean_variants(
+		array(
+			array( 'os' => 'ios', 'target' => 'https://apple.example/' ),
+			array( 'os' => 'android', 'target' => 'https://play.example/' ),
+			array( 'max_w' => 600, 'target' => 'https://m.example/' ),
+			array( 'device' => 'mobile', 'target' => 'https://phone.example/' ),
+		)
+	);
+	same( array( 'target' => 'https://apple.example/' ), variant_plan( $v, 'mobile', 'ios' ) );
+	same( array( 'target' => 'https://play.example/' ), variant_plan( $v, 'tablet', 'android' ) );
+	same(
+		array(
+			'screen'   => array( array( 0, 600, 'https://m.example/' ) ),
+			'fallback' => 'https://phone.example/',
+		),
+		variant_plan( $v, 'mobile', 'windows' ),
+		'screen first, then the next fitting variant'
+	);
+	same(
+		array(
+			'screen'   => array( array( 0, 600, 'https://m.example/' ) ),
+			'fallback' => null,
+		),
+		variant_plan( $v, 'desktop', 'linux' ),
+		'no further variant: the normal target'
+	);
+	same( null, variant_plan( array(), 'desktop', 'linux' ) );
+} );
+
+test( 'Host names are cleaned', function () {
+	same( array( 'cbl.de', 'kuro.couch-blog.de' ), clean_hosts( "https://CBL.de/s/x\nkuro.couch-blog.de, cbl.de" ) );
+	same( array(), clean_hosts( array( 'not a host', 'localhost', '-bad.de' ) ) );
+	same( array(), clean_meta( array( 'hosts' => 'nonsense' ) )['hosts'] );
+} );
+
+test( 'No permanent redirect with variants', function () {
+	$l = array(
+		'meta'       => clean_meta( array( 'permanent' => 1, 'variants' => array( array( 'os' => 'ios', 'target' => 'https://a.example/' ) ) ) ),
+		'parent_id'  => 0,
+		'rules'      => array(),
+		'starts_at'  => null,
+		'start_mode' => '',
+		'ends_at'    => null,
+		'max_clicks' => 0,
+	);
+	same( false, permanent_allowed( $l ) );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

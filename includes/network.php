@@ -40,6 +40,8 @@ function page_network() {
 		)
 	);
 	$saved = isset( $_GET['updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only shows a notice.
+	$q     = isset( $_GET['csl_q'] ) ? trim( sanitize_text_field( wp_unslash( $_GET['csl_q'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- A search, changes nothing.
+	$found = array();
 	$sum   = array(
 		'links'  => 0,
 		'visits' => 0,
@@ -49,6 +51,24 @@ function page_network() {
 	foreach ( $sites as $site ) {
 		switch_to_blog( (int) $site->blog_id );
 		$ready = (int) get_option( 'clean_short_links_db' ) === DB_VERSION;
+		if ( $ready && '' !== $q && count( $found ) < 100 ) {
+			foreach ( list_links(
+				array(
+					'search'   => $q,
+					'per_page' => 25,
+				)
+			)['items'] as $l ) {
+				$found[] = array(
+					'site'   => get_bloginfo( 'name' ),
+					'title'  => '' !== $l['title'] ? $l['title'] : $l['slug'],
+					'url'    => short_urls( $l )['link'],
+					'target' => $l['target'],
+					'label'  => target_label( $l['target'] ),
+					'state'  => link_state( $l, time(), site_settings()['gone_days'] ),
+					'edit'   => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $l['id'] ),
+				);
+			}
+		}
 		$row   = array(
 			'name'   => get_bloginfo( 'name' ),
 			'url'    => home_url( '/' ),
@@ -105,6 +125,32 @@ function page_network() {
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'clean-short-links' ); ?></p></div>
 		<?php endif; ?>
 
+		<form method="get" action="<?php echo esc_url( network_admin_url( 'admin.php' ) ); ?>" class="csl-card csl-net-search" role="search">
+			<input type="hidden" name="page" value="clean-short-links-network">
+			<label class="csl-field" for="csl-net-q"><span><?php esc_html_e( 'Find short links on all sites', 'clean-short-links' ); ?></span></label>
+			<div class="csl-net-search-row">
+				<span class="csl-search"><?php the_icon( 'search' ); ?><input type="search" id="csl-net-q" name="csl_q" value="<?php echo esc_attr( $q ); ?>" placeholder="<?php esc_attr_e( 'Title, short address or target', 'clean-short-links' ); ?>"></span>
+				<?php submit_button( __( 'Search', 'clean-short-links' ), 'secondary', '', false ); ?>
+			</div>
+			<?php if ( '' !== $q ) : ?>
+				<?php if ( ! $found ) : ?>
+					<p class="csl-help"><?php esc_html_e( 'No short link found.', 'clean-short-links' ); ?></p>
+				<?php else : ?>
+					<ul class="csl-net-results">
+						<?php foreach ( $found as $f ) : ?>
+							<li>
+								<span class="csl-dot csl-dot-<?php echo esc_attr( 'active' === $f['state'] ? 'ok' : 'warn' ); ?>" aria-hidden="true"></span>
+								<span class="csl-net-result">
+									<a href="<?php echo esc_url( $f['edit'] ); ?>"><strong><?php echo esc_html( $f['title'] ); ?></strong></a>
+									<small><?php echo esc_html( $f['site'] ); ?> · <code><?php echo esc_html( preg_replace( '#^https?://#', '', $f['url'] ) ); ?></code> → <?php echo esc_html( $f['label'] ); ?></small>
+								</span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			<?php endif; ?>
+		</form>
+
 		<div class="csl-sites">
 			<?php foreach ( $rows as $r ) : ?>
 				<article class="csl-site <?php echo $r['links'] ? 'csl-site-used' : ''; ?>">
@@ -146,6 +192,21 @@ function page_network() {
 					</span>
 					<span class="csl-help"><?php esc_html_e( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ); ?></span>
 				</div>
+				<div class="csl-sub"><?php toggle( 'referrers', ! empty( $n['referrers'] ), __( 'Store the host of referring websites', 'clean-short-links' ), __( 'Off: only date, source and device class are counted. Visitors who ask for privacy (Global Privacy Control, Do Not Track) are always counted without it.', 'clean-short-links' ) ); ?></div>
+				<div class="csl-sub">
+					<span class="csl-field-label"><?php esc_html_e( 'Short domains', 'clean-short-links' ); ?></span>
+					<span class="csl-help"><?php esc_html_e( 'Sites of the network with their own short domain (e.g. a short .de domain as an empty site). Their links can be offered from every site, the home page of a short domain leads to the main site.', 'clean-short-links' ); ?></span>
+					<div class="csl-chips">
+						<?php foreach ( $sites as $site ) : ?>
+							<?php
+							if ( '/' !== $site->path ) {
+								continue;
+							}
+							?>
+							<label class="csl-chip"><input type="checkbox" name="short_sites[]" value="<?php echo esc_attr( (string) $site->blog_id ); ?>" <?php checked( in_array( (int) $site->blog_id, array_map( 'intval', (array) $n['short_sites'] ), true ) ); ?>><span><?php echo esc_html( $site->domain ); ?></span></label>
+						<?php endforeach; ?>
+					</div>
+				</div>
 				<div class="csl-sub">
 					<label class="csl-field" for="csl-n-res"><span><?php esc_html_e( 'Reserved words', 'clean-short-links' ); ?></span></label>
 					<textarea id="csl-n-res" name="reserved" rows="3" class="csl-wide code"><?php echo esc_textarea( $n['reserved'] ); ?></textarea>
@@ -176,6 +237,8 @@ add_action(
 			'allow_root'     => empty( $p['allow_root'] ) ? 0 : 1,
 			'retention_days' => in_array( (int) ( $p['retention_days'] ?? 730 ), array( 0, 90, 365, 730 ), true ) ? (int) $p['retention_days'] : 730,
 			'reserved'       => sanitize_textarea_field( $p['reserved'] ?? '' ),
+			'referrers'      => empty( $p['referrers'] ) ? 0 : 1,
+			'short_sites'    => array_values( array_filter( array_map( 'absint', (array) ( $p['short_sites'] ?? array() ) ), 'get_site' ) ),
 		);
 		if ( $new['prefix'] === $new['qr_prefix'] ) {
 			$new['qr_prefix'] = 's' === $new['prefix'] ? 'q' : $d['qr_prefix'];
