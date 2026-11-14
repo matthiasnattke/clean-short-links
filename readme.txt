@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.3
+Stable tag: 0.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,7 +111,7 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 
 == Changelog ==
 
-= Unreleased =
+= 0.2.4 =
 * Faster redirects with less server load: answered before the theme and init, short addresses kept in the object cache, the visit counted after the visitor already has the redirect; prefetching and HEAD requests are not counted.
 * Different targets by device, operating system and screen width – e.g. one QR code for the App Store, Google Play and the website. Screen widths are decided in the browser by a tiny page with a strict content security policy.
 * Further domains: offer a short link on other domains of the network and on short domains (an empty site with a short domain); the short domain's home page leads to the main site.
@@ -122,6 +122,8 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * Optional: while registration is off, the sign-up page (also reached by unknown subdomains) leads to the home page.
 * Locations: one short link with addresses of its own for several posters, flyers or tags, each counted separately; QR codes and NFC tags for each location.
 * More privacy: the network can stop storing referring websites; visitors with Global Privacy Control or Do Not Track are counted without it; redirects send a strict referrer policy.
+* Phones in landscape: compact header, section links in one row, slim save bar.
+* Tests also run on PHP 8.5.
 
 = 0.2.3 =
 * Posts and pages get their short address from the title by default (the plain title, without “Private:”), all other targets a random or memorable one – both can be set in the settings.
