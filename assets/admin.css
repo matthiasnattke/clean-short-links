@@ -396,3 +396,11 @@ textarea.csl-wide { max-width: none; }
 .csl-calendar .csl-grow { flex: 1 1 320px; }
 .csl-rule-ical { border-left-color: var(--csl-blue); }
 .csl-rule-ical .csl-rule-no { background: var(--csl-blue); }
+
+/* Clickable targets in the list */
+.csl-link-target { align-items: center; flex-wrap: wrap; }
+.csl-target-link { display: inline-flex; align-items: center; gap: 4px; color: var(--csl-muted); text-decoration: none; overflow-wrap: anywhere; }
+.csl-target-link:hover, .csl-target-link:focus { color: var(--csl-blue); text-decoration: underline; }
+.csl-target-link .csl-ico { width: 13px; height: 13px; margin: 0; opacity: .7; }
+.csl-link-target .csl-target-edit { width: 24px; height: 24px; }
+.csl-link-target .csl-target-edit .csl-ico { width: 14px; height: 14px; margin: 0; }

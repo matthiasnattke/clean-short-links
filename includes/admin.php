@@ -143,6 +143,77 @@ function copy_field( $url, $label = '' ) {
 }
 
 /**
+ * Where a target can be looked at: the page or post (its preview for drafts), the URL,
+ * the home page, or the edit screen of another short link.
+ *
+ * @param string $target Target.
+ * @return array{url:string,external:bool,edit:string} url '' if there is nothing to open.
+ */
+function target_view( $target ) {
+	if ( 'home' === $target ) {
+		return array(
+			'url'      => home_url( '/' ),
+			'external' => false,
+			'edit'     => '',
+		);
+	}
+	$link_id = target_link_id( $target );
+	if ( $link_id ) {
+		return array(
+			'url'      => admin_page_url( 'edit', array( 'id' => $link_id ) ),
+			'external' => false,
+			'edit'     => '',
+		);
+	}
+	$post_id = target_post_id( $target );
+	if ( $post_id ) {
+		$post = get_post( $post_id );
+		if ( ! $post || 'trash' === $post->post_status ) {
+			return array(
+				'url'      => '',
+				'external' => false,
+				'edit'     => '',
+			);
+		}
+		return array(
+			'url'      => 'publish' === $post->post_status ? (string) get_permalink( $post ) : (string) get_preview_post_link( $post ),
+			'external' => false,
+			'edit'     => current_user_can( 'edit_post', $post_id ) ? (string) get_edit_post_link( $post_id ) : '',
+		);
+	}
+	return array(
+		'url'      => preg_match( '#^https?://#', $target ) ? $target : '',
+		'external' => true,
+		'edit'     => '',
+	);
+}
+
+/**
+ * The target as a link to open it, with an edit link for posts and pages.
+ *
+ * @param string $target Target.
+ */
+function target_link( $target ) {
+	$v     = target_view( $target );
+	$label = target_label( $target );
+	if ( '' === $v['url'] ) {
+		echo '<span>' . esc_html( $label ) . '</span>';
+		return;
+	}
+	$new_tab = $v['external'] || ! target_link_id( $target );
+	printf(
+		'<a class="csl-target-link" href="%1$s"%2$s>%3$s%4$s</a>',
+		esc_url( $v['url'] ),
+		$new_tab ? ' target="_blank" rel="noopener"' : '',
+		esc_html( $label ),
+		$new_tab ? icon( 'external' ) : '' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
+	);
+	if ( '' !== $v['edit'] ) {
+		printf( ' <a class="csl-icon-link csl-target-edit" href="%1$s" title="%2$s">%3$s<span class="screen-reader-text">%2$s</span></a>', esc_url( $v['edit'] ), esc_attr__( 'Edit content', 'clean-short-links' ), icon( 'pencil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
+	}
+}
+
+/**
  * Notice after an action, read from the redirect URL.
  */
 function action_notice() {
@@ -332,7 +403,7 @@ function page_list() {
 						<a class="csl-icon-link" href="<?php echo esc_url( $edit . '#csl-sec-qr' ); ?>" title="<?php esc_attr_e( 'QR code', 'clean-short-links' ); ?>"><?php the_icon( 'qr' ); ?><span class="screen-reader-text"><?php esc_html_e( 'QR code', 'clean-short-links' ); ?></span></a>
 					</div>
 					<h3 class="csl-link-name"><a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $label ); ?></a></h3>
-					<p class="csl-link-target"><?php the_icon( 'target' ); ?><span><?php echo esc_html( target_label( $l['target'] ) ); ?></span></p>
+					<p class="csl-link-target"><?php the_icon( 'target' ); ?><?php target_link( $l['target'] ); ?></p>
 					<div class="csl-link-urls">
 						<?php copy_field( $urls['link'] ); ?>
 						<?php copy_field( $urls['root'] ); ?>
