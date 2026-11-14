@@ -83,6 +83,10 @@ function admin_js_data() {
 			'useLogo'     => __( 'Use', 'clean-short-links' ),
 			'saved'       => __( 'Saved to the media library.', 'clean-short-links' ),
 			'saveFailed'  => __( 'Could not save to the media library.', 'clean-short-links' ),
+			'nfcHold'     => __( 'Hold the tag to the back of the phone …', 'clean-short-links' ),
+			'nfcDone'     => __( 'Written. Touch the tag with a phone to try it.', 'clean-short-links' ),
+			'nfcLocked'   => __( 'Written and locked.', 'clean-short-links' ),
+			'nfcFailed'   => __( 'Could not write the tag:', 'clean-short-links' ),
 			/* translators: 1: QR version, 2: error correction level, 3: number of modules per side */
 			'qrInfo'      => __( 'Version %1$s · error correction %2$s · %3$s × %3$s modules', 'clean-short-links' ),
 			'compact'     => __( 'compact mode (capitals)', 'clean-short-links' ),
@@ -650,6 +654,112 @@ function hosts_card( array $link ) {
 }
 
 /**
+ * Choice of the address a code is made for: the short link or one of its locations.
+ *
+ * @param array  $urls  Short URLs of the link.
+ * @param string $for   qr or nfc.
+ */
+function code_for_select( array $urls, $for ) {
+	if ( ! $urls['places'] ) {
+		return;
+	}
+	$opt = function ( $label, array $u, $slug, $selected = false ) use ( $for ) {
+		printf(
+			'<option value="%1$s" data-url="%2$s" data-upper="%3$s" data-print="%4$s" data-slug="%5$s"%6$s>%7$s</option>',
+			esc_attr( $slug ),
+			esc_attr( 'nfc' === $for ? $u['nfc'] : $u['qr'] ),
+			esc_attr( $u['qr_upper'] ),
+			esc_attr( preg_replace( '#^https?://#', '', $u['link'] ) ),
+			esc_attr( $slug ),
+			$selected ? ' selected' : '',
+			esc_html( $label )
+		);
+	};
+	?>
+	<label class="csl-field csl-code-for"><span><?php esc_html_e( 'Code for', 'clean-short-links' ); ?></span>
+		<select data-code-for="<?php echo esc_attr( $for ); ?>">
+			<?php
+			$opt( __( 'The short link itself', 'clean-short-links' ), $urls, '', true );
+			foreach ( $urls['places'] as $pl ) {
+				/* translators: %s: name of a location */
+				$opt( sprintf( __( 'Location: %s', 'clean-short-links' ), $pl['name'] ), $pl, $pl['slug'] );
+			}
+			?>
+		</select>
+	</label>
+	<?php
+}
+
+/**
+ * One location row.
+ *
+ * @param int|string $i   Index.
+ * @param array      $pl  Location (key, name).
+ * @param array|null $u   Its addresses, null for a new row.
+ */
+function place_row( $i, array $pl, $u = null ) {
+	$n = 'meta[places][' . $i . ']';
+	?>
+	<div class="csl-place">
+		<input type="hidden" name="<?php echo esc_attr( $n ); ?>[key]" value="<?php echo esc_attr( $pl['key'] ?? '' ); ?>">
+		<label class="csl-field csl-grow"><span class="screen-reader-text"><?php esc_html_e( 'Name of the location', 'clean-short-links' ); ?></span>
+			<input type="text" name="<?php echo esc_attr( $n ); ?>[name]" value="<?php echo esc_attr( $pl['name'] ?? '' ); ?>" maxlength="60" placeholder="<?php esc_attr_e( 'e.g. Poster at the station', 'clean-short-links' ); ?>"></label>
+		<button type="button" class="csl-icon-link csl-place-remove" title="<?php esc_attr_e( 'Remove location', 'clean-short-links' ); ?>"><?php the_icon( 'trash' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Remove location', 'clean-short-links' ); ?></span></button>
+		<?php if ( $u ) : ?>
+			<div class="csl-place-urls"><?php copy_field( $u['link'] ); ?></div>
+		<?php endif; ?>
+	</div>
+	<?php
+}
+
+/**
+ * Card: locations – one target, but every poster, flyer or tag gets an address of its own.
+ *
+ * @param array $link Link.
+ * @param array $urls Short URLs.
+ */
+function places_card( array $link, array $urls ) {
+	card_open( 'csl-sec-places', 'pin', __( 'Locations', 'clean-short-links' ), __( 'Several posters, flyers or tags for the same target: each location gets an address of its own, the statistics show which one is used how often. Target, rules and variants stay shared.', 'clean-short-links' ) );
+	?>
+	<div class="csl-places">
+		<?php
+		foreach ( $link['meta']['places'] as $i => $pl ) {
+			place_row( $i, $pl, $urls['places'][ $pl['key'] ] ?? null );
+		}
+		?>
+	</div>
+	<template id="csl-place-template"><?php place_row( '__i__', array() ); ?></template>
+	<button type="button" class="button csl-btn csl-place-add"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Add location', 'clean-short-links' ); ?></button>
+	<?php /* translators: %s: example address */ ?>
+	<p class="csl-help"><?php echo esc_html( sprintf( __( 'Addresses look like %s and keep working when you rename the location. QR code and NFC tag can be made for each location below.', 'clean-short-links' ), '…/' . $link['slug'] . '-bahnhof' ) ); ?></p>
+	<?php
+	card_close();
+}
+
+/**
+ * Card: NFC tag – write the short link onto a sticker or card.
+ *
+ * @param array $urls Short URLs.
+ */
+function nfc_card( array $urls ) {
+	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag.', 'clean-short-links' ) );
+	code_for_select( $urls, 'nfc' );
+	?>
+	<div class="csl-nfc" data-chars="<?php esc_attr_e( '%d characters – fits on every common tag (NTAG213 holds about 130).', 'clean-short-links' ); ?>" data-long="<?php esc_attr_e( '%d characters – please use a tag with more memory (NTAG215 or NTAG216).', 'clean-short-links' ); ?>">
+		<span class="csl-copy csl-nfc-address"><code><?php echo esc_html( preg_replace( '#^https?://#', '', $urls['nfc'] ) ); ?></code><button type="button" class="csl-copy-btn" data-copy="<?php echo esc_attr( $urls['nfc'] ); ?>" title="<?php esc_attr_e( 'Copy', 'clean-short-links' ); ?>"><?php the_icon( 'copy' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Copy', 'clean-short-links' ); ?></span></button></span>
+		<p class="csl-help csl-nfc-size"></p>
+		<div class="csl-nfc-write" hidden>
+			<button type="button" class="button button-primary csl-btn csl-nfc-go"><?php the_icon( 'nfc' ); ?><?php esc_html_e( 'Write to NFC tag', 'clean-short-links' ); ?></button>
+			<label class="csl-check"><input type="checkbox" class="csl-nfc-lock"> <?php esc_html_e( 'Lock the tag afterwards (cannot be changed again)', 'clean-short-links' ); ?></label>
+			<p class="csl-nfc-status" aria-live="polite"></p>
+		</div>
+		<p class="csl-help csl-nfc-other"><?php esc_html_e( 'Writing directly works in Chrome on Android. On an iPhone or in other browsers, copy the address and write it with an NFC app as a URL (link) record.', 'clean-short-links' ); ?></p>
+	</div>
+	<?php
+	card_close();
+}
+
+/**
  * Radio buttons as a segmented control for the QR designer.
  *
  * @param string $key     Design key.
@@ -749,12 +859,21 @@ function check_line( array $link ) {
 /**
  * Label of a referrer entry in the statistics: a host, a channel ("@ig") or none.
  *
- * @param string $key Stored value.
+ * @param string     $key  Stored value.
+ * @param array|null $link Link, for the names of its locations.
  * @return string
  */
-function referrer_label( $key ) {
+function referrer_label( $key, $link = null ) {
 	if ( '' === $key ) {
 		return __( 'direct or app', 'clean-short-links' );
+	}
+	if ( 0 === strpos( $key, '@p:' ) ) {
+		$name = substr( $key, 3 );
+		foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
+			$name = $pl['key'] === $name ? $pl['name'] : $name;
+		}
+		/* translators: %s: name of a location, e.g. "Poster at the station" */
+		return sprintf( __( 'Location: %s', 'clean-short-links' ), $name );
 	}
 	if ( 0 === strpos( $key, '@' ) ) {
 		$name = channels()[ substr( $key, 1 ) ] ?? substr( $key, 1 );
@@ -1001,7 +1120,9 @@ function page_edit() {
 	);
 	if ( $link['id'] ) {
 		$sections['csl-sec-invites'] = __( 'Invitations', 'clean-short-links' );
+		$sections['csl-sec-places']  = __( 'Locations', 'clean-short-links' );
 		$sections['csl-sec-qr']      = __( 'QR code', 'clean-short-links' );
+		$sections['csl-sec-nfc']     = __( 'NFC tag', 'clean-short-links' );
 		$sections['csl-sec-stats'] = __( 'Visits', 'clean-short-links' );
 	}
 	?>
@@ -1189,6 +1310,7 @@ function page_edit() {
 				?>
 
 				<?php if ( $urls ) : ?>
+					<?php places_card( $link, $urls ); ?>
 					<?php card_open( 'csl-sec-qr', 'qr', __( 'QR code', 'clean-short-links' ), __( 'The QR code contains the short link – time window and rules also apply to printed codes.', 'clean-short-links' ) ); ?>
 						<div class="csl-qr-start">
 							<?php copy_field( $urls['qr'] ); ?>
@@ -1201,6 +1323,7 @@ function page_edit() {
 								<p class="csl-qr-warn" aria-live="polite"></p>
 							</div>
 							<div class="csl-qr-controls">
+								<?php code_for_select( $urls, 'qr' ); ?>
 								<div class="csl-qr-group">
 									<span class="csl-field-label"><?php esc_html_e( 'Dots', 'clean-short-links' ); ?></span>
 									<?php
@@ -1272,6 +1395,7 @@ function page_edit() {
 							</div>
 						</div>
 					<?php card_close(); ?>
+					<?php nfc_card( $urls ); ?>
 
 					<?php
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Chooses the period of the chart.
@@ -1281,7 +1405,7 @@ function page_edit() {
 					$dev    = breakdown( $link['id'], 'device', $days );
 					$ref    = breakdown( $link['id'], 'referrer', $days );
 					$total  = array_sum( $series );
-					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ), __( 'Link-in-bio page', 'clean-short-links' ) );
+					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ), __( 'Link-in-bio page', 'clean-short-links' ), __( 'NFC tag', 'clean-short-links' ) );
 					$dnames = array( __( 'Desktop', 'clean-short-links' ), __( 'Mobile', 'clean-short-links' ), __( 'Tablet', 'clean-short-links' ) );
 					card_open( 'csl-sec-stats', 'chart', __( 'Visits', 'clean-short-links' ), __( 'Counted without IP addresses or cookies. Bots and link previews are left out.', 'clean-short-links' ) );
 					?>
@@ -1312,7 +1436,7 @@ function page_edit() {
 									<?php else : ?>
 										<ul class="csl-toplist">
 										<?php foreach ( $block[1] as $k => $v ) : ?>
-											<li><span><?php echo esc_html( $block[2] ? ( $block[2][ (int) $k ] ?? $k ) : referrer_label( (string) $k ) ); ?></span> <span class="csl-num"><?php echo esc_html( number_format_i18n( $v ) ); ?></span>
+											<li><span><?php echo esc_html( $block[2] ? ( $block[2][ (int) $k ] ?? $k ) : referrer_label( (string) $k, $link ) ); ?></span> <span class="csl-num"><?php echo esc_html( number_format_i18n( $v ) ); ?></span>
 												<span class="csl-bar-bg"><span style="width:<?php echo esc_attr( (string) round( 100 * $v / $sum ) ); ?>%"></span></span></li>
 										<?php endforeach; ?>
 										</ul>

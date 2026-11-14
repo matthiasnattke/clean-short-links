@@ -261,7 +261,10 @@ function default_target_url( $case ) {
  */
 function handle( array $found, $source, $slug = '', $fast = false ) {
 	list( $link, $kind ) = $found;
-	$channel = $link && 'channel' === $kind && 0 === strpos( $slug, $link['slug'] . '-' ) ? substr( $slug, strlen( $link['slug'] ) + 1 ) : '';
+	$channel = $link && in_array( $kind, array( 'channel', 'place' ), true ) && 0 === strpos( $slug, $link['slug'] . '-' ) ? substr( $slug, strlen( $link['slug'] ) + 1 ) : '';
+	if ( 'place' === $kind && '' !== $channel ) {
+		$channel = 'p:' . $channel; // A location: counted as "@p:<key>".
+	}
 	if ( isset( $_GET['cslsrc'] ) && 'bio' === $_GET['cslsrc'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only marks a visit from the link-in-bio page.
 		$source = SOURCE_BIO;
 	}
@@ -274,6 +277,9 @@ function handle( array $found, $source, $slug = '', $fast = false ) {
 	}
 	if ( 'qr' === $kind ) {
 		$source = SOURCE_QR;
+	}
+	if ( isset( $_GET['nfc'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only marks a visit from an NFC tag.
+		$source = SOURCE_NFC;
 	}
 	$result = resolve(
 		$link,
@@ -355,7 +361,7 @@ function final_url( $url, $link, $source, $channel = '' ) {
 		$url = add_utm( $url, utm_params( $link, $source, $channel ) );
 	}
 	$query = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
-	unset( $query['cslsrc'] );
+	unset( $query['cslsrc'], $query['nfc'] );
 	if ( ! empty( site_settings()['pass_query'] ) && $query ) {
 		$url = add_query_arg( map_deep( $query, 'rawurlencode' ), $url );
 	}
@@ -364,7 +370,7 @@ function final_url( $url, $link, $source, $channel = '' ) {
 	 *
 	 * @param string     $url    Target URL.
 	 * @param array|null $link   The link, null for an unknown short address.
-	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address.
+	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address, 3 link-in-bio page, 4 NFC tag.
 	 */
 	return (string) apply_filters( 'clean_short_links_redirect', $url, $link, $source );
 }

@@ -55,6 +55,20 @@
 		el.addEventListener( 'change', update );
 	} );
 
+	/* ---- Code for the short link or one of its locations ---- */
+	var codeFor = box.querySelector( 'select[data-code-for="qr"]' );
+	if ( codeFor ) {
+		box.dataset.slugMain = box.dataset.slug;
+		codeFor.addEventListener( 'change', function () {
+			var o = codeFor.selectedOptions[ 0 ].dataset;
+			box.dataset.url = o.url;
+			box.dataset.upper = o.upper;
+			box.dataset.print = o.print;
+			box.dataset.slug = o.slug || box.dataset.slugMain;
+			render();
+		} );
+	}
+
 	/* ---- Logo ---- */
 	var pick = box.querySelector( '.csl-qr-logo-pick' ), remove = box.querySelector( '.csl-qr-logo-remove' ), sizeRow = box.querySelector( '.csl-qr-logo-size' );
 	function loadLogo( url ) {

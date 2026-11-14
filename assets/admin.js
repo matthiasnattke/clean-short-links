@@ -353,4 +353,60 @@
 		} );
 		vnumber();
 	}
+
+	/* ---- Locations ---- */
+	var places = $( '.csl-places' ), ptpl = $( '#csl-place-template' ), pnext = $$( '.csl-place', places ).length + 100;
+	if ( places && ptpl ) {
+		$( '.csl-place-add' ).addEventListener( 'click', function () {
+			var wrap = document.createElement( 'div' );
+			wrap.innerHTML = ptpl.innerHTML.replace( /__i__/g, String( pnext++ ) );
+			var row = wrap.firstElementChild;
+			places.appendChild( row );
+			$( 'input[type="text"]', row ).focus();
+		} );
+		places.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '.csl-place-remove' ) ) {
+				e.target.closest( '.csl-place' ).remove();
+			}
+		} );
+	}
+
+	/* ---- NFC tag ---- */
+	var nfc = $( '.csl-nfc' );
+	if ( nfc ) {
+		var nfcCode = $( '.csl-nfc-address code', nfc ), nfcCopy = $( '.csl-nfc-address .csl-copy-btn', nfc ), nfcStatus = $( '.csl-nfc-status', nfc );
+		var nfcFor = $( 'select[data-code-for="nfc"]' );
+		var nfcSize = function () {
+			var n = nfcCopy.getAttribute( 'data-copy' ).replace( /^https?:\/\/(www\.)?/, '' ).length;
+			$( '.csl-nfc-size', nfc ).textContent = ( n <= 130 ? nfc.dataset.chars : nfc.dataset.long ).replace( '%d', String( n ) );
+		};
+		if ( nfcFor ) {
+			nfcFor.addEventListener( 'change', function () {
+				var url = nfcFor.selectedOptions[ 0 ].dataset.url;
+				nfcCopy.setAttribute( 'data-copy', url );
+				nfcCode.textContent = url.replace( /^https?:\/\//, '' );
+				nfcStatus.textContent = '';
+				nfcSize();
+			} );
+		}
+		nfcSize();
+		if ( 'NDEFReader' in window ) {
+			$( '.csl-nfc-write', nfc ).hidden = false;
+			$( '.csl-nfc-other', nfc ).hidden = true;
+			$( '.csl-nfc-go', nfc ).addEventListener( 'click', function () {
+				var btn = this, lock = $( '.csl-nfc-lock', nfc ).checked, reader = new window.NDEFReader();
+				btn.disabled = true;
+				nfcStatus.textContent = T.nfcHold;
+				reader.write( { records: [ { recordType: 'url', data: nfcCopy.getAttribute( 'data-copy' ) } ] } ).then( function () {
+					return lock ? reader.makeReadOnly() : null;
+				} ).then( function () {
+					nfcStatus.textContent = lock ? T.nfcLocked : T.nfcDone;
+				} ).catch( function ( err ) {
+					nfcStatus.textContent = T.nfcFailed + ' ' + ( err && err.message ? err.message : '' );
+				} ).then( function () {
+					btn.disabled = false;
+				} );
+			} );
+		}
+	}
 } )();

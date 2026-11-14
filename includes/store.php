@@ -255,6 +255,11 @@ function sync_routes( array $link ) {
 		if ( '' !== $link['qr_slug'] ) {
 			$slugs[ $link['qr_slug'] ] = 'qr';
 		}
+		foreach ( array( 'channel', 'place' ) as $extra ) {
+			foreach ( array_keys( channel_slugs( $link['id'], $link['slug'], $extra ) ) as $s ) {
+				$slugs[ $s ] = $extra;
+			}
+		}
 		foreach ( $slugs as $slug => $kind ) {
 			if ( route_free( $host, $slug, $link['id'] ) ) {
 				$wpdb->replace(
@@ -743,7 +748,9 @@ function save_link( array $data ) {
 			)
 		);
 	}
-	sync_channel_slugs( $id, $slug, clean_meta( json_decode( $row['meta'], true ) )['channels'], $old ? $old['slug'] : '' );
+	$meta = clean_meta( json_decode( $row['meta'], true ) );
+	sync_channel_slugs( $id, $slug, $meta['channels'], $old ? $old['slug'] : '' );
+	sync_channel_slugs( $id, $slug, array_column( $meta['places'], 'key' ), $old ? $old['slug'] : '', 'place' );
 	forget_links();
 	$saved = link_by_id( $id );
 	if ( $saved && ( $saved['meta']['hosts'] || ( $old && $old['meta']['hosts'] ) ) ) {
@@ -759,10 +766,10 @@ function save_link( array $data ) {
  * @param string $slug Main short address.
  * @return array<string,string>
  */
-function channel_slugs( $id, $slug ) {
+function channel_slugs( $id, $slug, $kind = 'channel' ) {
 	global $wpdb;
 	$out = array();
-	foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT slug FROM %i WHERE link_id = %d AND kind = 'channel'", tables()['slugs'], $id ) ) as $s ) {
+	foreach ( $wpdb->get_col( $wpdb->prepare( 'SELECT slug FROM %i WHERE link_id = %d AND kind = %s', tables()['slugs'], $id, $kind ) ) as $s ) {
 		if ( 0 === strpos( $s, $slug . '-' ) ) {
 			$out[ $s ] = substr( $s, strlen( $slug ) + 1 );
 		}
@@ -778,11 +785,12 @@ function channel_slugs( $id, $slug ) {
  * @param string $slug     Main short address.
  * @param array  $wanted   Channel keys.
  * @param string $old_slug Previous short address, '' for a new link.
+ * @param string $kind     channel, or place for the addresses of locations.
  */
-function sync_channel_slugs( $id, $slug, array $wanted, $old_slug ) {
+function sync_channel_slugs( $id, $slug, array $wanted, $old_slug, $kind = 'channel' ) {
 	global $wpdb;
 	$t = tables();
-	foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT slug FROM %i WHERE link_id = %d AND kind = 'channel'", $t['slugs'], $id ) ) as $s ) {
+	foreach ( $wpdb->get_col( $wpdb->prepare( 'SELECT slug FROM %i WHERE link_id = %d AND kind = %s', $t['slugs'], $id, $kind ) ) as $s ) {
 		$key = 0 === strpos( $s, $slug . '-' ) ? substr( $s, strlen( $slug ) + 1 ) : '';
 		if ( '' !== $old_slug && $old_slug !== $slug && 0 === strpos( $s, $old_slug . '-' ) ) {
 			$wpdb->update( $t['slugs'], array( 'kind' => 'alias' ), array( 'slug' => $s ) );
@@ -798,7 +806,7 @@ function sync_channel_slugs( $id, $slug, array $wanted, $old_slug ) {
 				array(
 					'slug'       => $s,
 					'link_id'    => $id,
-					'kind'       => 'channel',
+					'kind'       => $kind,
 					'created_at' => time(),
 				)
 			);
@@ -1177,7 +1185,7 @@ function target_label( $target ) {
  * The full short URLs of a link.
  *
  * @param array $link Link.
- * @return array{link:string,qr:string,root:string,qr_upper:string}
+ * @return array{link:string,qr:string,root:string,qr_upper:string,nfc:string,hosts:array,places:array}
  */
 function short_urls( array $link ) {
 	list( $p, $q ) = prefixes();
@@ -1187,12 +1195,26 @@ function short_urls( array $link ) {
 	foreach ( (array) ( $link['meta']['hosts'] ?? array() ) as $host ) {
 		$hosts[ $host ] = 'https://' . $host . '/' . $p . '/' . $link['slug'];
 	}
+	$places = array();
+	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
+		$s                    = substr( $link['slug'], 0, 64 - strlen( $pl['key'] ) - 1 ) . '-' . $pl['key'];
+		$places[ $pl['key'] ] = array(
+			'name'     => $pl['name'],
+			'slug'     => $s,
+			'link'     => home_url( '/' . $p . '/' . $s ),
+			'qr'       => home_url( '/' . $q . '/' . $s ),
+			'qr_upper' => qr_uppercase( home_url( '/' . $q . '/' . $s ) ),
+			'nfc'      => home_url( '/' . $p . '/' . $s ) . '?nfc',
+		);
+	}
 	return array(
 		'link'     => home_url( '/' . $p . '/' . $link['slug'] ),
 		'qr'       => $qr,
 		'root'     => ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '',
 		'qr_upper' => qr_uppercase( $qr ),
+		'nfc'      => home_url( '/' . $p . '/' . $link['slug'] ) . '?nfc',
 		'hosts'    => $hosts,
+		'places'   => $places,
 	);
 }
 

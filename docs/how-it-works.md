@@ -43,6 +43,8 @@ A network-wide table `{base_prefix}cleansl_routes` (host, short address → site
 5. Target not available (draft, deleted) → fallback or 404.
 6. Main target only: the first fitting variant by device, operating system and screen width (`variant_plan()`, also pure and tested).
 
+Visits through a location address (`<short address>-<key>`, kind `place` in the slugs table) are stored with the referrer `@p:<key>`; `?nfc` marks the source NFC tag (4) and is not passed on to the target.
+
 ## Data
 
 Three tables per site:

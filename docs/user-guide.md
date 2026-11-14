@@ -44,6 +44,14 @@ Example for a festival poster:
 
 Redirects are always temporary (302) and sent with no-cache headers, so browsers never remember an old target.
 
+## Locations
+
+Under *Locations* one short link gets addresses of its own for several posters, flyers or tags – e.g. `…/s/sommer-bahnhof` and `…/s/sommer-markt`. They all lead to the same target with the same rules and variants; the statistics list them under *Referring sites* as "Location: …", so you see which place works. A location keeps its address when you rename it. In the QR designer and in the NFC card, *Code for* chooses the short link itself or a location.
+
+## NFC tags
+
+NFC stickers, cards and key rings open the short link when a phone touches them – on iPhone and Android, without an app. The card *NFC tag* shows the address for the tag (the short link with `?nfc`, so visits count as *NFC tag* in the statistics). In Chrome on Android, *Write to NFC tag* writes it directly; on an iPhone or in other browsers, copy the address into an NFC app and write it as a URL record. Locking the tag afterwards is possible but cannot be undone – the short link itself can still be changed at any time, so a locked tag never needs rewriting. Short addresses fit on every common tag (NTAG213).
+
 ## Different targets by device and screen
 
 Under *Different targets by device and screen* a short link can lead elsewhere depending on the visitor: by device (phone, tablet, computer), operating system (iOS/iPadOS, Android, Windows, macOS, Linux/ChromeOS) and screen width in pixels. The first variant that fits decides; rules by date and time come first, variants apply to the main target. Typical: one QR code that sends iPhones to the App Store, Android phones to Google Play and everyone else to the website.

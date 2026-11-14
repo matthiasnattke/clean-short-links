@@ -301,6 +301,24 @@ test( 'UTM values come from the link, channel and source', function () {
 	same( 'email', utm_params( $l, SOURCE_LINK, 'nl' )['utm_medium'] );
 	same( array( 'utm_source' => 'qr', 'utm_medium' => 'qr', 'utm_campaign' => 'fest' ), utm_params( $l, SOURCE_QR ) );
 	same( 'linkinbio', utm_params( $l, SOURCE_BIO )['utm_source'] );
+	same( array( 'utm_source' => 'nfc', 'utm_medium' => 'nfc', 'utm_campaign' => 'fest' ), utm_params( $l, SOURCE_NFC ) );
+	same( array( 'utm_source' => 'qr', 'utm_medium' => 'qr', 'utm_campaign' => 'fest', 'utm_content' => 'bahnhof' ), utm_params( $l, SOURCE_QR, 'p:bahnhof' ) );
+} );
+
+test( 'Locations get stable, unique keys that never clash with channels', function () {
+	$p = clean_places(
+		array(
+			array( 'name' => 'Plakat Bahnhof' ),
+			array( 'name' => 'Plakat Bahnhof' ),
+			array( 'name' => 'Neuer Name', 'key' => 'markt' ),
+			array( 'name' => 'IG' ),
+			array( 'name' => '' ),
+			'junk',
+		)
+	);
+	same( array( 'plakat-bahnhof', 'plakat-bahnhof-2', 'markt', 'ig-2' ), array_column( $p, 'key' ) );
+	same( 'Neuer Name', $p[2]['name'] );
+	same( 30, count( clean_places( array_fill( 0, 40, array( 'name' => 'x' ) ) ) ) );
 } );
 
 test( 'Permanent redirects only for links that cannot change by themselves', function () {

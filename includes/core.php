@@ -19,6 +19,7 @@ const SOURCE_LINK = 0;
 const SOURCE_QR   = 1;
 const SOURCE_ROOT = 2;
 const SOURCE_BIO  = 3;
+const SOURCE_NFC  = 4;
 
 /** Device class of a visit. */
 const DEVICE_DESKTOP = 0;
@@ -465,7 +466,47 @@ function clean_meta( $meta ) {
 		// Other targets by device, operating system or screen width, and further domains.
 		'variants'     => clean_variants( $meta['variants'] ?? array() ),
 		'hosts'        => clean_hosts( $meta['hosts'] ?? array() ),
+		// Locations with addresses of their own ("<short address>-<key>").
+		'places'       => clean_places( $meta['places'] ?? array() ),
 	);
+}
+
+/**
+ * Cleans the locations of a link: a name and a key that becomes part of the address. The
+ * key is kept when the name changes, so printed codes keep working.
+ *
+ * @param mixed $in Raw list.
+ * @return array<int,array{key:string,name:string}>
+ */
+function clean_places( $in ) {
+	$out  = array();
+	$used = array_keys( channels() );
+	foreach ( is_array( $in ) ? $in : array() as $row ) {
+		if ( ! is_array( $row ) || count( $out ) >= 30 ) {
+			continue;
+		}
+		$name = substr( sanitize_text_field( $row['name'] ?? '' ), 0, 60 );
+		$key  = normalize_slug( (string) ( $row['key'] ?? '' ) );
+		if ( '' === $key || ! is_valid_slug( $key ) ) {
+			$key = trim( substr( normalize_slug( $name ), 0, 24 ), '-' );
+		}
+		if ( '' === $name && '' === trim( (string) ( $row['key'] ?? '' ) ) ) {
+			continue;
+		}
+		if ( '' === $key || ! is_valid_slug( $key ) ) {
+			continue;
+		}
+		$base = $key;
+		for ( $i = 2; in_array( $key, $used, true ); $i++ ) {
+			$key = substr( $base, 0, 21 ) . '-' . $i;
+		}
+		$used[] = $key;
+		$out[]  = array(
+			'key'  => $key,
+			'name' => '' !== $name ? $name : $key,
+		);
+	}
+	return $out;
 }
 
 /**
@@ -616,18 +657,24 @@ function add_utm( $url, array $params ) {
  * @return array
  */
 function utm_params( array $link, $source, $channel = '' ) {
-	if ( '' !== $channel ) {
+	$place = 0 === strpos( $channel, 'p:' ) ? substr( $channel, 2 ) : '';
+	if ( '' !== $channel && '' === $place ) {
 		$medium = in_array( $channel, array( 'nl', 'mail' ), true ) ? 'email' : ( 'print' === $channel ? 'print' : 'social' );
 		$src    = $channel;
 	} else {
-		$medium = SOURCE_QR === $source ? 'qr' : ( SOURCE_BIO === $source ? 'social' : 'shortlink' );
-		$src    = SOURCE_BIO === $source ? 'linkinbio' : ( SOURCE_QR === $source ? 'qr' : 'shortlink' );
+		$names  = array(
+			SOURCE_QR  => array( 'qr', 'qr' ),
+			SOURCE_BIO => array( 'linkinbio', 'social' ),
+			SOURCE_NFC => array( 'nfc', 'nfc' ),
+		);
+		$src    = $names[ $source ][0] ?? 'shortlink';
+		$medium = $names[ $source ][1] ?? 'shortlink';
 	}
 	return array(
 		'utm_source'   => $src,
 		'utm_medium'   => $medium,
 		'utm_campaign' => $link['slug'] ?? '',
-	);
+	) + ( '' !== $place ? array( 'utm_content' => $place ) : array() );
 }
 
 /**

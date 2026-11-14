@@ -463,3 +463,17 @@ textarea.csl-wide { max-width: none; }
 .csl-net-results .csl-dot { margin-top: 7px; }
 .csl-net-result { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
 .csl-net-result small { color: var(--csl-muted); }
+
+/* Locations. */
+.csl-places { display: grid; gap: 8px; margin-bottom: 10px; }
+.csl-place { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--csl-line); border-left: 3px solid #1d8a5f; border-radius: 12px; background: #fff; }
+.csl-place .csl-field { flex: 1 1 220px; margin: 0; }
+.csl-place .csl-field input { width: 100%; }
+.csl-place-urls { flex-basis: 100%; min-width: 0; }
+.csl-code-for { display: block; margin-bottom: 12px; }
+.csl-code-for select { max-width: 100%; }
+
+/* NFC tag. */
+.csl-nfc-write { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 12px 0 4px; }
+.csl-nfc-status { flex-basis: 100%; margin: 0; font-weight: 600; }
+.csl-nfc-status:empty { display: none; }
