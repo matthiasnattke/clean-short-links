@@ -64,6 +64,8 @@ function admin_js_data() {
 		'prefix'   => $p,
 		'qrPrefix' => $q,
 		'root'     => root_allowed(),
+		'postKind' => default_kind( 'post:1', site_settings() ),
+		'otherKind' => default_kind( '', site_settings() ),
 		'i18n'     => array(
 			'copied'      => __( 'Copied', 'clean-short-links' ),
 			'checking'    => __( 'Checking …', 'clean-short-links' ),
@@ -831,11 +833,11 @@ function page_edit() {
 		'id'         => 0,
 		'title'      => $for_post ? get_the_title( $for_post ) : '',
 		'target'     => $for_post ? 'post:' . $for_post : '',
-		'slug'       => unique_random_slug(),
+		'slug'       => '',
 		'qr_slug'    => '',
-		'kind'       => 'random',
+		'kind'       => default_kind( $for_post ? 'post:' . $for_post : '', $s ),
 		'root'       => 0,
-		'start_mode' => '',
+		'start_mode' => $for_post ? 'publish' : '',
 		'starts_at'  => null,
 		'ends_at'    => null,
 		'fallback'   => '',
@@ -852,6 +854,9 @@ function page_edit() {
 			'at'     => 0,
 		),
 	);
+	if ( ! $link['id'] && '' === $link['slug'] ) {
+		$link['slug'] = 'random' === $link['kind'] ? unique_random_slug() : suggest_slug( $link['kind'], $link['title'] );
+	}
 	$urls          = $link['id'] ? short_urls( $link ) : null;
 	list( $p, $q ) = prefixes();
 	$home          = preg_replace( '#^https?://#', '', home_url( '/' ) );
@@ -1521,14 +1526,24 @@ function page_settings() {
 							<?php endforeach; ?>
 						</div>
 						<div class="csl-sub">
-							<span class="csl-field-label"><?php esc_html_e( 'Kind of short address', 'clean-short-links' ); ?></span>
+							<span class="csl-field-label"><?php esc_html_e( 'Short address for posts and pages', 'clean-short-links' ); ?></span>
 							<div class="csl-tiles csl-tiles-3">
 								<?php
-								tile( 'auto_kind', 'random', 'random' === $s['auto_kind'], 'shuffle', __( 'Random', 'clean-short-links' ), __( 'Short and unique, e.g. k7mq4', 'clean-short-links' ) );
-								tile( 'auto_kind', 'memorable', 'memorable' === $s['auto_kind'], 'sparkle', __( 'Memorable', 'clean-short-links' ), __( 'Two words, e.g. blue-couch', 'clean-short-links' ) );
-								tile( 'auto_kind', 'title', 'title' === $s['auto_kind'], 'type', __( 'From the title', 'clean-short-links' ), __( 'The first words of the title', 'clean-short-links' ) );
+								tile( 'post_kind', 'title', 'title' === $s['post_kind'], 'type', __( 'From the title', 'clean-short-links' ), __( 'The first words of the title', 'clean-short-links' ) );
+								tile( 'post_kind', 'memorable', 'memorable' === $s['post_kind'], 'sparkle', __( 'Memorable', 'clean-short-links' ), __( 'Two words, e.g. blue-couch', 'clean-short-links' ) );
+								tile( 'post_kind', 'random', 'random' === $s['post_kind'], 'shuffle', __( 'Random', 'clean-short-links' ), __( 'Short and unique, e.g. k7mq4', 'clean-short-links' ) );
 								?>
 							</div>
+						</div>
+						<div class="csl-sub">
+							<span class="csl-field-label"><?php esc_html_e( 'Short address for all other targets', 'clean-short-links' ); ?></span>
+							<div class="csl-tiles csl-tiles-2">
+								<?php
+								tile( 'other_kind', 'random', 'random' === $s['other_kind'], 'shuffle', __( 'Random', 'clean-short-links' ), __( 'Short and unique, e.g. k7mq4', 'clean-short-links' ) );
+								tile( 'other_kind', 'memorable', 'memorable' === $s['other_kind'], 'sparkle', __( 'Memorable', 'clean-short-links' ), __( 'Two words, e.g. blue-couch', 'clean-short-links' ) );
+								?>
+							</div>
+							<p class="csl-help"><?php esc_html_e( 'The default for new short links – each link can still get a different kind.', 'clean-short-links' ); ?></p>
 						</div>
 					<?php card_close(); ?>
 
@@ -1645,7 +1660,8 @@ add_action(
 			'prefix'        => clean_prefix( $p['prefix'] ?? '' ),
 			'qr_prefix'     => clean_prefix( $p['qr_prefix'] ?? '' ),
 			'auto_types'    => array_values( array_intersect( array_map( 'sanitize_key', (array) ( $p['auto_types'] ?? array() ) ), $types ) ),
-			'auto_kind'     => in_array( $p['auto_kind'] ?? '', array( 'random', 'memorable', 'title' ), true ) ? $p['auto_kind'] : 'random',
+			'post_kind'     => in_array( $p['post_kind'] ?? '', array( 'random', 'memorable', 'title' ), true ) ? $p['post_kind'] : 'title',
+			'other_kind'    => 'memorable' === ( $p['other_kind'] ?? '' ) ? 'memorable' : 'random',
 			'root_default'  => empty( $p['root_default'] ) ? 0 : 1,
 			'count_editors' => empty( $p['count_editors'] ) ? 0 : 1,
 			'pass_query'    => empty( $p['pass_query'] ) ? 0 : 1,
@@ -1705,7 +1721,7 @@ add_action(
 				)
 			);
 			foreach ( $ids as $post_id ) {
-				if ( ! get_link_for_post( $post_id ) && ! is_wp_error( create_for_post( $post_id, site_settings()['auto_kind'] ) ) ) {
+				if ( ! get_link_for_post( $post_id ) && ! is_wp_error( create_for_post( $post_id ) ) ) {
 					++$n;
 				}
 			}

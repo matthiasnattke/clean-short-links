@@ -399,5 +399,13 @@
 	"Only takes effect without time window, rules and limit.": "Greift nur ohne Zeitraum, Regeln und Limit.",
 	"Saved.": "Gespeichert.",
 	"Saved together with the content, or right away with the button.": "Wird mit dem Inhalt gespeichert – oder sofort über den Button.",
-	"More: QR design, rules, invitations, statistics": "Mehr: QR-Design, Regeln, Einladungen, Statistik"
+	"More: QR design, rules, invitations, statistics": "Mehr: QR-Design, Regeln, Einladungen, Statistik",
+	"With the publication of this content.": "Mit der Veröffentlichung dieses Inhalts.",
+	"With the scheduled publication on %s.": "Mit der geplanten Veröffentlichung am %s.",
+	"Ends on %s – change it on the edit screen.": "Endet am %s – änderbar auf der Bearbeiten-Seite.",
+	"Only takes effect without end, rules and limit.": "Greift nur ohne Ende, Regeln und Limit.",
+	"More: end, rules, QR design, invitations, statistics": "Mehr: Ende, Regeln, QR-Design, Einladungen, Statistik",
+	"Short address for posts and pages": "Kurzadresse für Beiträge und Seiten",
+	"Short address for all other targets": "Kurzadresse für alle anderen Ziele",
+	"The default for new short links – each link can still get a different kind.": "Die Vorgabe für neue Kurzlinks – jeder Link kann trotzdem eine andere Art bekommen."
 }

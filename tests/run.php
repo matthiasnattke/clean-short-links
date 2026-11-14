@@ -309,7 +309,8 @@ test( 'Permanent redirects only for links that cannot change by themselves', fun
 	same( false, permanent_allowed( array_merge( $l, array( 'rules' => array( array( 'target' => 'post:1' ) ) ) ) ) );
 	same( false, permanent_allowed( array_merge( $l, array( 'ends_at' => 5 ) ) ) );
 	same( false, permanent_allowed( array_merge( $l, array( 'max_clicks' => 5 ) ) ) );
-	same( false, permanent_allowed( array_merge( $l, array( 'start_mode' => 'publish' ) ) ) );
+	same( true, permanent_allowed( array_merge( $l, array( 'start_mode' => 'publish' ) ) ), 'publish start' );
+	same( false, permanent_allowed( array_merge( $l, array( 'start_mode' => 'date', 'starts_at' => 5 ) ) ), 'date start' );
 	same( false, permanent_allowed( link() ) );
 } );
 
@@ -474,6 +475,16 @@ test( 'Local times of the site', function () {
 	same( '2026-12-24T18:00', timestamp_to_local( $ts ) );
 	same( null, local_to_timestamp( 'nonsense' ) );
 	same( '', timestamp_to_local( null ) );
+} );
+
+test( 'Default kind: posts and pages from the title, other targets random or memorable', function () {
+	same( 'title', default_kind( 'post:5', site_defaults() ) );
+	same( 'random', default_kind( 'https://example.org/', site_defaults() ) );
+	same( 'random', default_kind( 'home', site_defaults() ) );
+	same( 'memorable', default_kind( 'https://example.org/', array( 'other_kind' => 'memorable' ) ) );
+	same( 'random', default_kind( 'https://example.org/', array( 'other_kind' => 'title' ) ), 'title only for content' );
+	same( 'memorable', default_kind( 'post:5', array( 'post_kind' => 'memorable' ) ) );
+	same( 'title', default_kind( 'post:5', array( 'post_kind' => 'nonsense' ) ) );
 } );
 
 test( 'Changes from the editor sidebar touch only what it shows', function () {

@@ -4,7 +4,7 @@
 
 1. **Short links → Add new.**
 2. **Target:** type to search posts and pages, or paste a URL. Posts and pages are stored by ID, so the short link survives a changed permalink.
-3. **Short address:** pick a kind. A suggestion appears right away.
+3. **Short address:** pick a kind. A suggestion appears right away. Posts and pages get their address from the title by default, all other targets a random or memorable one – both defaults can be changed in the settings.
    - *Random* – five characters without look-alikes (`k7mq4`).
    - *Memorable* – two words (`blue-couch`), in German on German sites.
    - *From the title* – the first words of the title (`summer-party`).
@@ -118,7 +118,7 @@ Stored: daily totals only. No IP address, cookie, user ID or full referrer is ev
 
 ## Settings (per site)
 
-- **Create automatically** for chosen post types on first publication.
+- **Create automatically** for chosen post types on first publication, and the default kind of short address: for posts and pages (from the title unless you choose otherwise) and for all other targets (random or memorable).
 - **Short form by default** for new memorable and own addresses.
 - **Count editors** – off by default.
 - **Pass parameters** – `?utm_source=…` is appended to the target.
@@ -155,9 +155,8 @@ The essentials can be changed right there, without leaving the post:
 - **Active** – pause the link and switch it back on.
 - **Short address** – type your own or let it suggest a random, memorable or title-based one; the old address stays as an alias unless you untick that.
 - **Short form without prefix** – when the network allows it, with a warning if the address is already taken by a page.
-- **Starts / Ends** – right away, with the publication or at a date, and an optional end.
 - **Click limit** – with the clicks used so far and a way to reset the counter.
 - **Permanent redirect (301)** and **Show on the link-in-bio page**.
 - **Link check** – the latest result with any problems, and *Check now*.
 
-Changes are saved together with the post or page, or right away with *Save short link*. QR design, rules, the calendar, invitations, channels, social previews and statistics stay on the full edit screen, linked from the panel.
+The link always starts with the publication of the post or page – also when the publication is scheduled. Changes are saved together with the post or page, or right away with *Save short link*. An end, rules, QR design, the calendar, invitations, channels, social previews and statistics stay on the full edit screen, linked from the panel.

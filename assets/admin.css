@@ -85,6 +85,7 @@ textarea.csl-wide { max-width: none; }
 .csl-tiles { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
 .csl-tiles-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .csl-tiles-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.csl-tiles-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .csl-tile { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 14px; border: 1.5px solid var(--csl-line); border-radius: 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s, background .15s; }
 .csl-tile:hover { border-color: #a7aaad; }
 .csl-tile input { position: absolute; opacity: 0; pointer-events: none; }
@@ -303,7 +304,7 @@ textarea.csl-wide { max-width: none; }
 	.csl-overview { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 782px) {
-	.csl-tiles-4, .csl-tiles-3, .csl-breakdowns { grid-template-columns: minmax(0, 1fr); }
+	.csl-tiles-4, .csl-tiles-3, .csl-tiles-2, .csl-breakdowns { grid-template-columns: minmax(0, 1fr); }
 	.csl-hero { flex-wrap: wrap; padding: 18px; }
 	.csl-hero-actions { justify-content: flex-start; }
 	.csl-card { padding: 18px; }

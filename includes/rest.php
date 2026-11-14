@@ -14,15 +14,15 @@ defined( 'ABSPATH' ) || exit;
  * Creates a short link for a post.
  *
  * @param int    $post_id Post ID.
- * @param string $kind    random, memorable or title.
+ * @param string $kind    random, memorable or title; empty for the site's default.
  * @return int|\WP_Error Link ID.
  */
-function create_for_post( $post_id, $kind = 'random' ) {
+function create_for_post( $post_id, $kind = '' ) {
 	$post = get_post( $post_id );
 	if ( ! $post ) {
 		return new \WP_Error( 'missing', __( 'This content does not exist.', 'clean-short-links' ) );
 	}
-	$kind  = in_array( $kind, array( 'random', 'memorable', 'title' ), true ) ? $kind : 'random';
+	$kind  = in_array( $kind, array( 'random', 'memorable', 'title' ), true ) ? $kind : default_kind( 'post:' . $post->ID, site_settings() );
 	$title = get_the_title( $post );
 	return save_link(
 		array(
@@ -49,7 +49,7 @@ add_action(
 		if ( ! in_array( $post->post_type, (array) $s['auto_types'], true ) || get_link_for_post( $post->ID ) ) {
 			return;
 		}
-		create_for_post( $post->ID, $s['auto_kind'] );
+		create_for_post( $post->ID );
 	},
 	10,
 	3
@@ -230,7 +230,7 @@ add_action(
 					'args'                => array(
 						'kind' => array(
 							'type'    => 'string',
-							'default' => 'random',
+							'default' => '',
 						),
 					),
 					'callback'            => function ( $r ) {
@@ -307,7 +307,7 @@ add_action(
 			'CleanShortLinksEditor',
 			array(
 				'canCreate' => current_user_can( capability() ),
-				'kind'      => site_settings()['auto_kind'],
+				'kind'      => default_kind( 'post:1', site_settings() ),
 				'root'      => root_allowed(),
 				'bio'       => ! empty( site_settings()['bio_enabled'] ),
 				'base'      => home_url( '/' . prefixes()[0] . '/' ),
@@ -339,18 +339,18 @@ add_action(
 					'rootTaken'   => __( 'Taken by %s – the short form will not work.', 'clean-short-links' ),
 					'active'      => __( 'Active', 'clean-short-links' ),
 					'start'       => __( 'Starts', 'clean-short-links' ),
-					'startNow'    => __( 'Right away', 'clean-short-links' ),
-					'startPub'    => __( 'When the content is published', 'clean-short-links' ),
-					'startDate'   => __( 'At a date', 'clean-short-links' ),
-					'end'         => __( 'Ends', 'clean-short-links' ),
-					'endHelp'     => __( 'Leave empty for no end.', 'clean-short-links' ),
+					'startPub'    => __( 'With the publication of this content.', 'clean-short-links' ),
+					/* translators: %s: date and time the content is scheduled for */
+					'startPlanned' => __( 'With the scheduled publication on %s.', 'clean-short-links' ),
+					/* translators: %s: date and time */
+					'endsAt'      => __( 'Ends on %s – change it on the edit screen.', 'clean-short-links' ),
 					'limit'       => __( 'Click limit', 'clean-short-links' ),
 					'limitHelp'   => __( '0 = no limit', 'clean-short-links' ),
 					/* translators: 1: clicks so far, 2: limit */
 					'used'        => __( '%1$d of %2$d clicks used', 'clean-short-links' ),
 					'reset'       => __( 'Reset counter', 'clean-short-links' ),
 					'permanent'   => __( 'Permanent redirect (301)', 'clean-short-links' ),
-					'permHelp'    => __( 'Only takes effect without time window, rules and limit.', 'clean-short-links' ),
+					'permHelp'    => __( 'Only takes effect without end, rules and limit.', 'clean-short-links' ),
 					'bioToggle'   => __( 'Show on the link-in-bio page', 'clean-short-links' ),
 					'save'        => __( 'Save short link', 'clean-short-links' ),
 					'saved'       => __( 'Saved.', 'clean-short-links' ),
@@ -361,7 +361,7 @@ add_action(
 					'checkWarn'   => __( 'Link check: please have a look', 'clean-short-links' ),
 					'checkBad'    => __( 'Link check: a target is not reachable', 'clean-short-links' ),
 					'checkNone'   => __( 'Not checked yet', 'clean-short-links' ),
-					'more'        => __( 'More: QR design, rules, invitations, statistics', 'clean-short-links' ),
+					'more'        => __( 'More: end, rules, QR design, invitations, statistics', 'clean-short-links' ),
 					'exhausted'   => __( 'Limit reached', 'clean-short-links' ),
 					'unreachable' => __( 'Temporarily unreachable', 'clean-short-links' ),
 					'gone'        => __( 'Permanently unreachable', 'clean-short-links' ),

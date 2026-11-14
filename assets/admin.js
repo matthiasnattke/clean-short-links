@@ -204,8 +204,29 @@
 			check();
 		} );
 	}
+	// New links: posts and pages get their address from the title, other targets random
+	// or memorable – until the kind or the address is chosen by hand.
+	var chosen = !! id;
+	slug.addEventListener( 'input', function () {
+		chosen = true;
+	} );
 	$$( 'input[name="kind"]' ).forEach( function ( r ) {
-		r.addEventListener( 'change', suggest );
+		r.addEventListener( 'change', function () {
+			chosen = true;
+			suggest();
+		} );
+	} );
+	form.addEventListener( 'csl-target', function () {
+		if ( chosen ) {
+			return;
+		}
+		var isPost = 0 === $( 'input[name="target"]' ).value.indexOf( 'post:' );
+		setKind( isPost ? D.postKind : D.otherKind );
+		var pub = $( 'input[name="start_mode"][value="publish"]' );
+		if ( isPost && pub ) {
+			pub.checked = true;
+		}
+		suggest();
 	} );
 	$( '.csl-reroll' ).addEventListener( 'click', suggest );
 	if ( slug.value ) {

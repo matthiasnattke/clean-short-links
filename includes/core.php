@@ -70,7 +70,8 @@ function site_defaults() {
 		'prefix'        => '',
 		'qr_prefix'     => '',
 		'auto_types'    => array(),
-		'auto_kind'     => 'random',
+		'post_kind'     => 'title',
+		'other_kind'    => 'random',
 		'root_default'  => 1,
 		'count_editors' => 0,
 		'pass_query'    => 1,
@@ -460,6 +461,21 @@ function clean_meta( $meta ) {
 }
 
 /**
+ * The kind of short address a new link gets by default: posts and pages from their title,
+ * everything else random or memorable, as set for the site.
+ *
+ * @param string $target Target.
+ * @param array  $s      Site settings.
+ * @return string random, memorable or title.
+ */
+function default_kind( $target, array $s ) {
+	if ( target_post_id( $target ) ) {
+		return in_array( $s['post_kind'] ?? '', array( 'random', 'memorable', 'title' ), true ) ? $s['post_kind'] : 'title';
+	}
+	return 'memorable' === ( $s['other_kind'] ?? '' ) ? 'memorable' : 'random';
+}
+
+/**
  * Applies the changes from the block editor's sidebar to a link. Only the fields the
  * sidebar shows are taken over, everything else stays as it is.
  *
@@ -533,8 +549,9 @@ function editor_changes( array $old, array $in ) {
 
 /**
  * May this link answer with a permanent redirect (301)? Only if nothing about it can
- * change by itself: no time window, rules, limit or invitations – browsers and search
- * engines remember a 301.
+ * change by itself: no start date, end, rules, limit or invitations – browsers and search
+ * engines remember a 301. Starting with the publication is allowed: before it the link does
+ * not redirect at all, after it the target stays the same.
  *
  * @param array $link Link.
  * @return bool
@@ -543,7 +560,8 @@ function permanent_allowed( array $link ) {
 	return ! empty( $link['meta']['permanent'] )
 		&& empty( $link['parent_id'] )
 		&& empty( $link['rules'] )
-		&& empty( $link['starts_at'] ) && '' === ( $link['start_mode'] ?? '' )
+		// Starting with the publication is fine: once published, the target stays the same.
+		&& empty( $link['starts_at'] ) && in_array( $link['start_mode'] ?? '', array( '', 'publish' ), true )
 		&& empty( $link['ends_at'] )
 		&& empty( $link['max_clicks'] );
 }

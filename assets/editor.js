@@ -1,5 +1,6 @@
 /* Clean Short Links – panel in the sidebar of the block editor: the short link of the post
- * or page with its essential settings. Everything else stays on the full edit screen. */
+ * or page with its essential settings. It starts with the publication; end, rules and the
+ * rest stay on the full edit screen. */
 ( function ( wp ) {
 	'use strict';
 	if ( ! wp || ! wp.plugins || ! wp.element ) {
@@ -12,7 +13,7 @@
 		return;
 	}
 	var API = '/clean-short-links/v1/';
-	var FIELDS = [ 'slug', 'kind', 'keep_old', 'root', 'paused', 'start_mode', 'starts_at', 'ends_at', 'max_clicks', 'reset_clicks', 'permanent', 'bio' ];
+	var FIELDS = [ 'slug', 'kind', 'keep_old', 'root', 'paused', 'max_clicks', 'reset_clicks', 'permanent', 'bio' ];
 	var muted = { color: '#757575' };
 
 	function sprintf( text ) {
@@ -22,6 +23,12 @@
 		} );
 	}
 
+	// A local date-time ("2026-12-24T18:00") in the reader's format.
+	function when( local ) {
+		var d = new Date( local );
+		return isNaN( d ) ? local : d.toLocaleString( undefined, { dateStyle: 'medium', timeStyle: 'short' } );
+	}
+
 	function formFrom( link ) {
 		return {
 			slug: link.slug,
@@ -29,9 +36,6 @@
 			keep_old: true,
 			root: link.root,
 			paused: link.paused,
-			start_mode: link.start_mode,
-			starts_at: link.starts_at,
-			ends_at: link.ends_at,
 			max_clicks: String( link.max_clicks || 0 ),
 			reset_clicks: false,
 			permanent: link.permanent,
@@ -81,9 +85,11 @@
 
 	function Settings( props ) {
 		var link = props.link, form = props.form, set = props.set;
-		var title = wp.data.useSelect( function ( select ) {
-			return select( 'core/editor' ).getEditedPostAttribute( 'title' ) || '';
+		var post = wp.data.useSelect( function ( select ) {
+			var e = select( 'core/editor' );
+			return { title: e.getEditedPostAttribute( 'title' ) || '', status: e.getEditedPostAttribute( 'status' ), date: e.getEditedPostAttribute( 'date' ) };
 		}, [] );
+		var title = post.title;
 		var s1 = useState( '' ), slugMsg = s1[ 0 ], setSlugMsg = s1[ 1 ];
 		var s2 = useState( '' ), rootTaken = s2[ 0 ], setRootTaken = s2[ 1 ];
 
@@ -162,36 +168,10 @@
 				} )
 			) : null,
 			el( 'div', { style: { marginTop: '16px' } },
-				el( C.SelectControl, {
-					label: T.start,
-					value: form.start_mode,
-					options: [ { label: T.startNow, value: '' }, { label: T.startPub, value: 'publish' }, { label: T.startDate, value: 'date' } ],
-					onChange: function ( v ) {
-						set( { start_mode: v } );
-					},
-					__nextHasNoMarginBottom: true,
-				} ),
-				'date' === form.start_mode ? el( 'div', { style: { marginTop: '8px' } }, el( C.TextControl, {
-					type: 'datetime-local',
-					label: T.startDate,
-					hideLabelFromVision: true,
-					value: form.starts_at,
-					onChange: function ( v ) {
-						set( { starts_at: v } );
-					},
-					__nextHasNoMarginBottom: true,
-				} ) ) : null
+				el( 'div', { style: { fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', marginBottom: '6px' } }, T.start ),
+				el( 'p', { style: { margin: 0 } }, 'future' === post.status ? sprintf( T.startPlanned, when( post.date ) ) : T.startPub ),
+				link.ends_at ? el( 'p', { style: Object.assign( { margin: '4px 0 0' }, muted ) }, sprintf( T.endsAt, when( link.ends_at ) ) ) : null
 			),
-			el( 'div', { style: { marginTop: '12px' } }, el( C.TextControl, {
-				type: 'datetime-local',
-				label: T.end,
-				help: T.endHelp,
-				value: form.ends_at,
-				onChange: function ( v ) {
-					set( { ends_at: v } );
-				},
-				__nextHasNoMarginBottom: true,
-			} ) ),
 			el( 'div', { style: { marginTop: '12px' } },
 				el( C.TextControl, {
 					type: 'number',
@@ -265,7 +245,8 @@
 		}
 
 		function save() {
-			var data = {};
+			// Posts and pages start with their publication – also when it is scheduled.
+			var data = { start_mode: 'publish' };
 			FIELDS.forEach( function ( k ) {
 				data[ k ] = form[ k ];
 			} );
