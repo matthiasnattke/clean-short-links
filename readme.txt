@@ -116,6 +116,7 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * Different targets by device, operating system and screen width – e.g. one QR code for the App Store, Google Play and the website. Screen widths are decided in the browser by a tiny page with a strict content security policy.
 * Further domains: offer a short link on other domains of the network and on short domains (an empty site with a short domain); the short domain's home page leads to the main site.
 * Network admin: find short links on all sites.
+* QR codes can show the short link in plain text below the code (SVG, PNG and PDF).
 * More privacy: the network can stop storing referring websites; visitors with Global Privacy Control or Do Not Track are counted without it; redirects send a strict referrer policy.
 
 = 0.2.3 =

@@ -1194,7 +1194,7 @@ function page_edit() {
 							<?php copy_field( $urls['qr'] ); ?>
 							<button type="button" class="button button-primary csl-btn csl-qr-open"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Create QR code', 'clean-short-links' ); ?></button>
 						</div>
-						<div class="csl-designer" hidden data-url="<?php echo esc_attr( $urls['qr'] ); ?>" data-upper="<?php echo esc_attr( $urls['qr_upper'] ); ?>" data-slug="<?php echo esc_attr( '' !== $link['qr_slug'] ? $link['qr_slug'] : $link['slug'] ); ?>" data-cta="<?php esc_attr_e( 'Scan me', 'clean-short-links' ); ?>">
+						<div class="csl-designer" hidden data-url="<?php echo esc_attr( $urls['qr'] ); ?>" data-upper="<?php echo esc_attr( $urls['qr_upper'] ); ?>" data-slug="<?php echo esc_attr( '' !== $link['qr_slug'] ? $link['qr_slug'] : $link['slug'] ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $urls['link'] ) ); ?>" data-cta="<?php esc_attr_e( 'Scan me', 'clean-short-links' ); ?>">
 							<div class="csl-qr-stage">
 								<div class="csl-qr-preview"></div>
 								<p class="csl-qr-info csl-help"></p>
@@ -1255,6 +1255,8 @@ function page_edit() {
 								</div>
 								<div class="csl-qr-group">
 									<label class="csl-check"><input type="checkbox" data-qr="upper" checked> <?php esc_html_e( 'Compact code (address in capitals)', 'clean-short-links' ); ?></label>
+									<label class="csl-check"><input type="checkbox" data-qr="url"> <?php esc_html_e( 'Show the short link below the code', 'clean-short-links' ); ?></label>
+									<span class="csl-help"><?php esc_html_e( 'For people who cannot scan – they type the short link, visits count as link, not as QR code.', 'clean-short-links' ); ?></span>
 								</div>
 							</div>
 							<div class="csl-qr-actions">
@@ -1357,6 +1359,7 @@ function clean_qr_design( $json ) {
 		'logo'        => absint( $d['logo'] ?? 0 ),
 		'logo_size'   => min( 28, max( 12, absint( $d['logo_size'] ?? 22 ) ) ),
 		'upper'       => empty( $d['upper'] ) ? 0 : 1,
+		'url'         => empty( $d['url'] ) ? 0 : 1,
 	);
 }
 

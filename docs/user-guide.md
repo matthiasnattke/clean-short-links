@@ -101,6 +101,7 @@ In every case the order is the same: the link's own fallback → the site's defa
 Open *QR code* on the edit screen and click *Create QR code*.
 
 - The code contains `example.com/q/<short address>` – the same short address as the link unless you untick *QR code uses the same short address*. Scans are counted separately from clicks.
+- *Show the short link below the code* prints the address in plain text under the code (and under the call to action) – for people who cannot scan. It shows the normal short link, so typed visits count as link, not as QR code.
 - *Compact code* writes the address in capitals. Short links ignore case, and the QR standard has a compact mode for capitals, digits and a few symbols – the code gets fewer, larger modules and scans more reliably.
 - *Dots*: squares, rounded, dots or connected (neighbouring dots merge into capsules). *Corners*: square, rounded or round.
 - *Call to action*: a pill with a scan symbol and your text (default "Scan me") – below the code, or sitting on a rounded frame around it.

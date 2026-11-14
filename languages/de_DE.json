@@ -435,5 +435,7 @@
 	"Store the host of referring websites": "Verweisende Websites speichern (nur der Name)",
 	"Off: only date, source and device class are counted. Visitors who ask for privacy (Global Privacy Control, Do Not Track) are always counted without it.": "Aus: Gezählt werden nur Datum, Quelle und Geräteklasse. Besucher, die um Privatsphäre bitten (Global Privacy Control, Do Not Track), werden immer ohne gezählt.",
 	"Short domains": "Kurzdomains",
-	"Sites of the network with their own short domain (e.g. a short .de domain as an empty site). Their links can be offered from every site, the home page of a short domain leads to the main site.": "Websites im Netzwerk mit eigener kurzer Domain (z. B. eine kurze .de-Domain als leere Website). Jede Website kann ihre Links dort anbieten, die Startseite der Kurzdomain führt zur Hauptseite."
+	"Sites of the network with their own short domain (e.g. a short .de domain as an empty site). Their links can be offered from every site, the home page of a short domain leads to the main site.": "Websites im Netzwerk mit eigener kurzer Domain (z. B. eine kurze .de-Domain als leere Website). Jede Website kann ihre Links dort anbieten, die Startseite der Kurzdomain führt zur Hauptseite.",
+	"Show the short link below the code": "Kurzlink unter dem Code anzeigen",
+	"For people who cannot scan – they type the short link, visits count as link, not as QR code.": "Für alle, die nicht scannen können – sie tippen den Kurzlink ab, gezählt wird dann als Link, nicht als QR-Code."
 }
