@@ -450,6 +450,12 @@ function clean_meta( $meta ) {
 		'permanent' => empty( $meta['permanent'] ) ? 0 : 1,
 		'bio'       => empty( $meta['bio'] ) ? 0 : 1,
 		'bio_order' => (int) ( $meta['bio_order'] ?? 0 ),
+		// Calendar: address, target for events without a link, last sync.
+		'ical_url'     => preg_match( '#^(https?|webcals?)://\S+$#i', trim( (string) ( $meta['ical_url'] ?? '' ) ) ) ? esc_url_raw( preg_replace( '#^webcals?://#i', 'https://', trim( (string) $meta['ical_url'] ) ) ) : '',
+		'ical_default' => clean_target( $meta['ical_default'] ?? '' ),
+		'ical_at'      => (int) ( $meta['ical_at'] ?? 0 ),
+		'ical_error'   => substr( sanitize_text_field( $meta['ical_error'] ?? '' ), 0, 200 ),
+		'ical_count'   => (int) ( $meta['ical_count'] ?? 0 ),
 	);
 }
 
@@ -585,7 +591,7 @@ function clean_rules( $rules ) {
 			'time_from' => clean_time( $r['time_from'] ?? '' ),
 			'time_to'   => clean_time( $r['time_to'] ?? '' ),
 			'target'    => $target,
-		);
+		) + ( 'ical' === ( $r['source'] ?? '' ) ? array( 'source' => 'ical' ) : array() );
 	}
 	return $out;
 }

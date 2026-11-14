@@ -25,6 +25,7 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 
 * Start at a date or with the publication of the content, expire at a date. Before and after, the link leads to a fallback page of your choice – or answers "not found" and "gone".
 * Rules send the same link to different targets by date range, weekday and time of day – e.g. during the festival to the programme, in the evening to the stage plan and afterwards to the review. The first matching rule wins.
+* Rules can come from a calendar: import an iCal file or subscribe to a calendar address – every event becomes a rule, its link the target.
 * Redirects are temporary and never cached, so schedules work reliably – even for printed QR codes.
 * A click limit ends a link after a number of visits – bots, link previews and logged-in editors do not count.
 * A default target per site – the home page, a page, a post, another short link or a URL – catches mistyped short addresses and links that have run out.
@@ -98,7 +99,11 @@ Short-link redirects send no-cache headers. If your cache ignores them, exclude 
 
 = Does the plugin contact other servers? =
 
-Only for the link check: it requests the target addresses of your own short links (a HEAD request, with a small GET as fallback) to see whether they can be reached. Nothing else is sent, local and private network addresses are never contacted, and the automatic daily check can be switched off in the settings. QR codes are created in the browser.
+Only for the link check and calendar addresses you enter: the link check requests the target addresses of your own short links (a HEAD request, with a small GET as fallback) to see whether they can be reached. Nothing else is sent, local and private network addresses are never contacted, and the automatic daily check can be switched off in the settings. QR codes are created in the browser.
+
+= Which calendars work? =
+
+Any iCal file or address (also webcal://), for example the public or secret iCal address of Google Calendar, Apple iCloud, Nextcloud or Outlook. The address is fetched twice a day; nothing is sent to it.
 
 = Is it GDPR-friendly? =
 
@@ -118,6 +123,8 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * Link-in-bio page with buttons for chosen short links.
 * Permanent redirects (301) for links that cannot change by themselves.
 * Short links in the link search of the block editor and the classic editor.
+* Rules from a calendar: iCal file or calendar address, synced twice a day.
+* Dashboard widget with the state of the short links and the ones with problems.
 * Works together with Clean Maintenance: one shared rule per site for short links during maintenance (redirect, let targets through, pause) and for short links that do not work (error page or maintenance page).
 
 = 0.2.0 =

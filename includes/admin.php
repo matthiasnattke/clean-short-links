@@ -158,6 +158,11 @@ function action_notice() {
 	if ( isset( $messages[ $msg ] ) ) {
 		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $msg ] ) );
 	}
+	if ( 'calendar' === $msg ) {
+		$n = isset( $_GET['csl-n'] ) ? absint( $_GET['csl-n'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only shows a number.
+		/* translators: %d: number of rules */
+		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( sprintf( _n( 'Short link saved – %d rule from the calendar.', 'Short link saved – %d rules from the calendar.', $n, 'clean-short-links' ), $n ) ) );
+	}
 	if ( 'invites' === $msg ) {
 		$n = isset( $_GET['csl-n'] ) ? absint( $_GET['csl-n'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only shows a number.
 		/* translators: %d: number of invitation links */
@@ -406,10 +411,16 @@ function rule_row( $i, array $rule ) {
 	global $wp_locale;
 	$n = 'rules[' . $i . ']';
 	?>
-	<fieldset class="csl-rule">
+	<fieldset class="csl-rule<?php echo 'ical' === ( $rule['source'] ?? '' ) ? ' csl-rule-ical' : ''; ?>">
 		<legend class="screen-reader-text"><?php esc_html_e( 'Rule', 'clean-short-links' ); ?></legend>
+		<?php if ( 'ical' === ( $rule['source'] ?? '' ) ) : ?>
+			<input type="hidden" name="<?php echo esc_attr( $n ); ?>[source]" value="ical">
+		<?php endif; ?>
 		<div class="csl-rule-head">
 			<span class="csl-rule-no"></span>
+			<?php if ( 'ical' === ( $rule['source'] ?? '' ) ) : ?>
+				<span class="csl-badge csl-badge-soft" title="<?php esc_attr_e( 'Replaced on the next calendar sync', 'clean-short-links' ); ?>"><?php the_icon( 'calendar' ); ?><?php esc_html_e( 'from calendar', 'clean-short-links' ); ?></span>
+			<?php endif; ?>
 			<input type="text" name="<?php echo esc_attr( $n ); ?>[label]" value="<?php echo esc_attr( $rule['label'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Name, e.g. “Festival weekend”', 'clean-short-links' ); ?>" class="csl-rule-label">
 			<button type="button" class="csl-icon-link csl-rule-up" title="<?php esc_attr_e( 'Move up', 'clean-short-links' ); ?>"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span><span class="screen-reader-text"><?php esc_html_e( 'Move up', 'clean-short-links' ); ?></span></button>
 			<button type="button" class="csl-icon-link csl-rule-remove" title="<?php esc_attr_e( 'Remove rule', 'clean-short-links' ); ?>"><?php the_icon( 'trash' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Remove rule', 'clean-short-links' ); ?></span></button>
@@ -454,6 +465,43 @@ function qr_segment( $key, array $options ) {
 		);
 	}
 	echo '</span>';
+}
+
+/**
+ * Rules from a calendar: upload an .ics file or enter a calendar address.
+ *
+ * @param array $link Link.
+ */
+function calendar_box( array $link ) {
+	$m = $link['meta'];
+	?>
+	<details class="csl-calendar" <?php echo '' !== $m['ical_url'] ? 'open' : ''; ?>>
+		<summary><?php the_icon( 'calendar' ); ?><?php esc_html_e( 'Rules from a calendar', 'clean-short-links' ); ?></summary>
+		<p class="csl-help"><?php esc_html_e( 'Every event becomes a rule: its time decides when, the link of the event (URL field or first link in the description) where to. Weekly and daily events keep their weekdays and times. Rules you entered by hand stay untouched; calendar rules are replaced on every import.', 'clean-short-links' ); ?></p>
+		<div class="csl-row">
+			<label class="csl-field"><span><?php esc_html_e( 'iCal file (.ics)', 'clean-short-links' ); ?></span><input type="file" name="ical_file" accept=".ics,text/calendar"></label>
+			<label class="csl-field csl-grow"><span><?php esc_html_e( 'or calendar address – fetched again twice a day', 'clean-short-links' ); ?></span><input type="url" name="meta[ical_url]" class="csl-wide" value="<?php echo esc_attr( $m['ical_url'] ); ?>" placeholder="https://… or webcal://…"></label>
+		</div>
+		<label class="csl-field" for="csl-ical-default"><span><?php esc_html_e( 'Target of events without a link', 'clean-short-links' ); ?></span></label>
+		<?php target_picker( 'meta[ical_default]', $m['ical_default'], 'csl-ical-default' ); ?>
+		<span class="csl-help"><?php esc_html_e( 'Empty = the target of this short link.', 'clean-short-links' ); ?></span>
+		<p class="csl-inline">
+			<button type="submit" name="ical_import" value="1" class="button csl-btn"><?php the_icon( 'import' ); ?><?php esc_html_e( 'Import now', 'clean-short-links' ); ?></button>
+			<?php if ( $m['ical_at'] ) : ?>
+				<span class="csl-help">
+					<?php
+					/* translators: 1: time span, e.g. "2 hours", 2: number of rules */
+					echo esc_html( sprintf( _n( 'Last import %1$s ago: %2$d rule.', 'Last import %1$s ago: %2$d rules.', (int) $m['ical_count'], 'clean-short-links' ), human_time_diff( $m['ical_at'] ), (int) $m['ical_count'] ) );
+					if ( '' !== $m['ical_error'] ) {
+						/* translators: %s: error message */
+						echo ' ' . esc_html( sprintf( __( 'Last attempt failed: %s', 'clean-short-links' ), $m['ical_error'] ) );
+					}
+					?>
+				</span>
+			<?php endif; ?>
+		</p>
+	</details>
+	<?php
 }
 
 /**
@@ -796,7 +844,7 @@ function page_edit() {
 		action_notice();
 		?>
 
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="csl-layout" id="csl-form">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="csl-layout" id="csl-form" enctype="multipart/form-data">
 			<?php wp_nonce_field( 'clean_short_links_save' ); ?>
 			<?php // Pressing Enter in a field saves – it must not create invitations. ?>
 			<button type="submit" class="csl-default-submit" tabindex="-1" aria-hidden="true"></button>
@@ -918,6 +966,7 @@ function page_edit() {
 					</div>
 					<template id="csl-rule-template"><?php rule_row( '__i__', array() ); ?></template>
 					<button type="button" class="button csl-btn csl-rule-add"><?php the_icon( 'plus' ); ?><?php esc_html_e( 'Add rule', 'clean-short-links' ); ?></button>
+					<?php calendar_box( $link ); ?>
 				<?php card_close(); ?>
 
 				<?php
@@ -1135,6 +1184,12 @@ add_action(
 			'max_clicks' => absint( $p['max_clicks'] ?? 0 ),
 			'meta'       => clean_meta( (array) ( $p['meta'] ?? array() ) ),
 		);
+		if ( $old ) {
+			// The state of the last calendar import is not part of the form.
+			foreach ( array( 'ical_at', 'ical_error', 'ical_count' ) as $key ) {
+				$data['meta'][ $key ] = $old['meta'][ $key ];
+			}
+		}
 		if ( 'date' === $data['start_mode'] && ! $starts ) {
 			$data['start_mode'] = '';
 		}
@@ -1150,6 +1205,22 @@ add_action(
 		if ( ! empty( $p['reset_clicks'] ) ) {
 			reset_clicks( $result );
 		}
+		// Calendar: an uploaded file, or the calendar address when asked or when it changed.
+		$cal_msg = null;
+		$saved   = link_by_id( $result );
+		$file    = $_FILES['ical_file'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- Checked below, only read as text.
+		if ( $saved && $file && ! empty( $file['tmp_name'] ) && is_uploaded_file( $file['tmp_name'] ) && (int) $file['size'] < 2 * MB_IN_BYTES ) {
+			$cal_msg = import_calendar( $saved, (string) file_get_contents( $file['tmp_name'] ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the uploaded file.
+			if ( ! is_wp_error( $cal_msg ) ) {
+				$m             = $saved['meta'];
+				$m['ical_at']    = time();
+				$m['ical_error'] = '';
+				$m['ical_count'] = (int) $cal_msg;
+				update_meta( $result, $m );
+			}
+		} elseif ( $saved && '' !== $saved['meta']['ical_url'] && ( ! empty( $p['ical_import'] ) || ! $old || $old['meta']['ical_url'] !== $saved['meta']['ical_url'] ) ) {
+			$cal_msg = sync_calendar( $saved );
+		}
 		// New or changed targets are checked right away, so a broken target shows up at once.
 		$saved = link_by_id( $result );
 		if ( $saved && '' === $saved['check']['status'] ) {
@@ -1159,6 +1230,13 @@ add_action(
 			'id'      => $result,
 			'csl-msg' => 'saved',
 		);
+		if ( null !== $cal_msg ) {
+			$msg = is_wp_error( $cal_msg ) ? $msg + array( 'csl-error' => $cal_msg->get_error_message() ) : array(
+				'id'      => $result,
+				'csl-msg' => 'calendar',
+				'csl-n'   => (int) $cal_msg,
+			);
+		}
 		if ( ! empty( $p['invite_generate'] ) ) {
 			$ends     = local_to_timestamp( sanitize_text_field( $p['invite_ends'] ?? '' ) );
 			$group    = sanitize_text_field( $p['invite_group'] ?? '' );

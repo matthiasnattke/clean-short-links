@@ -30,10 +30,12 @@ require_once __DIR__ . '/includes/rest.php';
 require_once __DIR__ . '/includes/checker.php';
 require_once __DIR__ . '/includes/social.php';
 require_once __DIR__ . '/includes/maintenance.php';
+require_once __DIR__ . '/includes/calendar.php';
 
 if ( is_admin() ) {
 	require_once __DIR__ . '/includes/ui.php';
 	require_once __DIR__ . '/includes/admin.php';
+	require_once __DIR__ . '/includes/dashboard.php';
 	if ( is_multisite() ) {
 		require_once __DIR__ . '/includes/network.php';
 	}

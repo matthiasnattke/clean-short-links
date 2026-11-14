@@ -44,6 +44,15 @@ Example for a festival poster:
 
 Redirects are always temporary (302) and sent with no-cache headers, so browsers never remember an old target.
 
+## Rules from a calendar
+
+Below the rules, *Rules from a calendar* takes an iCal file (.ics, imported once) or a calendar address (also `webcal://`, fetched again twice a day – e.g. the public iCal address of a Google, Apple, Nextcloud or Outlook calendar).
+
+- Every event becomes a rule: from its start to its end.
+- Weekly events (with their weekdays) and daily events become one rule with weekdays and daily times; monthly and yearly events are listed one by one for the next year.
+- The target is the event's URL field, otherwise the first link in its description or location – links to this site become posts and pages. Events without a link lead to the chosen *Target of events without a link* or, if empty, to the target of the short link.
+- Past and cancelled events are left out. Rules you entered yourself stay first and untouched; rules from the calendar (marked “from calendar”) are replaced on every import.
+
 ## Click limit
 
 *Maximum number of visits* ends a link after that many uses; it then behaves as if it had expired (fallback, or *410 Gone*). Only real uses count – not bots, link previews, logged-in editors or the way to a fallback page. *Reset counter* starts again from zero.
@@ -128,6 +137,10 @@ Exceptions of the maintenance mode (slugs, addresses, access pass) still apply: 
 ## Network (multisite)
 
 **Network admin → Short links** lists every site with its prefixes, number of links, visits and most visited link, and holds the network-wide settings: prefixes for links and QR codes, whether sites may choose their own, whether the short form is allowed, how long statistics are kept and reserved words.
+
+## Dashboard
+
+The dashboard of each site shows a *Short links* widget: number of short links, visits in 30 days, problems, how many start later, have expired, reached their limit or are paused – and, only when there are any, the short links with problems, each with the reason and a link to it.
 
 ## Link search while writing
 

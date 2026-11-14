@@ -720,6 +720,48 @@ function add_click( $id ) {
 }
 
 /**
+ * Replaces the rules of a link (e.g. after a calendar sync). Check results are reset, as
+ * the targets may have changed.
+ *
+ * @param int   $id    Link ID.
+ * @param array $rules Clean rules.
+ */
+function update_rules( $id, array $rules ) {
+	global $wpdb;
+	$wpdb->update(
+		tables()['links'],
+		array(
+			'rules'        => wp_json_encode( $rules ),
+			'check_status' => '',
+			'checked_at'   => 0,
+			'updated_at'   => time(),
+		),
+		array( 'id' => (int) $id )
+	);
+}
+
+/**
+ * Replaces the extra settings of a link.
+ *
+ * @param int   $id   Link ID.
+ * @param array $meta Settings.
+ */
+function update_meta( $id, array $meta ) {
+	global $wpdb;
+	$wpdb->update( tables()['links'], array( 'meta' => wp_json_encode( clean_meta( $meta ) ) ), array( 'id' => (int) $id ) );
+}
+
+/**
+ * Main links with a calendar address.
+ *
+ * @return array[]
+ */
+function links_with_calendar() {
+	global $wpdb;
+	return array_map( __NAMESPACE__ . '\\row_to_link', $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE parent_id = 0 AND meta LIKE %s', tables()['links'], '%' . $wpdb->esc_like( '"ical_url":"http' ) . '%' ) ) );
+}
+
+/**
  * Sets the click counter of a link back to zero.
  *
  * @param int $id Link ID.

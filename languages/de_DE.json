@@ -364,5 +364,25 @@
 	"Always the maintenance page": "Immer die Wartungsseite",
 	"Instead of every error page – also without maintenance mode.": "Statt jeder Fehlerseite – auch ohne Wartungsmodus.",
 	"A fallback of the short link and the default target always come first.": "Ein Ersatzziel des Kurzlinks und das Standard-Ziel haben immer Vorrang.",
-	"%1$s – %2$s": "%1$s – %2$s"
+	"%1$s – %2$s": "%1$s – %2$s",
+	"Short link saved – %d rule from the calendar.": [
+		"Kurzlink gespeichert – %d Regel aus dem Kalender.",
+		"Kurzlink gespeichert – %d Regeln aus dem Kalender."
+	],
+	"Replaced on the next calendar sync": "Wird beim nächsten Kalender-Abgleich ersetzt",
+	"from calendar": "aus Kalender",
+	"Rules from a calendar": "Regeln aus einem Kalender",
+	"Every event becomes a rule: its time decides when, the link of the event (URL field or first link in the description) where to. Weekly and daily events keep their weekdays and times. Rules you entered by hand stay untouched; calendar rules are replaced on every import.": "Jeder Termin wird zu einer Regel: Seine Zeit bestimmt wann, der Link des Termins (URL-Feld oder erster Link in der Beschreibung) wohin. Wöchentliche und tägliche Termine behalten Wochentage und Uhrzeiten. Von Hand angelegte Regeln bleiben unangetastet, Kalender-Regeln werden bei jedem Import ersetzt.",
+	"iCal file (.ics)": "iCal-Datei (.ics)",
+	"or calendar address – fetched again twice a day": "oder Kalender-Adresse – wird zweimal täglich neu abgerufen",
+	"Target of events without a link": "Ziel für Termine ohne Link",
+	"Empty = the target of this short link.": "Leer = das Ziel dieses Kurzlinks.",
+	"Import now": "Jetzt importieren",
+	"Last import %1$s ago: %2$d rule.": [
+		"Letzter Import vor %1$s: %2$d Regel.",
+		"Letzter Import vor %1$s: %2$d Regeln."
+	],
+	"Last attempt failed: %s": "Letzter Versuch fehlgeschlagen: %s",
+	"This is not an iCal calendar.": "Das ist kein iCal-Kalender.",
+	"All checked short links can be reached.": "Alle geprüften Kurzlinks sind erreichbar."
 }

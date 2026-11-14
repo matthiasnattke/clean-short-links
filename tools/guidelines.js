@@ -82,7 +82,7 @@ check(5, 'No trialware or locked features', grep(code, /(license[_ -]?key|upgrad
 /* 7 – no tracking / phoning home */
 // Requests that are the plugin's own, documented feature carry the marker "// Link check:".
 check(7, 'No external requests or tracking', [
-	...grep(php, /\b(wp_(safe_)?remote_(get|post|request|head)|curl_init|fsockopen|stream_socket_client|download_url)\s*\(/).filter(h => !/\/\/ Link check:/.test(h)),
+	...grep(php, /\b(wp_(safe_)?remote_(get|post|request|head)|curl_init|fsockopen|stream_socket_client|download_url)\s*\(/).filter(h => !/\/\/ (Link check|Calendar import):/.test(h)),
 	...grep(php, /file_get_contents\s*\(\s*['"]https?:/),
 	...grep(js, /(fetch|XMLHttpRequest|sendBeacon)\s*\(?\s*['"]https?:/),
 	...grep(code, /(google-analytics|googletagmanager|gtag\(|facebook\.net|hotjar|matomo)/i),

@@ -20,6 +20,7 @@ function clean_short_links_uninstall_site() {
 	delete_option( 'clean_short_links_network' );
 	wp_clear_scheduled_hook( 'clean_short_links_prune' );
 	wp_clear_scheduled_hook( 'clean_short_links_check' );
+	wp_clear_scheduled_hook( 'clean_short_links_calendars' );
 	if ( ! function_exists( 'clean_maintenance_settings' ) ) {
 		delete_option( 'clean_maintenance_short_links' ); // Shared with Clean Maintenance – kept while that is installed.
 	}

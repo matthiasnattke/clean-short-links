@@ -368,3 +368,31 @@ textarea.csl-wide { max-width: none; }
 .csl-channel-urls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .csl-bio-order { margin-top: 10px; }
 @media (max-width: 960px) { .csl-social-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Dashboard widget */
+.csl-widget { --csl-ink: #0e2440; --csl-muted: #50575e; --csl-line: #e2e4e7; --csl-soft: #f3f6fa; --csl-accent: #e2611b; --csl-blue: var(--wp-admin-theme-color, #2271b1); color: var(--csl-ink); }
+.csl-widget .csl-stats { gap: 8px; }
+.csl-widget .csl-stat { flex: 1; min-width: 0; }
+.csl-widget-states { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+.csl-widget-states a { text-decoration: none; }
+.csl-widget-list { margin: 12px 0 0; }
+.csl-widget-list li { display: flex; align-items: center; gap: 10px; margin: 0; padding: 8px 0; border-top: 1px solid #f0f0f1; }
+.csl-widget .csl-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; }
+.csl-dot-bad { background: #d63638; }
+.csl-dot-warn { background: #dba617; }
+.csl-widget-link { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.csl-widget-link a { font-weight: 600; text-decoration: none; }
+.csl-widget-link small { color: var(--csl-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.csl-widget-ok { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; color: #00701c; }
+.csl-widget-ok .csl-ico { width: 16px; height: 16px; }
+.csl-widget-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid #f0f0f1; }
+.csl-widget-foot a { text-decoration: none; font-weight: 600; }
+
+/* Calendar */
+.csl-calendar { margin-top: 18px; padding: 14px 16px; border: 1px dashed #c5d9ed; border-radius: 12px; background: #f8fbff; }
+.csl-calendar > summary { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.csl-calendar > summary .csl-ico { width: 18px; height: 18px; color: var(--csl-accent); }
+.csl-calendar[open] > summary { margin-bottom: 10px; }
+.csl-calendar .csl-grow { flex: 1 1 320px; }
+.csl-rule-ical { border-left-color: var(--csl-blue); }
+.csl-rule-ical .csl-rule-no { background: var(--csl-blue); }

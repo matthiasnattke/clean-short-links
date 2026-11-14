@@ -340,6 +340,62 @@ test( 'Shared maintenance rules: same defaults and values as Clean Maintenance',
 	same( false, maintenance_available(), 'without Clean Maintenance nothing applies' );
 } );
 
+echo "\nCalendar\n";
+
+function ics_sample() {
+	return "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Festival\\, day one\r\nDTSTART;TZID=Europe/Berlin:20270710T180000\r\nDTEND;TZID=Europe/Berlin:20270710T230000\r\nURL:https://example.com/stage/\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Rehearsal\r\nDTSTART:20270101T170000Z\r\nDTEND:20270101T190000Z\r\nRRULE:FREQ=WEEKLY;BYDAY=FR,SA;UNTIL=20271231T000000Z\r\nDESCRIPTION:Plan: https://example.com/plan/ – see you\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Market\r\nDTSTART;VALUE=DATE:20270601\r\nDTEND;VALUE=DATE:20270603\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Old\r\nDTSTART:20200101T100000Z\r\nDTEND:20200101T110000Z\r\nURL:https://example.com/old/\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Cancelled\r\nSTATUS:CANCELLED\r\nDTSTART:20270801T100000Z\r\nURL:https://example.com/x/\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Monthly\r\nDTSTART:20270115T080000Z\r\nDTEND:20270115T090000Z\r\nRRULE:FREQ=MONTHLY;COUNT=3\r\nURL:https://example.com/month/\r\nEND:VEVENT\r\n"
+		. "BEGIN:VEVENT\r\nSUMMARY:Long description\r\nDTSTART:20270901T100000Z\r\nDESCRIPTION:folded https://example.com/fo\r\n lded/ text\r\nEND:VEVENT\r\n"
+		. "END:VCALENDAR\r\n";
+}
+
+test( 'iCal: events, time zones, all-day, folding, cancellations', function () {
+	$e = parse_ics( ics_sample(), wp_timezone() );
+	same( 6, count( $e ), 'cancelled event left out' );
+	same( 'Festival, day one', $e[0]['summary'] );
+	same( '2027-07-10 18:00', $e[0]['start']->format( 'Y-m-d H:i' ) );
+	same( '2027-01-01 18:00', $e[1]['start']->format( 'Y-m-d H:i' ), 'UTC converted to Berlin' );
+	same( true, $e[2]['all_day'] );
+	same( 'https://example.com/folded/', event_target( $e[5] ), 'folded line joined' );
+	same( 'https://example.com/plan/', event_target( $e[1] ) );
+} );
+
+test( 'iCal: events become rules', function () {
+	$now   = new \DateTimeImmutable( '2027-03-01 12:00', wp_timezone() );
+	$rules = events_to_rules( parse_ics( ics_sample(), wp_timezone() ), $now, 'post:5' );
+	$by    = array();
+	foreach ( $rules as $r ) {
+		$by[ $r['label'] ][] = $r;
+	}
+	same( false, isset( $by['Old'] ), 'past event skipped' );
+	same( array( 5, 6 ), $by['Rehearsal'][0]['days'] );
+	same( '18:00', $by['Rehearsal'][0]['time_from'] );
+	same( '20:00', $by['Rehearsal'][0]['time_to'] );
+	same( 'https://example.com/plan/', $by['Rehearsal'][0]['target'] );
+	same( '2027-07-10 18:00', $by['Festival, day one'][0]['from'] );
+	same( '2027-07-10 23:00', $by['Festival, day one'][0]['to'] );
+	same( 'post:5', $by['Market'][0]['target'], 'default target for events without a link' );
+	same( '2027-06-03 00:00', $by['Market'][0]['to'] );
+	same( 1, count( $by['Monthly'] ), 'of 15 Jan, 15 Feb and 15 Mar only March is still ahead' );
+	same( '2027-03-15 09:00', $by['Monthly'][0]['from'] );
+	same( 'ical', $rules[0]['source'] );
+} );
+
+test( 'iCal: rules entered by hand stay, calendar rules are replaced', function () {
+	$link = array( 'rules' => array( array( 'target' => 'post:1', 'label' => 'mine' ), array( 'target' => 'post:2', 'source' => 'ical' ) ) );
+	$all  = merge_calendar_rules( $link, array( array( 'target' => 'post:3', 'source' => 'ical' ) ) );
+	same( array( 'mine', null ), array( $all[0]['label'], $all[1]['label'] ?? null ) );
+	same( 'post:3', $all[1]['target'] );
+	same( 2, count( $all ) );
+	same( 'https://example.com/cal.ics', clean_calendar_url( 'webcal://example.com/cal.ics' ) );
+	same( '', clean_calendar_url( 'ftp://x' ) );
+} );
+
 echo "\nLink check\n";
 
 test( 'Unreachable targets are recognised from the last check', function () {
