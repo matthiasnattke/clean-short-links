@@ -202,7 +202,7 @@ function page_network() {
 						<span class="csl-help"><span class="csl-dot csl-dot-ok" aria-hidden="true"></span> <?php esc_html_e( 'The sunrise file is active.', 'clean-short-links' ); ?></span>
 					<?php else : ?>
 						<?php /* translators: 1: file in the plugin, 2: target file, 3: line for wp-config.php */ ?>
-						<span class="csl-help csl-host-warn"><?php echo esc_html( sprintf( __( 'Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php.', 'clean-short-links' ), 'clean-short-links/sunrise.php', 'wp-content/sunrise.php', "define( 'SUNRISE', true );" ) ); ?></span>
+						<span class="csl-help csl-host-warn"><?php echo esc_html( sprintf( __( 'Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php – if there is a sunrise.php already, include ours at its beginning (see the file).', 'clean-short-links' ), 'clean-short-links/sunrise.php', 'wp-content/sunrise.php', "define( 'SUNRISE', true );" ) ); ?></span>
 					<?php endif; ?>
 				</div>
 				<div class="csl-sub">

@@ -12,9 +12,10 @@
  *
  *     define( 'SUNRISE', true );
  *
- * If there is a sunrise.php already, add this line to it instead:
+ * If there is a sunrise.php already (e.g. from a domain mapping plugin), add this line at its
+ * beginning instead – it keeps the site working if the plugin is ever removed:
  *
- *     require WP_CONTENT_DIR . '/plugins/clean-short-links/sunrise.php';
+ *     if ( file_exists( WP_CONTENT_DIR . '/plugins/clean-short-links/sunrise.php' ) ) { require_once WP_CONTENT_DIR . '/plugins/clean-short-links/sunrise.php'; }
  *
  * @package CleanShortLinks
  */

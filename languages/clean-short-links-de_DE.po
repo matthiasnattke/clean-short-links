@@ -1675,8 +1675,8 @@ msgstr "Die Sunrise-Datei ist aktiv."
 #. translators: 1: file in the plugin, 2: target file, 3: line for wp-config.php
 #: includes/network.php:205
 #, php-format
-msgid "Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php."
-msgstr "Noch nicht aktiv: WordPress schickt unbekannte Subdomains zur Registrierungsseite, bevor ein Plugin geladen ist. Kopiere %1$s nach %2$s und ergänze %3$s in der wp-config.php."
+msgid "Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php – if there is a sunrise.php already, include ours at its beginning (see the file)."
+msgstr "Noch nicht aktiv: WordPress schickt unbekannte Subdomains zur Registrierungsseite, bevor ein Plugin geladen ist. Kopiere %1$s nach %2$s und ergänze %3$s in der wp-config.php – gibt es schon eine sunrise.php, binde unsere an deren Anfang ein (siehe Datei)."
 
 #: includes/network.php:209
 msgid "Short domains"

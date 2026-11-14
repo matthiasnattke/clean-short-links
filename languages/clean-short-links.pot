@@ -1674,7 +1674,7 @@ msgstr ""
 #. translators: 1: file in the plugin, 2: target file, 3: line for wp-config.php
 #: includes/network.php:205
 #, php-format
-msgid "Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php."
+msgid "Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php – if there is a sunrise.php already, include ours at its beginning (see the file)."
 msgstr ""
 
 #: includes/network.php:209
