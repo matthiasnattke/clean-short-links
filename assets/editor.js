@@ -126,8 +126,8 @@
 						set( { slug: v, kind: 'custom' } );
 						setSlugMsg( '' );
 					},
-					onBlur: function () {
-						checkSlug( form.slug );
+					onBlur: function ( e ) {
+						checkSlug( e.target.value );
 					},
 					__nextHasNoMarginBottom: true,
 				} ),
