@@ -1324,7 +1324,7 @@ msgstr "Kurzlinks anlegen"
 msgid "One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working."
 msgstr "Ein Kurzlink pro Zeile: Kurzadresse ; Ziel ; Titel – getrennt durch Semikolon oder Tabulator. Ziele auf dieser Website werden als Beiträge und Seiten erkannt. Importierte Links bekommen auch die Kurzform ohne Präfix, damit bestehende Kurzlinks wie example.com/abc weiter funktionieren."
 
-#: includes/calendar.php:307
+#: includes/calendar.php:311
 msgid "This is not an iCal calendar."
 msgstr "Das ist kein iCal-Kalender."
 

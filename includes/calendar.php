@@ -168,7 +168,8 @@ function event_target( array $event ) {
  */
 function events_to_rules( array $events, \DateTimeImmutable $now, $default = '', $limit = 200 ) {
 	$rules   = array();
-	$horizon = $now->modify( '+1 year' );
+	$horizon = $now->modify( '+1 year' ); // Repetitions are listed one year ahead.
+	$far     = $now->modify( '+2 years' ); // Single events up to two years ahead.
 	$day_map = array(
 		'MO' => 1,
 		'TU' => 2,
@@ -242,6 +243,9 @@ function events_to_rules( array $events, \DateTimeImmutable $now, $default = '',
 		)[ $freq ] ?? '';
 		$start  = $e['start'];
 		$n      = 0;
+		if ( $start > $far ) {
+			continue;
+		}
 		do {
 			$end = $start->modify( '+' . $length . ' seconds' );
 			if ( $end > $now ) {

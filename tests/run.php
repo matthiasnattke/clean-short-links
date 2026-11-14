@@ -384,6 +384,8 @@ test( 'iCal: events become rules', function () {
 	same( 1, count( $by['Monthly'] ), 'of 15 Jan, 15 Feb and 15 Mar only March is still ahead' );
 	same( '2027-03-15 09:00', $by['Monthly'][0]['from'] );
 	same( 'ical', $rules[0]['source'] );
+	$far = events_to_rules( parse_ics( "BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Far\nDTSTART:20300101T100000Z\nURL:https://example.com/\nEND:VEVENT\nEND:VCALENDAR", wp_timezone() ), $now );
+	same( array(), $far, 'single events more than two years ahead are left out' );
 } );
 
 test( 'iCal: rules entered by hand stay, calendar rules are replaced', function () {

@@ -1323,7 +1323,7 @@ msgstr ""
 msgid "One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working."
 msgstr ""
 
-#: includes/calendar.php:307
+#: includes/calendar.php:311
 msgid "This is not an iCal calendar."
 msgstr ""
 
