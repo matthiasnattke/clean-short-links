@@ -815,6 +815,13 @@ function link_state( array $link, $now, $gone_days = 30 ) {
 	if ( ! empty( $link['starts_at'] ) && $now < (int) $link['starts_at'] ) {
 		return 'waiting';
 	}
+	// Starting with the publication: waiting while the content is a draft or scheduled.
+	if ( 'publish' === ( $link['start_mode'] ?? '' ) && function_exists( __NAMESPACE__ . '\\target_published' ) ) {
+		$published = target_published( $link['target'] );
+		if ( null === $published || $now < $published ) {
+			return 'waiting';
+		}
+	}
 	if ( ! empty( $link['ends_at'] ) && $now >= (int) $link['ends_at'] ) {
 		return 'expired';
 	}
