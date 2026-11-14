@@ -68,7 +68,7 @@ Clean Short Links gives posts, pages and any URL a short address on your own dom
 
 **In the editor and the network**
 
-* A panel in the block editor shows the short link with copy button, QR code and visits – or creates one with a click.
+* A panel in the block editor shows the short link with copy button, QR code and visits – or creates one with a click. The essentials – address, short form, pause, time window, click limit, 301, link-in-bio and link check – can be changed right there.
 * Short links show up in the link search of the block editor and the classic editor – insert them like any other link.
 * Automatic short links on publishing, per post type. WordPress' own "Copy short link" uses them too.
 * In a multisite network every site has its own short links. The network admin shows all sites at a glance and sets prefixes, the short form, retention and reserved words for everyone.

@@ -81,16 +81,49 @@ function link_for_js( $link ) {
 	if ( ! $link ) {
 		return null;
 	}
-	$urls = short_urls( $link );
+	$urls     = short_urls( $link );
+	$problems = array();
+	foreach ( $link['check']['items'] as $item ) {
+		if ( 'ok' === ( $item['status'] ?? 'ok' ) ) {
+			continue;
+		}
+		$what       = 'self' === $item['role'] ? __( 'Short link', 'clean-short-links' ) : ( 'main' === $item['role'] ? __( 'Target', 'clean-short-links' ) : ( 'fallback' === $item['role'] ? __( 'Fallback', 'clean-short-links' ) : $item['role'] ) );
+		$why        = '' !== $item['message'] ? $item['message'] : ( $item['code'] ? 'HTTP ' . $item['code'] : '' );
+		$problems[] = trim( $what . ': ' . $why, ': ' );
+	}
+	$channels = array();
+	foreach ( $link['meta']['channels'] as $key ) {
+		$channels[ $key ] = home_url( '/' . prefixes()[0] . '/' . $link['slug'] . '-' . $key );
+	}
 	return array(
-		'id'     => $link['id'],
-		'slug'   => $link['slug'],
-		'urls'   => $urls,
-		'state'  => link_state( $link, time(), site_settings()['gone_days'] ),
-		'rules'  => count( $link['rules'] ),
-		'visits' => totals( array( $link['id'] ), 30 )[ $link['id'] ] ?? 0,
-		'edit'   => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] ),
-		'qr'     => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] . '#csl-sec-qr' ),
+		'id'         => $link['id'],
+		'slug'       => $link['slug'],
+		'kind'       => $link['kind'],
+		'urls'       => $urls,
+		'state'      => link_state( $link, time(), site_settings()['gone_days'] ),
+		'rules'      => count( $link['rules'] ),
+		'visits'     => totals( array( $link['id'] ), 30 )[ $link['id'] ] ?? 0,
+		'edit'       => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] ),
+		'qr'         => admin_url( 'admin.php?page=clean-short-links-edit&id=' . $link['id'] . '#csl-sec-qr' ),
+		'root'       => ! empty( $link['root'] ),
+		'paused'     => 'paused' === $link['status'],
+		'start_mode' => $link['start_mode'],
+		'starts_at'  => timestamp_to_local( $link['starts_at'] ),
+		'ends_at'    => timestamp_to_local( $link['ends_at'] ),
+		'max_clicks' => $link['max_clicks'],
+		'clicks'     => $link['clicks'],
+		'permanent'  => ! empty( $link['meta']['permanent'] ),
+		'permanent_works' => permanent_allowed( $link ),
+		'utm'        => ! empty( $link['meta']['utm'] ),
+		'bio'        => ! empty( $link['meta']['bio'] ),
+		'channels'   => $link['meta']['channels'],
+		'channel_urls' => $channels,
+		'check'      => array(
+			'status'   => $link['check']['status'],
+			/* translators: %s: time span, e.g. "3 hours" */
+			'at'       => $link['check']['at'] ? sprintf( __( '%s ago', 'clean-short-links' ), human_time_diff( $link['check']['at'] ) ) : '',
+			'problems' => $problems,
+		),
 	);
 }
 
@@ -207,6 +240,53 @@ add_action(
 				),
 			)
 		);
+
+		// Changes from the sidebar of the block editor.
+		register_rest_route(
+			'clean-short-links/v1',
+			'/link/(?P<id>\d+)',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $manage,
+				'callback'            => function ( $r ) {
+					$old = link_by_id( (int) $r['id'] );
+					if ( ! $old ) {
+						return new \WP_Error( 'missing', __( 'This short link no longer exists.', 'clean-short-links' ), array( 'status' => 404 ) );
+					}
+					$in = map_deep( (array) $r->get_json_params(), fn( $v ) => is_string( $v ) ? sanitize_text_field( $v ) : $v );
+					$id = save_link( editor_changes( $old, $in ) );
+					if ( is_wp_error( $id ) ) {
+						$id->add_data( array( 'status' => 400 ) );
+						return $id;
+					}
+					if ( ! empty( $in['reset_clicks'] ) ) {
+						reset_clicks( $id );
+					}
+					$saved = link_by_id( $id );
+					if ( $saved && '' === $saved['check']['status'] ) {
+						check_link( $saved );
+					}
+					return array( 'link' => link_for_js( link_by_id( $id ) ) );
+				},
+			)
+		);
+
+		register_rest_route(
+			'clean-short-links/v1',
+			'/link/(?P<id>\d+)/check',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $manage,
+				'callback'            => function ( $r ) {
+					$link = link_by_id( (int) $r['id'] );
+					if ( ! $link ) {
+						return new \WP_Error( 'missing', __( 'This short link no longer exists.', 'clean-short-links' ), array( 'status' => 404 ) );
+					}
+					check_link( $link );
+					return array( 'link' => link_for_js( link_by_id( $link['id'] ) ) );
+				},
+			)
+		);
 	}
 );
 
@@ -228,6 +308,9 @@ add_action(
 			array(
 				'canCreate' => current_user_can( capability() ),
 				'kind'      => site_settings()['auto_kind'],
+				'root'      => root_allowed(),
+				'bio'       => ! empty( site_settings()['bio_enabled'] ),
+				'base'      => home_url( '/' . prefixes()[0] . '/' ),
 				'i18n'      => array(
 					'panel'      => __( 'Short link', 'clean-short-links' ),
 					'none'       => __( 'This content has no short link yet.', 'clean-short-links' ),
@@ -240,7 +323,6 @@ add_action(
 					'copied'     => __( 'Copied', 'clean-short-links' ),
 					'short'      => __( 'Short form', 'clean-short-links' ),
 					'qr'         => __( 'QR code', 'clean-short-links' ),
-					'edit'       => __( 'Edit, schedule, statistics', 'clean-short-links' ),
 					/* translators: %d: number of visits */
 					'visits'     => __( '%d visits in the last 30 days', 'clean-short-links' ),
 					'waiting'    => __( 'Starts later', 'clean-short-links' ),
@@ -250,6 +332,39 @@ add_action(
 					'saveFirst'  => __( 'Save the content once to create a short link.', 'clean-short-links' ),
 					'collision'  => __( 'The short form is covered by this content’s own address and does not work – the link with prefix always does.', 'clean-short-links' ),
 					'createFail' => __( 'The short link could not be created.', 'clean-short-links' ),
+					'address'     => __( 'Short address', 'clean-short-links' ),
+					'keepOld'     => __( 'Keep the old address as an alias', 'clean-short-links' ),
+					'rootToggle'  => __( 'Short form without prefix', 'clean-short-links' ),
+					/* translators: %s: what already uses the address, e.g. the title of a page */
+					'rootTaken'   => __( 'Taken by %s – the short form will not work.', 'clean-short-links' ),
+					'active'      => __( 'Active', 'clean-short-links' ),
+					'start'       => __( 'Starts', 'clean-short-links' ),
+					'startNow'    => __( 'Right away', 'clean-short-links' ),
+					'startPub'    => __( 'When the content is published', 'clean-short-links' ),
+					'startDate'   => __( 'At a date', 'clean-short-links' ),
+					'end'         => __( 'Ends', 'clean-short-links' ),
+					'endHelp'     => __( 'Leave empty for no end.', 'clean-short-links' ),
+					'limit'       => __( 'Click limit', 'clean-short-links' ),
+					'limitHelp'   => __( '0 = no limit', 'clean-short-links' ),
+					/* translators: 1: clicks so far, 2: limit */
+					'used'        => __( '%1$d of %2$d clicks used', 'clean-short-links' ),
+					'reset'       => __( 'Reset counter', 'clean-short-links' ),
+					'permanent'   => __( 'Permanent redirect (301)', 'clean-short-links' ),
+					'permHelp'    => __( 'Only takes effect without time window, rules and limit.', 'clean-short-links' ),
+					'bioToggle'   => __( 'Show on the link-in-bio page', 'clean-short-links' ),
+					'save'        => __( 'Save short link', 'clean-short-links' ),
+					'saved'       => __( 'Saved.', 'clean-short-links' ),
+					'unsaved'     => __( 'Saved together with the content, or right away with the button.', 'clean-short-links' ),
+					'saveFail'    => __( 'The short link could not be saved.', 'clean-short-links' ),
+					'checkNow'    => __( 'Check now', 'clean-short-links' ),
+					'checkOk'     => __( 'Link check: everything reachable', 'clean-short-links' ),
+					'checkWarn'   => __( 'Link check: please have a look', 'clean-short-links' ),
+					'checkBad'    => __( 'Link check: a target is not reachable', 'clean-short-links' ),
+					'checkNone'   => __( 'Not checked yet', 'clean-short-links' ),
+					'more'        => __( 'More: QR design, rules, invitations, statistics', 'clean-short-links' ),
+					'exhausted'   => __( 'Limit reached', 'clean-short-links' ),
+					'unreachable' => __( 'Temporarily unreachable', 'clean-short-links' ),
+					'gone'        => __( 'Permanently unreachable', 'clean-short-links' ),
 				),
 			)
 		);

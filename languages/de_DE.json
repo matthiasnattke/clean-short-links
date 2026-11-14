@@ -384,5 +384,20 @@
 	],
 	"Last attempt failed: %s": "Letzter Versuch fehlgeschlagen: %s",
 	"This is not an iCal calendar.": "Das ist kein iCal-Kalender.",
-	"All checked short links can be reached.": "Alle geprüften Kurzlinks sind erreichbar."
+	"All checked short links can be reached.": "Alle geprüften Kurzlinks sind erreichbar.",
+	"Keep the old address as an alias": "Alte Adresse als Alias behalten",
+	"Short form without prefix": "Kurzform ohne Präfix",
+	"Taken by %s – the short form will not work.": "Belegt durch %s – die Kurzform funktioniert nicht.",
+	"Starts": "Beginnt",
+	"When the content is published": "Mit der Veröffentlichung",
+	"At a date": "Zu einem Datum",
+	"Ends": "Endet",
+	"Leave empty for no end.": "Leer lassen für kein Ende.",
+	"Click limit": "Klicklimit",
+	"0 = no limit": "0 = kein Limit",
+	"%1$d of %2$d clicks used": "%1$d von %2$d Klicks verbraucht",
+	"Only takes effect without time window, rules and limit.": "Greift nur ohne Zeitraum, Regeln und Limit.",
+	"Saved.": "Gespeichert.",
+	"Saved together with the content, or right away with the button.": "Wird mit dem Inhalt gespeichert – oder sofort über den Button.",
+	"More: QR design, rules, invitations, statistics": "Mehr: QR-Design, Regeln, Einladungen, Statistik"
 }

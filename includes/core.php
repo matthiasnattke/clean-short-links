@@ -460,6 +460,78 @@ function clean_meta( $meta ) {
 }
 
 /**
+ * Applies the changes from the block editor's sidebar to a link. Only the fields the
+ * sidebar shows are taken over, everything else stays as it is.
+ *
+ * @param array $old Link as stored.
+ * @param array $in  Changes: slug, kind, keep_old, root, paused, start_mode, starts_at,
+ *                   ends_at (local "Y-m-d\TH:i"), max_clicks, permanent, utm, bio, channels.
+ * @return array Data for save_link().
+ */
+function editor_changes( array $old, array $in ) {
+	$data = array(
+		'id'         => $old['id'],
+		'title'      => $old['title'],
+		'target'     => $old['target'],
+		'slug'       => $old['slug'],
+		'qr_slug'    => $old['qr_slug'],
+		'kind'       => $old['kind'],
+		'root'       => ! empty( $old['root'] ),
+		'start_mode' => $old['start_mode'],
+		'starts_at'  => (int) $old['starts_at'],
+		'ends_at'    => (int) $old['ends_at'],
+		'fallback'   => $old['fallback'],
+		'rules'      => $old['rules'],
+		'qr'         => $old['qr'],
+		'status'     => $old['status'],
+		'max_clicks' => (int) $old['max_clicks'],
+		'meta'       => $old['meta'],
+		'old_slug'   => 'alias',
+	);
+	if ( isset( $in['slug'] ) ) {
+		$slug         = normalize_slug( (string) $in['slug'] );
+		$kind         = sanitize_key( (string) ( $in['kind'] ?? '' ) );
+		$data['slug'] = $slug;
+		if ( $slug !== $old['slug'] ) {
+			$data['kind'] = in_array( $kind, array( 'random', 'memorable', 'title' ), true ) ? $kind : 'custom';
+		}
+		$data['old_slug'] = isset( $in['keep_old'] ) && ! $in['keep_old'] ? 'retire' : 'alias';
+	}
+	if ( isset( $in['root'] ) ) {
+		$data['root'] = (bool) $in['root'];
+	}
+	if ( isset( $in['paused'] ) ) {
+		$data['status'] = $in['paused'] ? 'paused' : 'active';
+	}
+	if ( isset( $in['start_mode'] ) ) {
+		$mode               = in_array( $in['start_mode'], array( 'publish', 'date' ), true ) ? $in['start_mode'] : '';
+		$starts             = 'date' === $mode ? local_to_timestamp( (string) ( $in['starts_at'] ?? '' ) ) : null;
+		$data['start_mode'] = 'date' === $mode && ! $starts ? '' : $mode;
+		$data['starts_at']  = $starts ? $starts : 0;
+		if ( 'publish' === $mode && ! target_post_id( $old['target'] ) ) {
+			$data['start_mode'] = '';
+		}
+	}
+	if ( isset( $in['ends_at'] ) ) {
+		$ends            = local_to_timestamp( (string) $in['ends_at'] );
+		$data['ends_at'] = $ends ? $ends : 0;
+	}
+	if ( isset( $in['max_clicks'] ) ) {
+		$data['max_clicks'] = absint( $in['max_clicks'] );
+	}
+	foreach ( array( 'permanent', 'utm', 'bio' ) as $key ) {
+		if ( isset( $in[ $key ] ) ) {
+			$data['meta'][ $key ] = $in[ $key ] ? 1 : 0;
+		}
+	}
+	if ( isset( $in['channels'] ) ) {
+		$data['meta']['channels'] = (array) $in['channels'];
+	}
+	$data['meta'] = clean_meta( $data['meta'] );
+	return $data;
+}
+
+/**
  * May this link answer with a permanent redirect (301)? Only if nothing about it can
  * change by itself: no time window, rules, limit or invitations – browsers and search
  * engines remember a 301.

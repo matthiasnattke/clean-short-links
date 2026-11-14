@@ -149,3 +149,15 @@ When you add a link in the block editor – in a paragraph, button, navigation, 
 ## Block editor
 
 The document sidebar has a *Short link* panel: copy the link and short form, open the QR designer, see the visits of the last 30 days – or create a link with one click.
+
+The essentials can be changed right there, without leaving the post:
+
+- **Active** – pause the link and switch it back on.
+- **Short address** – type your own or let it suggest a random, memorable or title-based one; the old address stays as an alias unless you untick that.
+- **Short form without prefix** – when the network allows it, with a warning if the address is already taken by a page.
+- **Starts / Ends** – right away, with the publication or at a date, and an optional end.
+- **Click limit** – with the clicks used so far and a way to reset the counter.
+- **Permanent redirect (301)** and **Show on the link-in-bio page**.
+- **Link check** – the latest result with any problems, and *Check now*.
+
+Changes are saved together with the post or page, or right away with *Save short link*. QR design, rules, the calendar, invitations, channels, social previews and statistics stay on the full edit screen, linked from the panel.

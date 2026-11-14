@@ -476,6 +476,49 @@ test( 'Local times of the site', function () {
 	same( '', timestamp_to_local( null ) );
 } );
 
+test( 'Changes from the editor sidebar touch only what it shows', function () {
+	$old = array(
+		'id' => 7, 'title' => 'T', 'target' => 'post:5', 'slug' => 'abc', 'qr_slug' => '', 'kind' => 'random', 'root' => 0,
+		'start_mode' => '', 'starts_at' => null, 'ends_at' => null, 'fallback' => 'https://example.org/',
+		'rules' => array( array( 'target' => 'home' ) ), 'qr' => array( 'dots' => 'round' ), 'status' => 'active', 'max_clicks' => 0,
+		'meta' => clean_meta( array( 'utm' => 1, 'channels' => array( 'ig' ) ) ),
+	);
+	$d = editor_changes( $old, array() );
+	same( 'abc', $d['slug'] );
+	same( 'random', $d['kind'], 'kind kept' );
+	same( 'https://example.org/', $d['fallback'], 'fallback kept' );
+	same( 1, count( $d['rules'] ), 'rules kept' );
+	same( array( 'ig' ), $d['meta']['channels'], 'channels kept' );
+	same( 1, $d['meta']['utm'], 'utm kept' );
+
+	$d = editor_changes( $old, array( 'slug' => 'Sommer Fest', 'kind' => 'random', 'keep_old' => false, 'paused' => true, 'root' => true, 'max_clicks' => '50', 'permanent' => true ) );
+	same( 'sommer-fest', $d['slug'] );
+	same( 'random', $d['kind'] );
+	same( 'retire', $d['old_slug'] );
+	same( 'paused', $d['status'] );
+	same( true, $d['root'] );
+	same( 50, $d['max_clicks'] );
+	same( 1, $d['meta']['permanent'] );
+
+	$d = editor_changes( $old, array( 'slug' => 'eigen', 'kind' => 'custom' ) );
+	same( 'custom', $d['kind'] );
+	same( 'alias', $d['old_slug'] );
+
+	$d = editor_changes( $old, array( 'start_mode' => 'date', 'starts_at' => '2026-12-24T18:00', 'ends_at' => '2026-12-31T23:59' ) );
+	same( 'date', $d['start_mode'] );
+	same( '2026-12-24T18:00', timestamp_to_local( $d['starts_at'] ) );
+	same( '2026-12-31T23:59', timestamp_to_local( $d['ends_at'] ) );
+
+	$d = editor_changes( $old, array( 'start_mode' => 'date', 'starts_at' => '', 'ends_at' => '' ) );
+	same( '', $d['start_mode'], 'date without a date starts right away' );
+	same( 0, $d['ends_at'] );
+
+	$url = $old;
+	$url['target'] = 'https://example.org/x';
+	same( '', editor_changes( $url, array( 'start_mode' => 'publish' ) )['start_mode'], 'publish needs a post' );
+	same( 'publish', editor_changes( $old, array( 'start_mode' => 'publish' ) )['start_mode'] );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {
