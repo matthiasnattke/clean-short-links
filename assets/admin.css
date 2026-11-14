@@ -477,3 +477,36 @@ textarea.csl-wide { max-width: none; }
 .csl-nfc-write { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 12px 0 4px; }
 .csl-nfc-status { flex-basis: 100%; margin: 0; font-weight: 600; }
 .csl-nfc-status:empty { display: none; }
+
+/* Phones in landscape (e.g. iPhone turned sideways): wide but low. A compact head with the
+   actions beside the title, navigation in one scrolling row, a slim save bar – so the
+   settings themselves keep most of the screen. */
+@media (max-height: 500px) and (orientation: landscape) {
+	.csl-hero { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 14px; row-gap: 8px; align-items: center; margin: 10px 0 14px; padding: 12px 16px; }
+	.csl-hero-text { display: contents; }
+	.csl-hero-icon { grid-column: 1; grid-row: 1 / span 2; width: 40px; height: 40px; border-radius: 12px; transform: none; }
+	.csl-hero-icon img { width: 40px; height: 40px; border-radius: 12px; }
+	.csl-hero-icon .csl-ico { width: 24px; height: 24px; }
+	.csl-hero-text > *, .csl-hero > .csl-stats { grid-column: 1 / -1; }
+	.csl-hero-text > .csl-eyebrow { grid-column: 2; align-self: end; margin: 0; }
+	.csl-hero-text > .csl-hero-title { grid-column: 2; align-self: start; font-size: 20px; margin: 0 !important; }
+	.csl-hero-text > .csl-pill { justify-self: start; }
+	.csl-hero-actions { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+	.csl-hero .csl-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+	.csl-hero .csl-stats .csl-stat { min-width: 0; padding: 6px 10px; }
+	.csl-hero .csl-stats .csl-stat strong { font-size: 20px; }
+	.csl-hero .csl-stats .csl-stat span { font-size: 11px; }
+	/* Without actions the figures sit beside the title. */
+	.csl-hero:not(:has(> .csl-hero-actions)) > .csl-stats { grid-column: 3; grid-row: 1 / span 2; display: flex; }
+	.csl-hero:not(:has(> .csl-hero-actions)) > .csl-stats .csl-stat { min-width: 96px; }
+	.csl-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+	.csl-nav > a { white-space: nowrap; }
+	.csl-card { padding: 16px 18px; margin-bottom: 14px; }
+	.csl-savebar { flex-wrap: nowrap; gap: 12px; padding: 6px 14px; }
+	.csl-savebar .button-primary { min-height: 32px; }
+	.csl-savebar-delete { font-size: 0; gap: 0; padding: 6px; }
+	.csl-savebar-delete .csl-ico { width: 20px; height: 20px; }
+	.csl-qr-stage { position: static; }
+	.csl-toolbar .csl-segment { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+	.csl-toolbar .csl-segment a { white-space: nowrap; }
+}
