@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,10 @@ Any iCal file or address (also webcal://), for example the public or secret iCal
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.2.2 =
+* Block editor sidebar: change the essentials of a post's or page's short link right there – short address with suggestions and availability check, short form, pause, start and end, click limit, permanent redirect, link-in-bio and link check. Changes are saved with the content or by button.
+* Admin pages use the full width on large screens.
 
 = 0.2.1 =
 * Link check: once a day, when saving and at the push of a button – does each short link answer, and can its targets still be reached? Problems show on the card, as a key figure and in a filter.
