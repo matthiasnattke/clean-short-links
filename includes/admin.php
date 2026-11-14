@@ -831,7 +831,7 @@ function page_edit() {
 	$s        = site_settings();
 	$link     = $link ? $link : array(
 		'id'         => 0,
-		'title'      => $for_post ? get_the_title( $for_post ) : '',
+		'title'      => $for_post ? plain_post_title( $for_post ) : '',
 		'target'     => $for_post ? 'post:' . $for_post : '',
 		'slug'       => '',
 		'qr_slug'    => '',

@@ -105,6 +105,7 @@ textarea.csl-wide { max-width: none; }
 .csl-switch input:checked + .csl-switch-track { background: var(--csl-blue); }
 .csl-switch input:checked + .csl-switch-track::after { transform: translateX(16px); }
 .csl-switch input:focus-visible + .csl-switch-track { outline: 2px solid var(--csl-blue); outline-offset: 2px; }
+.csl-switch-text { min-width: 0; overflow-wrap: anywhere; }
 .csl-switch-text strong { display: block; font-weight: 600; }
 
 /* Chips */
@@ -140,7 +141,7 @@ textarea.csl-wide { max-width: none; }
 
 /* Copy field */
 .csl-copy { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 4px 4px 10px; border-radius: 10px; background: var(--csl-soft); border: 1px solid var(--csl-line); }
-.csl-copy code { padding: 0; background: none; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.csl-copy code { min-width: 0; padding: 0; background: none; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .csl-copy small { color: var(--csl-muted); font-weight: 600; }
 .csl-copy-btn { position: relative; display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px; background: #fff; color: var(--csl-muted); cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
 .csl-copy-btn .csl-ico { width: 15px; height: 15px; }
@@ -301,7 +302,7 @@ textarea.csl-wide { max-width: none; }
 	.csl-layout { grid-template-columns: minmax(0, 1fr); }
 	.csl-nav { position: static; flex-direction: row; flex-wrap: wrap; }
 	.csl-about { display: none; }
-	.csl-overview { grid-template-columns: minmax(0, 1fr); }
+	.csl-overview { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
 @media (max-width: 782px) {
 	.csl-tiles-4, .csl-tiles-3, .csl-tiles-2, .csl-breakdowns { grid-template-columns: minmax(0, 1fr); }
@@ -405,3 +406,33 @@ textarea.csl-wide { max-width: none; }
 .csl-target-link .csl-ico { width: 13px; height: 13px; margin: 0; opacity: .7; }
 .csl-link-target .csl-target-edit { width: 24px; height: 24px; }
 .csl-link-target .csl-target-edit .csl-ico { width: 14px; height: 14px; margin: 0; }
+
+/* Phones: small icon next to eyebrow and title, everything else below in the full width. */
+@media (max-width: 600px) {
+	.csl-hero { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; row-gap: 12px; align-items: center; padding: 16px; }
+	.csl-hero-text { display: contents; }
+	.csl-hero-icon { grid-column: 1; grid-row: 1 / span 2; width: 44px; height: 44px; border-radius: 13px; }
+	.csl-hero-icon img { width: 44px; height: 44px; border-radius: 13px; }
+	.csl-hero-icon .csl-ico { width: 26px; height: 26px; }
+	.csl-hero-text > *, .csl-hero-actions, .csl-hero > .csl-stats { grid-column: 1 / -1; }
+	.csl-hero-text > .csl-eyebrow { grid-column: 2; align-self: end; }
+	.csl-hero-text > .csl-hero-title { grid-column: 2; align-self: start; font-size: 22px; margin: 0 !important; }
+	.csl-hero-text > .csl-pill { justify-self: start; }
+	.csl-hero .csl-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+	.csl-hero .csl-stats:has(> :nth-child(4)) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.csl-hero .csl-stats .csl-stat { min-width: 0; padding: 8px 10px; }
+	.csl-hero .csl-stats .csl-stat strong { font-size: 22px; }
+	.csl-hero .csl-stats .csl-stat span { font-size: 11px; overflow-wrap: break-word; hyphens: auto; }
+	.csl-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+	.csl-hero-actions > * { flex: 1 1 auto; justify-content: center; }
+	.csl-toolbar { padding: 8px; }
+	.csl-toolbar .csl-segment { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+	.csl-toolbar .csl-segment a { white-space: nowrap; }
+	.csl-copy { display: flex; }
+	.csl-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+	.csl-nav > a { white-space: nowrap; }
+	/* Save bar in one row: the delete link keeps its text for screen readers but shows only the icon. */
+	.csl-savebar { flex-wrap: nowrap; gap: 12px; padding: 10px 14px; }
+	.csl-savebar-delete { font-size: 0; gap: 0; padding: 6px; }
+	.csl-savebar-delete .csl-ico { width: 20px; height: 20px; }
+}

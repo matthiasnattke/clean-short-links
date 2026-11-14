@@ -195,8 +195,10 @@
 			slug.focus();
 			return;
 		}
-		var title = $( '#csl-title' ).value || $( '#csl-target' ).value;
-		api( { path: '/clean-short-links/v1/suggest?kind=' + k + '&title=' + encodeURIComponent( title ) } ).then( function ( r ) {
+		// Content brings its own plain title (the server reads it); otherwise the title field or the URL.
+		var target = $( 'input[name="target"]' ).value, own = $( '#csl-title' ).value;
+		var title = own || ( 0 === target.indexOf( 'post:' ) ? '' : $( '#csl-target' ).value );
+		api( { path: '/clean-short-links/v1/suggest?kind=' + k + '&title=' + encodeURIComponent( title ) + '&target=' + encodeURIComponent( target ) } ).then( function ( r ) {
 			slug.value = r.slug;
 			if ( root && ! id ) {
 				root.checked = 'random' !== k;

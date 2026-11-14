@@ -300,6 +300,18 @@ function suggest_slug( $kind, $title = '' ) {
 }
 
 /**
+ * The plain title of a post as written – without the "Private:" or "Protected:" that
+ * WordPress puts in front of displayed titles, and without tags or entities.
+ *
+ * @param int $post_id Post ID.
+ * @return string
+ */
+function plain_post_title( $post_id ) {
+	$post = get_post( (int) $post_id );
+	return $post ? trim( html_entity_decode( wp_strip_all_tags( $post->post_title ), ENT_QUOTES, 'UTF-8' ) ) : '';
+}
+
+/**
  * Checks a wished short address.
  *
  * @param string $slug    Raw short address.

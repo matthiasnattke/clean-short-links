@@ -23,7 +23,7 @@ function create_for_post( $post_id, $kind = '' ) {
 		return new \WP_Error( 'missing', __( 'This content does not exist.', 'clean-short-links' ) );
 	}
 	$kind  = in_array( $kind, array( 'random', 'memorable', 'title' ), true ) ? $kind : default_kind( 'post:' . $post->ID, site_settings() );
-	$title = get_the_title( $post );
+	$title = plain_post_title( $post->ID );
 	return save_link(
 		array(
 			'title'      => $title,
@@ -143,12 +143,24 @@ add_action(
 						'type'    => 'string',
 						'default' => 'random',
 					),
-					'title' => array(
+					'title'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					// Without a title of its own: the plain title of the post the link leads to.
+					'target' => array(
 						'type'    => 'string',
 						'default' => '',
 					),
 				),
-				'callback'            => fn( $r ) => array( 'slug' => suggest_slug( $r['kind'], $r['title'] ) ),
+				'callback'            => function ( $r ) {
+					$title   = trim( (string) $r['title'] );
+					$post_id = target_post_id( clean_target( (string) $r['target'] ) );
+					if ( '' === $title && $post_id ) {
+						$title = plain_post_title( $post_id );
+					}
+					return array( 'slug' => suggest_slug( $r['kind'], $title ) );
+				},
 			)
 		);
 
