@@ -117,7 +117,7 @@ function handle_alias( $host ) {
 	}
 	if ( $status ) {
 		nocache_headers();
-		wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status ) );
+		wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
 	}
 	nocache_headers();
 	wp_redirect( network_home_url( '/' ), 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- The main site of the own network.

@@ -19,7 +19,11 @@
  * @package CleanShortLinks
  */
 
-if ( ! defined( 'ABSPATH' ) || defined( 'CLEAN_SHORT_LINKS_SUNRISE' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+if ( defined( 'CLEAN_SHORT_LINKS_SUNRISE' ) ) {
 	return;
 }
 
