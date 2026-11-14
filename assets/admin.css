@@ -9,7 +9,7 @@
 	--csl-accent: #e2611b;
 	--csl-blue: var(--wp-admin-theme-color, #2271b1);
 	--csl-radius: 16px;
-	max-width: 1180px;
+	max-width: none;
 	color: var(--csl-ink);
 }
 .csl-ico { flex: none; vertical-align: middle; }
