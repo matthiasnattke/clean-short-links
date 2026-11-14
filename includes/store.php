@@ -205,6 +205,17 @@ function offer_hosts() {
 			return (int) $b['short'] <=> (int) $a['short'];
 		}
 	);
+	// Subdomains without a site of their own (sunrise.php).
+	foreach ( alias_hosts() as $host ) {
+		if ( ! isset( $out[ $host ] ) && $host !== $own ) {
+			$out[ $host ] = array(
+				'name'    => $host,
+				'blog_id' => 0,
+				'short'   => false,
+				'alias'   => true,
+			);
+		}
+	}
 	return $out;
 }
 
@@ -224,7 +235,7 @@ function route_free( $host, $slug, $link_id ) {
 		return false;
 	}
 	$hosts = offer_hosts();
-	if ( isset( $hosts[ $host ] ) && is_multisite() ) {
+	if ( ! empty( $hosts[ $host ]['blog_id'] ) && is_multisite() ) {
 		switch_to_blog( $hosts[ $host ]['blog_id'] );
 		$taken = (int) get_option( 'clean_short_links_db' ) === DB_VERSION && null !== slug_owner( $slug );
 		restore_current_blog();
@@ -1192,8 +1203,10 @@ function short_urls( array $link ) {
 	$qr_slug       = '' !== ( $link['qr_slug'] ?? '' ) ? $link['qr_slug'] : $link['slug'];
 	$qr            = home_url( '/' . $q . '/' . $qr_slug );
 	$hosts = array();
+	$aliases = alias_hosts();
 	foreach ( (array) ( $link['meta']['hosts'] ?? array() ) as $host ) {
-		$hosts[ $host ] = 'https://' . $host . '/' . $p . '/' . $link['slug'];
+		// Subdomains without a site have no content of their own: no prefix needed.
+		$hosts[ $host ] = 'https://' . $host . '/' . ( in_array( $host, $aliases, true ) ? '' : $p . '/' ) . $link['slug'];
 	}
 	$places = array();
 	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {

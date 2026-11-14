@@ -28,6 +28,10 @@ Prefixed links are answered as soon as WordPress can build permalinks – before
 - **Variants by device and system** are decided from the client hint browsers send anyway (`Sec-CH-UA-Platform`) or the user agent – no extra request.
 - **Variants by screen width** need the browser: a page of about 1 KB with one inline script (allowed by its hash in a strict `Content-Security-Policy`, nothing else may load), `location.replace()` so it does not stay in the history, and a `noscript` fallback to the normal target.
 
+### Subdomains without a site
+
+`sunrise.php` (copied to `wp-content/`, `SUNRISE` defined) filters `pre_get_site_by_path`: hosts listed in the site option `clean_short_links_alias_hosts` (written by the network settings, read with one cached query because the network is not loaded yet) are answered by the main site and marked with `CLEAN_SHORT_LINKS_ALIAS`. On `setup_theme` priority 0 the plugin looks up the routes table for that host (`/slug`, `/<prefix>/slug`), redirects or answers 404/410 – anything else goes to the network home page. Real sites are never shadowed: their domains cannot be listed.
+
 ### Further domains
 
 A network-wide table `{base_prefix}cleansl_routes` (host, short address → site, link) holds the further domains of each link. A request on a host first looks at its own site; if the short address is unknown there, the routes table answers and the link is handled inside its own site (`switch_to_blog()`), where the visit is counted. Saving a link writes its routes; a short address that is already taken on that host – by the site there or another route – is left out and shown as taken. The home page of a site marked as short domain leads to the main site.

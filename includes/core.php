@@ -54,6 +54,8 @@ function network_defaults() {
 		'retention_days' => 730,
 		'reserved'       => '',
 		'short_sites'    => array(),
+		'alias_hosts'    => array(),
+		'signup_home'    => 0,
 		'referrers'      => 1,
 	);
 }
@@ -64,6 +66,53 @@ function network_defaults() {
 function network_settings() {
 	$saved = is_multisite() ? get_site_option( 'clean_short_links_network', array() ) : get_option( 'clean_short_links_network', array() );
 	return array_merge( network_defaults(), is_array( $saved ) ? $saved : array() );
+}
+
+/**
+ * Subdomains without a site of their own that serve short links – only when the sunrise
+ * file of the plugin is active (see sunrise.php).
+ *
+ * @return string[]
+ */
+function alias_hosts() {
+	return defined( 'CLEAN_SHORT_LINKS_SUNRISE' ) && is_multisite() ? (array) network_settings()['alias_hosts'] : array();
+}
+
+/**
+ * Cleans a list of host names (one per line or an array): lower case, valid, unique, at most 20.
+ *
+ * @param string|array $in       Raw value.
+ * @param string[]     $excluded Hosts that may not be used (domains of real sites).
+ * @return string[]
+ */
+function clean_alias_hosts( $in, array $excluded = array() ) {
+	$out = array();
+	foreach ( is_array( $in ) ? $in : preg_split( '/[\s,]+/', (string) $in ) as $h ) {
+		$h = strtolower( trim( preg_replace( '#^https?://#i', '', trim( (string) $h ) ), '/ ' ) );
+		if ( preg_match( '/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $h ) && ! in_array( $h, $excluded, true ) && ! in_array( $h, $out, true ) ) {
+			$out[] = $h;
+		}
+	}
+	return array_slice( $out, 0, 20 );
+}
+
+/**
+ * The short address of a request on a subdomain without a site: /slug, /<prefix>/slug or
+ * /<qr prefix>/slug.
+ *
+ * @param string $path      Request path.
+ * @param string $qr_prefix QR prefix.
+ * @return array{0:int,1:string}|null Source and short address.
+ */
+function parse_alias_path( $path, $qr_prefix ) {
+	$parts = array_values( array_filter( explode( '/', strtolower( rawurldecode( (string) $path ) ) ), 'strlen' ) );
+	if ( 1 === count( $parts ) && is_valid_slug( $parts[0] ) ) {
+		return array( SOURCE_LINK, $parts[0] );
+	}
+	if ( 2 === count( $parts ) && is_valid_slug( $parts[1] ) && preg_match( '/^[a-z0-9-]{1,20}$/', $parts[0] ) ) {
+		return array( $parts[0] === $qr_prefix ? SOURCE_QR : SOURCE_LINK, $parts[1] );
+	}
+	return null;
 }
 
 /**

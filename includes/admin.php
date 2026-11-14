@@ -632,9 +632,9 @@ function hosts_card( array $link ) {
 			<label class="csl-host<?php echo $taken ? ' is-taken' : ''; ?>">
 				<input type="checkbox" name="meta[hosts][]" value="<?php echo esc_attr( $host ); ?>" <?php checked( $on ); ?>>
 				<span class="csl-host-text">
-					<strong><?php echo esc_html( $host . '/' . $p . '/' . ( '' !== $link['slug'] ? $link['slug'] : '…' ) ); ?></strong>
-					<small>
-						<?php echo esc_html( $h['name'] ); ?>
+					<strong><?php echo esc_html( $host . '/' . ( empty( $h['alias'] ) ? $p . '/' : '' ) . ( '' !== $link['slug'] ? $link['slug'] : '…' ) ); ?></strong>
+						<small>
+							<?php echo esc_html( empty( $h['alias'] ) ? $h['name'] : __( 'Subdomain without a site', 'clean-short-links' ) ); ?>
 						<?php if ( $h['short'] ) : ?>
 							<span class="csl-badge csl-badge-soft"><?php esc_html_e( 'Short domain', 'clean-short-links' ); ?></span>
 						<?php endif; ?>
@@ -745,6 +745,7 @@ function nfc_card( array $urls ) {
 	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag.', 'clean-short-links' ) );
 	code_for_select( $urls, 'nfc' );
 	?>
+	<?php /* translators: %d: number of characters */ ?>
 	<div class="csl-nfc" data-chars="<?php esc_attr_e( '%d characters – fits on every common tag (NTAG213 holds about 130).', 'clean-short-links' ); ?>" data-long="<?php esc_attr_e( '%d characters – please use a tag with more memory (NTAG215 or NTAG216).', 'clean-short-links' ); ?>">
 		<span class="csl-copy csl-nfc-address"><code><?php echo esc_html( preg_replace( '#^https?://#', '', $urls['nfc'] ) ); ?></code><button type="button" class="csl-copy-btn" data-copy="<?php echo esc_attr( $urls['nfc'] ); ?>" title="<?php esc_attr_e( 'Copy', 'clean-short-links' ); ?>"><?php the_icon( 'copy' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Copy', 'clean-short-links' ); ?></span></button></span>
 		<p class="csl-help csl-nfc-size"></p>

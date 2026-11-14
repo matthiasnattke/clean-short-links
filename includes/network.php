@@ -193,6 +193,18 @@ function page_network() {
 					<span class="csl-help"><?php esc_html_e( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ); ?></span>
 				</div>
 				<div class="csl-sub"><?php toggle( 'referrers', ! empty( $n['referrers'] ), __( 'Store the host of referring websites', 'clean-short-links' ), __( 'Off: only date, source and device class are counted. Visitors who ask for privacy (Global Privacy Control, Do Not Track) are always counted without it.', 'clean-short-links' ) ); ?></div>
+				<div class="csl-sub"><?php toggle( 'signup_home', ! empty( $n['signup_home'] ), __( 'Sign-up page leads to the home page', 'clean-short-links' ), __( 'Only while registration is switched off: instead of "Registration has been disabled" visitors see the home page – also those who open an unknown subdomain.', 'clean-short-links' ) ); ?></div>
+				<div class="csl-sub">
+					<label class="csl-field" for="csl-n-alias"><span><?php esc_html_e( 'Subdomains without a site', 'clean-short-links' ); ?></span></label>
+					<textarea id="csl-n-alias" name="alias_hosts" rows="3" class="csl-wide" placeholder="go.example.com" spellcheck="false"><?php echo esc_textarea( implode( "\n", (array) $n['alias_hosts'] ) ); ?></textarea>
+					<span class="csl-help"><?php esc_html_e( 'One per line. Every site can offer its short links there – also without prefix (go.example.com/summer) –, no site needs to be created. Everything else on these subdomains leads to the main site. The domain must point to this server (e.g. by a wildcard DNS entry and certificate).', 'clean-short-links' ); ?></span>
+					<?php if ( defined( 'CLEAN_SHORT_LINKS_SUNRISE' ) ) : ?>
+						<span class="csl-help"><span class="csl-dot csl-dot-ok" aria-hidden="true"></span> <?php esc_html_e( 'The sunrise file is active.', 'clean-short-links' ); ?></span>
+					<?php else : ?>
+						<?php /* translators: 1: file in the plugin, 2: target file, 3: line for wp-config.php */ ?>
+						<span class="csl-help csl-host-warn"><?php echo esc_html( sprintf( __( 'Not active yet: WordPress sends unknown subdomains to its sign-up page before any plugin is loaded. Copy %1$s to %2$s and add %3$s to wp-config.php.', 'clean-short-links' ), 'clean-short-links/sunrise.php', 'wp-content/sunrise.php', "define( 'SUNRISE', true );" ) ); ?></span>
+					<?php endif; ?>
+				</div>
 				<div class="csl-sub">
 					<span class="csl-field-label"><?php esc_html_e( 'Short domains', 'clean-short-links' ); ?></span>
 					<span class="csl-help"><?php esc_html_e( 'Sites of the network with their own short domain (e.g. a short .de domain as an empty site). Their links can be offered from every site, the home page of a short domain leads to the main site.', 'clean-short-links' ); ?></span>
@@ -239,7 +251,29 @@ add_action(
 			'reserved'       => sanitize_textarea_field( $p['reserved'] ?? '' ),
 			'referrers'      => empty( $p['referrers'] ) ? 0 : 1,
 			'short_sites'    => array_values( array_filter( array_map( 'absint', (array) ( $p['short_sites'] ?? array() ) ), 'get_site' ) ),
+			'signup_home'    => empty( $p['signup_home'] ) ? 0 : 1,
+			'alias_hosts'    => clean_alias_hosts(
+				(string) ( $p['alias_hosts'] ?? '' ),
+				array_map(
+					fn( $s ) => strtolower( $s->domain ),
+					get_sites(
+						array(
+							'number' => 1000,
+							'fields' => '',
+						)
+					)
+				)
+			),
 		);
+		// For sunrise.php, which runs before the network is loaded.
+		update_site_option(
+			'clean_short_links_alias_hosts',
+			array(
+				'hosts' => $new['alias_hosts'],
+				'blog'  => get_main_site_id(),
+			)
+		);
+		wp_cache_delete( 'alias_hosts', 'clean_short_links' );
 		if ( $new['prefix'] === $new['qr_prefix'] ) {
 			$new['qr_prefix'] = 's' === $new['prefix'] ? 'q' : $d['qr_prefix'];
 		}

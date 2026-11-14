@@ -62,6 +62,14 @@ Device and system are recognised on the server, nothing of it is stored. Screen 
 
 In a network a short link can also be offered on the domains of other sites, e.g. `kuroikizu.couch-blog.de/s/sommer` – tick them under *Further domains*. Visits are still counted on the site the link belongs to. If the short address is already taken on another domain, that domain is marked and left out.
 
+### Subdomains without a site
+
+If the server answers all subdomains (wildcard DNS entry and certificate), short links can also live on subdomains such as `go.example.com` without creating a site for each: list them under *Network admin → Short links → Subdomains without a site* and tick them under *Further domains* of a link. There links work without prefix (`go.example.com/summer`); everything else on these subdomains leads to the main site.
+
+WordPress decides which site answers a host before any plugin is loaded, so this needs a small file once: copy `clean-short-links/sunrise.php` to `wp-content/sunrise.php` and add `define( 'SUNRISE', true );` to `wp-config.php`. The network settings show whether it is active.
+
+While registration is switched off, *Sign-up page leads to the home page* sends visitors of the sign-up page – and of unknown subdomains, which WordPress sends there – to the home page instead of the notice "Registration has been disabled".
+
 For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there, also as short form without prefix (`short.de/sommer`); the home page of the short domain leads to the main site.
 
 ## Rules from a calendar

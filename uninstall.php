@@ -38,6 +38,7 @@ if ( is_multisite() ) {
 		restore_current_blog();
 	}
 	delete_site_option( 'clean_short_links_network' );
+	delete_site_option( 'clean_short_links_alias_hosts' );
 } else {
 	clean_short_links_uninstall_site();
 }

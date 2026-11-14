@@ -305,6 +305,15 @@ test( 'UTM values come from the link, channel and source', function () {
 	same( array( 'utm_source' => 'qr', 'utm_medium' => 'qr', 'utm_campaign' => 'fest', 'utm_content' => 'bahnhof' ), utm_params( $l, SOURCE_QR, 'p:bahnhof' ) );
 } );
 
+test( 'Subdomains without a site: clean host list and short addresses', function () {
+	same( array( 'about.example.org', 'go.example.org' ), clean_alias_hosts( "https://About.example.org/\n go.example.org, about.example.org\nbad host\nexample.org", array( 'example.org' ) ) );
+	same( array( SOURCE_LINK, 'sommer' ), parse_alias_path( '/sommer/', 'q' ) );
+	same( array( SOURCE_QR, 'sommer' ), parse_alias_path( '/q/sommer', 'q' ) );
+	same( array( SOURCE_LINK, 'sommer' ), parse_alias_path( '/s/sommer', 'q' ) );
+	same( null, parse_alias_path( '/', 'q' ) );
+	same( null, parse_alias_path( '/wp-admin/x/y', 'q' ) );
+} );
+
 test( 'Locations get stable, unique keys that never clash with channels', function () {
 	$p = clean_places(
 		array(

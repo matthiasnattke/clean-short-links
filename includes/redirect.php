@@ -68,6 +68,63 @@ function maintenance_pauses() {
 $GLOBALS['clean_short_links_status'] = 0;
 
 /*
+ * Registration switched off: the sign-up page – where WordPress also sends unknown
+ * subdomains – can lead to the home page of the network instead.
+ */
+add_action(
+	'before_signup_header',
+	function () {
+		if ( ! is_multisite() || empty( network_settings()['signup_home'] ) || 'none' !== get_site_option( 'registration', 'none' ) ) {
+			return;
+		}
+		wp_safe_redirect( network_home_url( '/' ), 302, 'Clean Short Links' );
+		exit;
+	}
+);
+
+/*
+ * A subdomain without a site of its own (sunrise.php): only short links offered there,
+ * everything else leads to the main site. Runs before everything else of the plugin.
+ */
+add_action(
+	'setup_theme',
+	function () {
+		if ( ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) || current_host() !== CLEAN_SHORT_LINKS_ALIAS || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+			return;
+		}
+		handle_alias( CLEAN_SHORT_LINKS_ALIAS );
+	},
+	0
+);
+
+/**
+ * Answers a request on a subdomain without a site. Never returns.
+ *
+ * @param string $host Host.
+ */
+function handle_alias( $host ) {
+	$req    = parse_alias_path( request_path(), prefixes()[1] );
+	$route  = $req ? find_route( $host, $req[1] ) : null;
+	$status = 0;
+	if ( $route && get_site( $route['blog_id'] ) ) {
+		switch_to_blog( $route['blog_id'] );
+		$link = link_by_id( $route['link_id'] );
+		if ( $link ) {
+			$status = (int) handle( array( $link, $route['kind'] ), 'qr' === $route['kind'] ? SOURCE_QR : $req[0], $req[1], true ); // Returns only for a dead link.
+			$status = $status > 0 ? $status : 404;
+		}
+		restore_current_blog();
+	}
+	if ( $status ) {
+		nocache_headers();
+		wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status ) );
+	}
+	nocache_headers();
+	wp_redirect( network_home_url( '/' ), 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- The main site of the own network.
+	exit;
+}
+
+/*
  * The fast way: answer before the theme and init are loaded. Everything that needs a page
  * (404 of a dead link, maintenance page, link-in-bio) is left to the normal way below.
  */
