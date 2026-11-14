@@ -196,8 +196,8 @@ function page_network() {
 				<div class="csl-sub"><?php toggle( 'signup_home', ! empty( $n['signup_home'] ), __( 'Sign-up page leads to the home page', 'clean-short-links' ), __( 'Only while registration is switched off: instead of "Registration has been disabled" visitors see the home page – also those who open an unknown subdomain.', 'clean-short-links' ) ); ?></div>
 				<div class="csl-sub">
 					<label class="csl-field" for="csl-n-alias"><span><?php esc_html_e( 'Subdomains without a site', 'clean-short-links' ); ?></span></label>
-					<textarea id="csl-n-alias" name="alias_hosts" rows="3" class="csl-wide" placeholder="go.example.com" spellcheck="false"><?php echo esc_textarea( implode( "\n", (array) $n['alias_hosts'] ) ); ?></textarea>
-					<span class="csl-help"><?php esc_html_e( 'One per line. Every site can offer its short links there – also without prefix (go.example.com/summer) –, no site needs to be created. Everything else on these subdomains leads to the main site. The domain must point to this server (e.g. by a wildcard DNS entry and certificate).', 'clean-short-links' ); ?></span>
+					<textarea id="csl-n-alias" name="alias_hosts" rows="3" class="csl-wide" placeholder="go.example.com&#10;about.example.com /about" spellcheck="false"><?php echo esc_textarea( implode( "\n", array_map( fn( $h ) => trim( $h . ' ' . ( $n['alias_homes'][ $h ] ?? '' ) ), (array) $n['alias_hosts'] ) ) ); ?></textarea>
+					<span class="csl-help"><?php esc_html_e( 'One per line, optionally followed by where its home page leads – a page of the main site (/about) or an address. Every site can offer its short links there – also without prefix (go.example.com/summer) –, no site needs to be created. Everything else on these subdomains leads to that page, otherwise to the main site. The domain must point to this server (e.g. by a wildcard DNS entry and certificate).', 'clean-short-links' ); ?></span>
 					<?php if ( defined( 'CLEAN_SHORT_LINKS_SUNRISE' ) ) : ?>
 						<span class="csl-help"><span class="csl-dot csl-dot-ok" aria-hidden="true"></span> <?php esc_html_e( 'The sunrise file is active.', 'clean-short-links' ); ?></span>
 					<?php else : ?>
@@ -242,6 +242,18 @@ add_action(
 		$prefix = clean_prefix( $p['prefix'] ?? '' );
 		$qr     = clean_prefix( $p['qr_prefix'] ?? '' );
 		$d      = network_defaults();
+		$alias  = clean_alias_hosts(
+			(string) ( $p['alias_hosts'] ?? '' ),
+			array_map(
+				fn( $s ) => strtolower( $s->domain ),
+				get_sites(
+					array(
+						'number' => 1000,
+						'fields' => '',
+					)
+				)
+			)
+		);
 		$new    = array(
 			'prefix'         => '' !== $prefix ? $prefix : $d['prefix'],
 			'qr_prefix'      => '' !== $qr ? $qr : $d['qr_prefix'],
@@ -252,18 +264,8 @@ add_action(
 			'referrers'      => empty( $p['referrers'] ) ? 0 : 1,
 			'short_sites'    => array_values( array_filter( array_map( 'absint', (array) ( $p['short_sites'] ?? array() ) ), 'get_site' ) ),
 			'signup_home'    => empty( $p['signup_home'] ) ? 0 : 1,
-			'alias_hosts'    => clean_alias_hosts(
-				(string) ( $p['alias_hosts'] ?? '' ),
-				array_map(
-					fn( $s ) => strtolower( $s->domain ),
-					get_sites(
-						array(
-							'number' => 1000,
-							'fields' => '',
-						)
-					)
-				)
-			),
+			'alias_hosts'    => $alias['hosts'],
+			'alias_homes'    => $alias['homes'],
 		);
 		// For sunrise.php, which runs before the network is loaded.
 		update_site_option(

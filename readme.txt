@@ -118,7 +118,7 @@ Visits are only added up per day – no IP addresses, cookies or user IDs are st
 * Network admin: find short links on all sites.
 * QR codes can show the short link in plain text below the code (SVG, PNG and PDF).
 * NFC tags: an address of its own that counts visits as NFC tag; written directly from the edit screen in Chrome on Android.
-* Subdomains without a site of their own can serve short links (also without prefix) – with the included sunrise.php; everything else there leads to the main site.
+* Subdomains without a site of their own can serve short links (also without prefix) – with the included sunrise.php; everything else there leads to a page set per subdomain (e.g. about.example.com → /about) or the main site.
 * Optional: while registration is off, the sign-up page (also reached by unknown subdomains) leads to the home page.
 * Locations: one short link with addresses of its own for several posters, flyers or tags, each counted separately; QR codes and NFC tags for each location.
 * More privacy: the network can stop storing referring websites; visitors with Global Privacy Control or Do Not Track are counted without it; redirects send a strict referrer policy.

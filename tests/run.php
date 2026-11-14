@@ -306,7 +306,9 @@ test( 'UTM values come from the link, channel and source', function () {
 } );
 
 test( 'Subdomains without a site: clean host list and short addresses', function () {
-	same( array( 'about.example.org', 'go.example.org' ), clean_alias_hosts( "https://About.example.org/\n go.example.org, about.example.org\nbad host\nexample.org", array( 'example.org' ) ) );
+	$a = clean_alias_hosts( "https://About.example.org/ /about\n go.example.org\nabout.example.org /x\nbad host\nexample.org\nmedia.example.org = example.net/podcast\nx.example.org javascript:alert(1)", array( 'example.org' ) );
+	same( array( 'about.example.org', 'go.example.org', 'media.example.org', 'x.example.org' ), $a['hosts'] );
+	same( array( 'about.example.org' => '/about', 'media.example.org' => 'https://example.net/podcast' ), $a['homes'] );
 	same( array( SOURCE_LINK, 'sommer' ), parse_alias_path( '/sommer/', 'q' ) );
 	same( array( SOURCE_QR, 'sommer' ), parse_alias_path( '/q/sommer', 'q' ) );
 	same( array( SOURCE_LINK, 'sommer' ), parse_alias_path( '/s/sommer', 'q' ) );

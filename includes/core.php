@@ -55,6 +55,7 @@ function network_defaults() {
 		'reserved'       => '',
 		'short_sites'    => array(),
 		'alias_hosts'    => array(),
+		'alias_homes'    => array(),
 		'signup_home'    => 0,
 		'referrers'      => 1,
 	);
@@ -79,21 +80,51 @@ function alias_hosts() {
 }
 
 /**
- * Cleans a list of host names (one per line or an array): lower case, valid, unique, at most 20.
+ * Cleans the list of subdomains without a site: one per line, optionally followed by where
+ * its home page leads – a path of the main site (/about) or an address. Host names are lower
+ * case, valid and unique, at most 20.
  *
- * @param string|array $in       Raw value.
+ * @param string|array $in       Raw value (text or list of lines).
  * @param string[]     $excluded Hosts that may not be used (domains of real sites).
- * @return string[]
+ * @return array{hosts:string[],homes:array<string,string>}
  */
 function clean_alias_hosts( $in, array $excluded = array() ) {
-	$out = array();
-	foreach ( is_array( $in ) ? $in : preg_split( '/[\s,]+/', (string) $in ) as $h ) {
-		$h = strtolower( trim( preg_replace( '#^https?://#i', '', trim( (string) $h ) ), '/ ' ) );
-		if ( preg_match( '/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $h ) && ! in_array( $h, $excluded, true ) && ! in_array( $h, $out, true ) ) {
-			$out[] = $h;
+	$out = array(
+		'hosts' => array(),
+		'homes' => array(),
+	);
+	foreach ( is_array( $in ) ? $in : preg_split( '/\r\n|\r|\n/', (string) $in ) as $line ) {
+		$parts = preg_split( '/\s*(?:\s|=>|→|=)\s*/u', trim( (string) $line ), 2 );
+		$h     = strtolower( trim( preg_replace( '#^https?://#i', '', $parts[0] ), '/ ' ) );
+		if ( count( $out['hosts'] ) >= 20 || ! preg_match( '/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $h ) || in_array( $h, $excluded, true ) || in_array( $h, $out['hosts'], true ) ) {
+			continue;
+		}
+		$out['hosts'][] = $h;
+		$home           = clean_alias_home( $parts[1] ?? '' );
+		if ( '' !== $home ) {
+			$out['homes'][ $h ] = $home;
 		}
 	}
-	return array_slice( $out, 0, 20 );
+	return $out;
+}
+
+/**
+ * Where the home page of a subdomain without a site leads: a path of the main site
+ * ("/about") or an http(s) address. Without a scheme, https is assumed.
+ *
+ * @param string $v Raw value.
+ * @return string '' if empty or invalid.
+ */
+function clean_alias_home( $v ) {
+	$v = trim( (string) $v );
+	if ( '' === $v ) {
+		return '';
+	}
+	if ( '/' === $v[0] ) {
+		return preg_match( '#^/[^\s<>"\'\\\\]*$#', $v ) ? $v : '';
+	}
+	$v = preg_match( '#^https?://#i', $v ) ? $v : 'https://' . $v;
+	return preg_match( '#^https?://[a-z0-9.-]+\.[a-z]{2,63}(?::\d+)?(?:[/?\#][^\s<>"]*)?$#i', $v ) ? $v : '';
 }
 
 /**

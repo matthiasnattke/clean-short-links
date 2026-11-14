@@ -119,8 +119,11 @@ function handle_alias( $host ) {
 		nocache_headers();
 		wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
 	}
+	// Everything else: the page set for this subdomain, otherwise the main site.
+	$home = (string) ( network_settings()['alias_homes'][ $host ] ?? '' );
+	$home = '' === $home ? network_home_url( '/' ) : ( '/' === $home[0] ? network_home_url( $home ) : $home );
 	nocache_headers();
-	wp_redirect( network_home_url( '/' ), 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- The main site of the own network.
+	wp_redirect( $home, 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Set by a network administrator.
 	exit;
 }
 

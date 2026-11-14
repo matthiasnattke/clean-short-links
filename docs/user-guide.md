@@ -64,7 +64,7 @@ In a network a short link can also be offered on the domains of other sites, e.g
 
 ### Subdomains without a site
 
-If the server answers all subdomains (wildcard DNS entry and certificate), short links can also live on subdomains such as `go.example.com` without creating a site for each: list them under *Network admin → Short links → Subdomains without a site* and tick them under *Further domains* of a link. There links work without prefix (`go.example.com/summer`); everything else on these subdomains leads to the main site.
+If the server answers all subdomains (wildcard DNS entry and certificate), short links can also live on subdomains such as `go.example.com` without creating a site for each: list them under *Network admin → Short links → Subdomains without a site* and tick them under *Further domains* of a link. There links work without prefix (`go.example.com/summer`). After a space, a line can name where the subdomain's home page leads – a page of the main site or any address, e.g. `about.example.com /about`; everything else on that subdomain leads there too, on subdomains without such a target to the main site.
 
 WordPress decides which site answers a host before any plugin is loaded, so this needs a small file once: copy `clean-short-links/sunrise.php` to `wp-content/sunrise.php` and add `define( 'SUNRISE', true );` to `wp-config.php`. The network settings show whether it is active.
 

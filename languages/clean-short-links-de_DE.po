@@ -1555,16 +1555,16 @@ msgstr "Regel %d"
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
 msgstr "Antwortet mit %1$d statt %2$d – vielleicht stört ein Cache oder ein anderes Plugin."
 
-#: includes/core.php:476
+#: includes/core.php:507
 msgid "Newsletter"
 msgstr "Newsletter"
 
 #. translators: E-mail share option
-#: includes/core.php:477 includes/social.php:145
+#: includes/core.php:508 includes/social.php:145
 msgid "E-mail"
 msgstr "E-Mail"
 
-#: includes/core.php:478
+#: includes/core.php:509
 msgid "Print"
 msgstr "Druck"
 
@@ -1665,8 +1665,8 @@ msgid "Subdomains without a site"
 msgstr "Subdomains ohne eigene Website"
 
 #: includes/network.php:200
-msgid "One per line. Every site can offer its short links there – also without prefix (go.example.com/summer) –, no site needs to be created. Everything else on these subdomains leads to the main site. The domain must point to this server (e.g. by a wildcard DNS entry and certificate)."
-msgstr "Eine pro Zeile. Jede Website kann ihre Kurzlinks dort anbieten – auch ohne Präfix (go.example.com/sommer) –, ohne dass eine Website angelegt werden muss. Alles andere auf diesen Subdomains führt zur Hauptseite. Die Domain muss auf diesen Server zeigen (z. B. per Wildcard-DNS-Eintrag und -Zertifikat)."
+msgid "One per line, optionally followed by where its home page leads – a page of the main site (/about) or an address. Every site can offer its short links there – also without prefix (go.example.com/summer) –, no site needs to be created. Everything else on these subdomains leads to that page, otherwise to the main site. The domain must point to this server (e.g. by a wildcard DNS entry and certificate)."
+msgstr "Eine pro Zeile, wahlweise gefolgt vom Ziel ihrer Startseite – eine Seite der Hauptseite (/about) oder eine Adresse. Jede Website kann ihre Kurzlinks dort anbieten – auch ohne Präfix (go.example.com/sommer) –, ohne dass eine Website angelegt werden muss. Alles andere auf diesen Subdomains führt zu diesem Ziel, sonst zur Hauptseite. Die Domain muss auf diesen Server zeigen (z. B. per Wildcard-DNS-Eintrag und -Zertifikat)."
 
 #: includes/network.php:202
 msgid "The sunrise file is active."
