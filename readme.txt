@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,12 @@ Any iCal file or address (also webcal://), for example the public or secret iCal
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.2.3 =
+* Posts and pages get their short address from the title by default (the plain title, without “Private:”), all other targets a random or memorable one – both can be set in the settings.
+* Editor sidebar: the link starts with the publication of the content, also a scheduled one; it has no end field.
+* Links that start with the publication show “Starts later” while the content is a draft or scheduled, and may use a permanent redirect once published.
+* Phones: compact header, filters and section links in one row to swipe, copy fields and switch texts stay inside the cards, one-row save bar.
 
 = 0.2.2 =
 * Block editor sidebar: change the essentials of a post's or page's short link right there – short address with suggestions and availability check, short form, pause, start and end, click limit, permanent redirect, link-in-bio and link check. Changes are saved with the content or by button.
