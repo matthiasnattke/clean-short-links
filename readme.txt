@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.4
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,14 @@ Any iCal file or address (also webcal://), for example the public or secret iCal
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.2.5 =
+* Security: further domains can only be chosen by site administrators and only among the hosts the network offers – short domains and subdomains without a site; other sites' domains need a new network switch (off by default).
+* Security: routes of suspended, archived or deleted sites stop working and are removed with the site and on uninstall.
+* Security: link previews never show text of password-protected posts.
+* Security: passed-on parameters never replace parameters of the target (e.g. redirect_to).
+* Security: click limits are claimed atomically before the redirect.
+* Robustness: at most 50 referring hosts per link and day, bounded calendar imports (size and work), link suggestions only for users who may manage short links, CSV cells never start a formula.
 
 = 0.2.4 =
 * Faster redirects with less server load: answered before the theme and init, short addresses kept in the object cache, the visit counted after the visitor already has the redirect; prefetching and HEAD requests are not counted.
