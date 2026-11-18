@@ -58,6 +58,7 @@ function network_defaults() {
 		'alias_homes'    => array(),
 		'signup_home'    => 0,
 		'referrers'      => 1,
+		'cross_sites'    => 0, // Sites may also offer links on the domains of other sites.
 	);
 }
 
@@ -726,6 +727,37 @@ function add_utm( $url, array $params ) {
 		$pairs[] = $k . '=' . $v;
 	}
 	return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . implode( '&', $pairs ) . $hash;
+}
+
+/**
+ * Adds the parameters of the short link to the target – only those the target does not set
+ * itself, so a visitor can never change e.g. its redirect_to, and only with plain names.
+ *
+ * @param string $url   Target URL.
+ * @param array  $query Parameters of the request.
+ * @return string
+ */
+function pass_query( $url, array $query ) {
+	$have = array();
+	wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $have );
+	$add = array();
+	foreach ( $query as $k => $v ) {
+		if ( is_string( $k ) && ! isset( $have[ $k ] ) && preg_match( '/^[A-Za-z0-9_.-]{1,64}$/', $k ) ) {
+			$add[ $k ] = $v;
+		}
+	}
+	return $add ? add_query_arg( map_deep( $add, 'rawurlencode' ), $url ) : $url;
+}
+
+/**
+ * A text cell for CSV files: no commas or line breaks, and never the start of a formula.
+ *
+ * @param string $v Value.
+ * @return string
+ */
+function csv_cell( $v ) {
+	$v = str_replace( array( ',', "\r", "\n" ), ' ', (string) $v );
+	return preg_match( '/^[=+\-@\t]/', $v ) ? "'" . $v : $v;
 }
 
 /**

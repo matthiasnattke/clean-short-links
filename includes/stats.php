@@ -24,6 +24,14 @@ defined( 'ABSPATH' ) || exit;
  */
 function record_click( $link_id, $source, $device, $referrer ) {
 	global $wpdb;
+	// Referring hosts cannot be used to fill the table: from the 51st host of a day on, a link
+	// counts further ones together as "other".
+	if ( '' !== $referrer && '@' !== $referrer[0] && '~' !== $referrer ) {
+		$known = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(DISTINCT referrer) FROM %i WHERE link_id = %d AND day = %s', tables()['clicks'], $link_id, wp_date( 'Y-m-d' ) ) );
+		if ( $known >= 50 && ! $wpdb->get_var( $wpdb->prepare( 'SELECT 1 FROM %i WHERE link_id = %d AND day = %s AND referrer = %s LIMIT 1', tables()['clicks'], $link_id, wp_date( 'Y-m-d' ), $referrer ) ) ) {
+			$referrer = '~';
+		}
+	}
 	$wpdb->query(
 		$wpdb->prepare(
 			'INSERT INTO %i (link_id, day, source, device, referrer, hits) VALUES (%d, %s, %d, %d, %s, 1) ON DUPLICATE KEY UPDATE hits = hits + 1',

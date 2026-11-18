@@ -1,4 +1,7 @@
 <?php
+if ( 'cli' !== PHP_SAPI ) {
+	exit;
+}
 /**
  * Minimal WordPress stand-ins so the plugin logic can be tested without a WordPress install.
  *
@@ -11,6 +14,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'DAY_IN_SECONDS', 86400 );
+define( 'WEEK_IN_SECONDS', 604800 );
 define( 'YEAR_IN_SECONDS', 31536000 );
 define( 'OBJECT', 'OBJECT' );
 
@@ -33,6 +37,9 @@ function wp_timezone() { return new DateTimeZone( 'Europe/Berlin' ); }
 function wp_timezone_string() { return 'Europe/Berlin'; }
 function wp_date( $format, $ts = null, $tz = null ) { return ( new DateTimeImmutable( '@' . ( $ts ?? time() ) ) )->setTimezone( $tz ? $tz : wp_timezone() )->format( $format ); }
 function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
+function wp_parse_str( $str, &$out ) { parse_str( (string) $str, $out ); }
+function map_deep( $v, $cb ) { return is_array( $v ) ? array_map( fn( $x ) => map_deep( $x, $cb ), $v ) : $cb( $v ); }
+function add_query_arg( array $args, $url ) { return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 ); }
 function esc_url_raw( $u ) { return filter_var( $u, FILTER_VALIDATE_URL ) ? $u : ''; }
 function sanitize_text_field( $v ) { return trim( preg_replace( '/[\r\n\t ]+/', ' ', strip_tags( (string) $v ) ) ); }
 function sanitize_key( $v ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $v ) ); }

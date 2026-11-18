@@ -168,6 +168,8 @@ function event_target( array $event ) {
  */
 function events_to_rules( array $events, \DateTimeImmutable $now, $default = '', $limit = 200 ) {
 	$rules   = array();
+	$work    = 0; // Steps over all events – a hostile calendar cannot keep the server busy.
+	$work    = 0; // Steps over all events – a hostile calendar cannot keep the server busy.
 	$horizon = $now->modify( '+1 year' ); // Repetitions are listed one year ahead.
 	$far     = $now->modify( '+2 years' ); // Single events up to two years ahead.
 	$day_map = array(
@@ -246,6 +248,19 @@ function events_to_rules( array $events, \DateTimeImmutable $now, $default = '',
 		if ( $start > $far ) {
 			continue;
 		}
+		// A series that began long ago: jump close to today instead of stepping through
+		// every past occurrence (days and weeks are exact; months and years are few anyway).
+		$secs = array(
+			'day'  => DAY_IN_SECONDS,
+			'week' => WEEK_IN_SECONDS,
+		)[ $unit ] ?? 0;
+		if ( $secs && ! $count && $start < $now ) {
+			$skip = (int) floor( ( $now->getTimestamp() - $start->getTimestamp() - $length ) / ( $step * $secs ) ) - 1;
+			if ( $skip > 0 ) {
+				$start = $start->modify( '+' . ( $skip * $step ) . ' ' . $unit );
+			}
+		}
+		$steps = 0;
 		do {
 			$end = $start->modify( '+' . $length . ' seconds' );
 			if ( $end > $now ) {
@@ -265,7 +280,8 @@ function events_to_rules( array $events, \DateTimeImmutable $now, $default = '',
 				break;
 			}
 			$start = $start->modify( '+' . $step . ' ' . $unit );
-		} while ( $start <= $horizon && ( ! $count || $n < $count ) && ( ! $until || $start < $until ) && count( $rules ) < $limit );
+			++$work;
+		} while ( ++$steps < 2000 && $work < 100000 && $start <= $horizon && ( ! $count || $n < $count ) && ( ! $until || $start < $until ) && count( $rules ) < $limit );
 
 		if ( count( $rules ) >= $limit ) {
 			break;
@@ -337,8 +353,9 @@ function sync_calendar( array $link ) {
 	$res = wp_safe_remote_get( // Calendar import: the plugin's own feature, see readme.
 		$url,
 		array(
-			'timeout'    => 15,
-			'user-agent' => 'Clean Short Links calendar import (' . home_url( '/' ) . ')',
+			'timeout'             => 15,
+			'limit_response_size' => 2 * MB_IN_BYTES,
+			'user-agent'          => 'Clean Short Links calendar import (' . home_url( '/' ) . ')',
 		)
 	);
 	$result = is_wp_error( $res ) ? $res : ( 200 === (int) wp_remote_retrieve_response_code( $res ) ? import_calendar( $link, wp_remote_retrieve_body( $res ) ) : new \WP_Error( 'http', 'HTTP ' . wp_remote_retrieve_response_code( $res ) ) );

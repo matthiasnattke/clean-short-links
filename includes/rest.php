@@ -396,7 +396,7 @@ add_action(
  */
 function link_suggestions( $search, $limit = 6 ) {
 	$search = trim( (string) $search );
-	if ( '' === $search || ! current_user_can( 'edit_posts' ) ) {
+	if ( '' === $search || ! current_user_can( capability() ) ) {
 		return array();
 	}
 	$out = array();

@@ -13,6 +13,10 @@
 
 namespace CleanShortLinks;
 
+if ( 'cli' !== PHP_SAPI ) {
+	exit;
+}
+
 require __DIR__ . '/bootstrap.php';
 
 $GLOBALS['pass'] = 0;
@@ -314,6 +318,25 @@ test( 'Subdomains without a site: clean host list and short addresses', function
 	same( array( SOURCE_LINK, 'sommer' ), parse_alias_path( '/s/sommer', 'q' ) );
 	same( null, parse_alias_path( '/', 'q' ) );
 	same( null, parse_alias_path( '/wp-admin/x/y', 'q' ) );
+} );
+
+test( 'Passed-on parameters never replace those of the target', function () {
+	same( 'https://app.example/login?redirect_to=/dash&ref=x', pass_query( 'https://app.example/login?redirect_to=/dash', array( 'redirect_to' => 'https://evil.example', 'ref' => 'x' ) ) );
+	same( 'https://example.org/', pass_query( 'https://example.org/', array( 'a b' => '1', 'x"y' => '2' ) ), 'odd names are dropped' );
+} );
+
+test( 'CSV cells cannot start a formula', function () {
+	same( "'=HYPERLINK(1)", csv_cell( '=HYPERLINK(1)' ) );
+	same( "'-2+3", csv_cell( '-2+3' ) );
+	same( 'Gruppe A  B', csv_cell( "Gruppe A,\nB" ) );
+} );
+
+test( 'A calendar series from long ago is handled quickly and correctly', function () {
+	$now   = new \DateTimeImmutable( '2027-03-01 12:00', wp_timezone() );
+	$t     = microtime( true );
+	$rules = events_to_rules( parse_ics( "BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Ancient\nDTSTART:00010101T100000Z\nDTEND:00010101T110000Z\nRRULE:FREQ=DAILY;INTERVAL=3\nURL:https://example.com/\nEND:VEVENT\nEND:VCALENDAR", wp_timezone() ), $now );
+	same( true, microtime( true ) - $t < 1, 'fast' );
+	same( true, count( $rules ) >= 1, 'occurrences ahead are still found' );
 } );
 
 test( 'Locations get stable, unique keys that never clash with channels', function () {

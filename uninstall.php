@@ -39,6 +39,9 @@ if ( is_multisite() ) {
 	}
 	delete_site_option( 'clean_short_links_network' );
 	delete_site_option( 'clean_short_links_alias_hosts' );
+	delete_site_option( 'clean_short_links_routes_db' );
+	global $wpdb;
+	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->base_prefix . 'cleansl_routes' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL -- Removing the plugin's own table.
 } else {
 	clean_short_links_uninstall_site();
 }

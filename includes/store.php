@@ -192,6 +192,12 @@ function offer_hosts() {
 		if ( $host === $own || '/' !== $site->path ) {
 			continue; // Sites in a subdirectory share the host of the main site.
 		}
+		// Short domains are open to every site. The domains of other sites only when the
+		// network allows it – otherwise an editor of one site could take over addresses on
+		// the domain of another (e.g. the main site).
+		if ( ! in_array( (int) $site->blog_id, $short, true ) && empty( network_settings()['cross_sites'] ) ) {
+			continue;
+		}
 		$details      = get_blog_details( (int) $site->blog_id );
 		$out[ $host ] = array(
 			'name'    => $details && '' !== $details->blogname ? $details->blogname : $host,
@@ -217,6 +223,30 @@ function offer_hosts() {
 		}
 	}
 	return $out;
+}
+
+/**
+ * Keeps only further domains the network offers. Domains a link already had stay as long as
+ * they are offered, so saving never adds one behind the network's back.
+ *
+ * @param array      $meta Clean meta.
+ * @param array|null $old  The link before saving.
+ * @return array
+ */
+function offered_hosts_only( array $meta, $old = null ) {
+	$meta['hosts'] = array_values( array_intersect( $meta['hosts'], array_keys( offer_hosts() ) ) );
+	return $meta;
+}
+
+/**
+ * Is a site still allowed to answer: not deleted, archived or marked as spam?
+ *
+ * @param int $blog_id Site ID.
+ * @return bool
+ */
+function site_serves( $blog_id ) {
+	$site = get_site( (int) $blog_id );
+	return $site && ! (int) $site->deleted && ! (int) $site->archived && ! (int) $site->spam;
 }
 
 /**
@@ -261,7 +291,11 @@ function sync_routes( array $link ) {
 			'link_id' => (int) $link['id'],
 		)
 	);
+	$offered = offer_hosts();
 	foreach ( $link['meta']['hosts'] as $host ) {
+		if ( ! isset( $offered[ $host ] ) ) {
+			continue;
+		}
 		$slugs = array( $link['slug'] => 'main' );
 		if ( '' !== $link['qr_slug'] ) {
 			$slugs[ $link['qr_slug'] ] = 'qr';
@@ -697,7 +731,7 @@ function save_link( array $data ) {
 		'qr'         => wp_json_encode( is_array( $data['qr'] ?? null ) ? $data['qr'] : ( $old['qr'] ?? new \stdClass() ) ),
 		'status'     => 'paused' === ( $data['status'] ?? '' ) ? 'paused' : 'active',
 		'max_clicks' => max( 0, (int) ( $data['max_clicks'] ?? 0 ) ),
-		'meta'       => wp_json_encode( clean_meta( $data['meta'] ?? ( $old['meta'] ?? array() ) ) ),
+		'meta'       => wp_json_encode( offered_hosts_only( clean_meta( $data['meta'] ?? ( $old['meta'] ?? array() ) ), $old ) ),
 		'updated_at' => $now,
 	);
 	if ( 'date' !== $row['start_mode'] ) {
@@ -1010,6 +1044,18 @@ function add_click( $id ) {
 }
 
 /**
+ * Takes one use of a link with a click limit – only if one is left.
+ *
+ * @param int $id    Link ID.
+ * @param int $limit Click limit.
+ * @return bool Whether a use was left.
+ */
+function claim_click( $id, $limit ) {
+	global $wpdb;
+	return 1 === (int) $wpdb->query( $wpdb->prepare( 'UPDATE %i SET clicks = clicks + 1 WHERE id = %d AND clicks < %d', tables()['links'], $id, $limit ) );
+}
+
+/**
  * Replaces the rules of a link (e.g. after a calendar sync). Check results are reset, as
  * the targets may have changed.
  *
@@ -1257,3 +1303,18 @@ function is_multisite_path_case_sensitive( $url ) {
 	$path = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
 	return '/' !== $path && '' !== $path && false !== strpos( $url, $path );
 }
+
+/*
+ * A deleted site takes its routes along – its addresses must not keep working on other
+ * domains of the network.
+ */
+add_action(
+	'wp_uninitialize_site',
+	function ( $site ) {
+		global $wpdb;
+		if ( (int) get_site_option( 'clean_short_links_routes_db' ) === ROUTES_VERSION ) {
+			$wpdb->delete( routes_table(), array( 'blog_id' => (int) $site->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Routes table of this plugin.
+			forget_links();
+		}
+	}
+);

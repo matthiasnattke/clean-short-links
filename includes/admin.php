@@ -609,7 +609,7 @@ function variants_card( array $link ) {
  */
 function hosts_card( array $link ) {
 	$hosts = offer_hosts();
-	if ( ! $hosts ) {
+	if ( ! $hosts || ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 	global $wpdb;
@@ -867,6 +867,9 @@ function check_line( array $link ) {
 function referrer_label( $key, $link = null ) {
 	if ( '' === $key ) {
 		return __( 'direct or app', 'clean-short-links' );
+	}
+	if ( '~' === $key ) {
+		return __( 'other websites', 'clean-short-links' );
 	}
 	if ( 0 === strpos( $key, '@p:' ) ) {
 		$name = substr( $key, 3 );
@@ -1524,6 +1527,10 @@ add_action(
 			'max_clicks' => absint( $p['max_clicks'] ?? 0 ),
 			'meta'       => clean_meta( (array) ( $p['meta'] ?? array() ) ),
 		);
+		// Further domains are a decision for the site's administrators.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$data['meta']['hosts'] = $old ? $old['meta']['hosts'] : array();
+		}
 		if ( $old ) {
 			// The state of the last calendar import is not part of the form.
 			foreach ( array( 'ical_at', 'ical_error', 'ical_count' ) as $key ) {
@@ -1628,7 +1635,7 @@ add_action(
 		$out = "group,link,qr,uses,limit,expires,state\n";
 		foreach ( invites( $id ) as $inv ) {
 			$urls = short_urls( $inv );
-			$out .= sprintf( "%s,%s,%s,%d,%d,%s,%s\n", str_replace( ',', ' ', $inv['title'] ), $urls['link'], $urls['qr'], $inv['clicks'], $inv['max_clicks'], $inv['ends_at'] ? wp_date( 'Y-m-d H:i', $inv['ends_at'] ) : '', link_state( $inv, time() ) );
+			$out .= sprintf( "%s,%s,%s,%d,%d,%s,%s\n", csv_cell( $inv['title'] ), $urls['link'], $urls['qr'], $inv['clicks'], $inv['max_clicks'], $inv['ends_at'] ? wp_date( 'Y-m-d H:i', $inv['ends_at'] ) : '', link_state( $inv, time() ) );
 		}
 		echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV download of addresses and numbers.
 		exit;

@@ -49,8 +49,8 @@ function preview_data( array $link, $target, $depth = 0 ) {
 	$post_id = target_post_id( $target );
 	if ( $post_id ) {
 		$post = get_post( $post_id );
-		if ( ! $post || 'publish' !== $post->post_status ) {
-			return null;
+		if ( ! $post || 'publish' !== $post->post_status || '' !== $post->post_password ) {
+			return null; // Unpublished or password-protected: no preview, nothing of its text.
 		}
 		$image = get_the_post_thumbnail_url( $post, 'large' );
 		$icon  = get_site_icon_url( 512 );

@@ -193,6 +193,7 @@ function page_network() {
 					<span class="csl-help"><?php esc_html_e( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ); ?></span>
 				</div>
 				<div class="csl-sub"><?php toggle( 'referrers', ! empty( $n['referrers'] ), __( 'Store the host of referring websites', 'clean-short-links' ), __( 'Off: only date, source and device class are counted. Visitors who ask for privacy (Global Privacy Control, Do Not Track) are always counted without it.', 'clean-short-links' ) ); ?></div>
+				<div class="csl-sub"><?php toggle( 'cross_sites', ! empty( $n['cross_sites'] ), __( 'Sites may also offer short links on the domains of other sites', 'clean-short-links' ), __( 'Off: only short domains and subdomains without a site. On: the administrators of every site can also use the domains of all other sites, including the main site – only for networks whose sites all belong to you.', 'clean-short-links' ) ); ?></div>
 				<div class="csl-sub"><?php toggle( 'signup_home', ! empty( $n['signup_home'] ), __( 'Sign-up page leads to the home page', 'clean-short-links' ), __( 'Only while registration is switched off: instead of "Registration has been disabled" visitors see the home page – also those who open an unknown subdomain.', 'clean-short-links' ) ); ?></div>
 				<div class="csl-sub">
 					<label class="csl-field" for="csl-n-alias"><span><?php esc_html_e( 'Subdomains without a site', 'clean-short-links' ); ?></span></label>
@@ -264,6 +265,7 @@ add_action(
 			'referrers'      => empty( $p['referrers'] ) ? 0 : 1,
 			'short_sites'    => array_values( array_filter( array_map( 'absint', (array) ( $p['short_sites'] ?? array() ) ), 'get_site' ) ),
 			'signup_home'    => empty( $p['signup_home'] ) ? 0 : 1,
+			'cross_sites'    => empty( $p['cross_sites'] ) ? 0 : 1,
 			'alias_hosts'    => $alias['hosts'],
 			'alias_homes'    => $alias['homes'],
 		);

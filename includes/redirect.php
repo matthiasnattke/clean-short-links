@@ -106,7 +106,7 @@ function handle_alias( $host ) {
 	$req    = parse_alias_path( request_path(), prefixes()[1] );
 	$route  = $req ? find_route( $host, $req[1] ) : null;
 	$status = 0;
-	if ( $route && get_site( $route['blog_id'] ) ) {
+	if ( $route && site_serves( $route['blog_id'] ) ) {
 		switch_to_blog( $route['blog_id'] );
 		$link = link_by_id( $route['link_id'] );
 		if ( $link ) {
@@ -190,7 +190,7 @@ function handle_route( $host, $slug, $source, $fast ) {
 		return false;
 	}
 	$route = find_route( $host, $slug );
-	if ( ! $route || ! get_site( $route['blog_id'] ) ) {
+	if ( ! $route || ! site_serves( $route['blog_id'] ) ) {
 		return false;
 	}
 	switch_to_blog( $route['blog_id'] );
@@ -377,6 +377,14 @@ function handle( array $found, $source, $slug = '', $fast = false ) {
 	}
 	// Only real uses count – not the way to the fallback page of an expired link.
 	$used = 'default' === $result['state'] || 0 === strpos( $result['state'], 'rule-' );
+	// With a click limit the use is claimed before the redirect, in one database step – two
+	// visitors at the same moment can never both get the last use.
+	if ( $used && ! empty( $link['max_clicks'] ) && visit_data( $source, $channel ) ) {
+		if ( ! claim_click( $link['id'], (int) $link['max_clicks'] ) ) {
+			return dead_end( 410, $link, $source, $fast );
+		}
+		$GLOBALS['clean_short_links_claimed'] = (int) $link['id'];
+	}
 	// Other targets by device, operating system or screen width – for the main target;
 	// rules by date and time come first.
 	if ( 'default' === $result['state'] && ! empty( $link['meta']['variants'] ) ) {
@@ -423,7 +431,7 @@ function final_url( $url, $link, $source, $channel = '' ) {
 	$query = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
 	unset( $query['cslsrc'], $query['nfc'] );
 	if ( ! empty( site_settings()['pass_query'] ) && $query ) {
-		$url = add_query_arg( map_deep( $query, 'rawurlencode' ), $url );
+		$url = pass_query( $url, $query );
 	}
 	/**
 	 * Filters the address a short link leads to right now.
@@ -545,7 +553,9 @@ function finish_and_count( $count, $link, $source, $channel ) {
 		litespeed_finish_request();
 	}
 	record_click( $link['id'], $visit['source'], $visit['device'], $visit['ref'] );
-	add_click( $link['id'] );
+	if ( ( $GLOBALS['clean_short_links_claimed'] ?? 0 ) !== (int) $link['id'] ) {
+		add_click( $link['id'] );
+	}
 }
 
 /**
