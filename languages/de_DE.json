@@ -490,5 +490,6 @@
 	"Really issue anew?": "Wirklich neu ausstellen?",
 	"Yes, issue anew": "Ja, neu ausstellen",
 	"Cancel": "Abbrechen",
-	"A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available.": "Es konnte keine neue Wallet-Karte ausgestellt werden: Der Kurzlink oder Ort existiert nicht oder Wallet-Karten sind nicht verfügbar."
+	"A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available.": "Es konnte keine neue Wallet-Karte ausgestellt werden: Der Kurzlink oder Ort existiert nicht oder Wallet-Karten sind nicht verfügbar.",
+	"Design QR code": "QR-Code gestalten"
 }

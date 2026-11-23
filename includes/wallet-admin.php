@@ -71,6 +71,73 @@ function wallet_entries( array $link, array $urls ): array {
 }
 
 /**
+ * The Wallet guest addresses of a link as choices for a code (QR designer, NFC tag): one
+ * entry for the short link itself and one for each location whose card is offered.
+ *
+ * @param array         $urls    short_urls() of the link.
+ * @param int           $link_id Link ID, 0 for none.
+ * @param string        $for     qr or nfc (the entries are the same, the code decides how to use them).
+ * @param callable|null $offered Receives a card reference, returns whether the card is offered; null asks Connect.
+ * @return array[] Entries: label, address, address in capitals (when compact), location key ('' for the short link itself).
+ */
+function wallet_code_entries( array $urls, int $link_id, string $for, ?callable $offered = null ): array {
+	unset( $for );
+	if ( $link_id <= 0 ) {
+		return array();
+	}
+	if ( null === $offered ) {
+		if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) ) {
+			return array();
+		}
+		$offered = static function ( $ref ) {
+			$card = \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
+			return $card && 'active' === ( $card['status'] ?? '' );
+		};
+	}
+	$entries = array();
+	if ( '' !== (string) ( $urls['wallet'] ?? '' ) && $offered( wallet_ref( $link_id ) ) ) {
+		$entries[] = array( __( 'Wallet card: the short link itself', 'clean-short-links' ), (string) $urls['wallet'], qr_uppercase( (string) $urls['wallet'] ), '' );
+	}
+	foreach ( (array) ( $urls['places'] ?? array() ) as $key => $pl ) {
+		if ( '' !== (string) ( $pl['wallet'] ?? '' ) && $offered( wallet_ref( $link_id, (string) $key ) ) ) {
+			/* translators: %s: name of a location */
+			$entries[] = array( sprintf( __( 'Wallet card: %s', 'clean-short-links' ), $pl['name'] ), (string) $pl['wallet'], qr_uppercase( (string) $pl['wallet'] ), (string) $key );
+		}
+	}
+	return $entries;
+}
+
+/**
+ * Prints the card editor of Connect. Connect 0.2.2 and later takes options: what the link
+ * fills in live (QR code and link) is shown as a note instead of a field. Older versions
+ * only take three arguments.
+ *
+ * @param string $ref      Card reference.
+ * @param array  $defaults Live data of the link.
+ */
+function wallet_editor_box( string $ref, array $defaults ): void {
+	$args = array( WALLET_OWNER, $ref, $defaults );
+	if ( wallet_editor_takes_options( 'clean_mobile_connect_wallet_editor_box' ) ) {
+		$args[] = array( 'fixed' => array( 'qr', 'link' ) );
+	}
+	\clean_mobile_connect_wallet_editor_box( ...$args );
+}
+
+/**
+ * Does the function take the options argument (a fourth one)?
+ *
+ * @param string|callable $fn Function.
+ * @return bool
+ */
+function wallet_editor_takes_options( $fn ): bool {
+	try {
+		return ( new \ReflectionFunction( $fn ) )->getNumberOfParameters() >= 4;
+	} catch ( \ReflectionException $e ) {
+		return false;
+	}
+}
+
+/**
  * Card: Wallet card – offer the link as a card for Apple Wallet.
  *
  * @param array $link Link.
@@ -118,14 +185,17 @@ function wallet_card( array $link, array $urls ) {
 			</label>
 			<?php
 			if ( function_exists( 'clean_mobile_connect_wallet_editor_box' ) ) {
-				\clean_mobile_connect_wallet_editor_box( WALLET_OWNER, $e['ref'], $e['defaults'] );
+				wallet_editor_box( $e['ref'], $e['defaults'] );
 			}
 			if ( '' !== $e['wallet'] ) {
 				?>
 				<div class="csl-wallet-address">
 					<span class="csl-field-label"><?php esc_html_e( 'Wallet address', 'clean-short-links' ); ?></span>
 					<?php copy_field( $e['wallet'] ); ?>
-					<div class="csl-wallet-qr" data-url="<?php echo esc_attr( $e['wallet'] ); ?>"></div>
+					<div class="csl-wallet-qr" data-url="<?php echo esc_attr( $e['wallet'] ); ?>" data-upper="<?php echo esc_attr( qr_uppercase( $e['wallet'] ) ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $e['wallet'] ) ); ?>"></div>
+					<?php if ( $on ) : ?>
+						<button type="button" class="button csl-btn csl-wallet-design" data-entry="<?php echo esc_attr( 'wallet:' . $e['place'] ); ?>"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Design QR code', 'clean-short-links' ); ?></button>
+					<?php endif; ?>
 				</div>
 				<?php
 			}

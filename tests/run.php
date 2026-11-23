@@ -876,6 +876,39 @@ test( 'choice rows leave out refs that have a card', function () {
 	same( array(), $rows );
 } );
 
+test( 'wallet code entries list offered cards with guest addresses and capitals', function () {
+	$urls = array(
+		'link'   => 'https://example.test/s/fest',
+		'wallet' => 'https://example.test/w/fest',
+		'places' => array(
+			'home' => array( 'name' => 'Rathaus', 'slug' => 'fest-home', 'wallet' => 'https://example.test/w/fest-home' ),
+			'shop' => array( 'name' => 'Shop', 'slug' => 'fest-shop', 'wallet' => 'https://example.test/w/fest-shop' ),
+		),
+	);
+	$offered = function ( $ref ) {
+		return in_array( $ref, array( '12', '12:home' ), true );
+	};
+	foreach ( array( 'qr', 'nfc' ) as $for ) {
+		$e = wallet_code_entries( $urls, 12, $for, $offered );
+		same( 2, count( $e ), $for );
+		same( 'https://example.test/w/fest', $e[0][1] );
+		same( 'HTTPS://EXAMPLE.TEST/W/FEST', $e[0][2] );
+		same( 'https://example.test/w/fest-home', $e[1][1] );
+		same( 'HTTPS://EXAMPLE.TEST/W/FEST-HOME', $e[1][2] );
+		same( 'Wallet card: Rathaus', $e[1][0] );
+		same( 'home', $e[1][3] );
+	}
+	same( array(), wallet_code_entries( $urls, 0, 'qr', $offered ) );
+	same( array(), wallet_code_entries( $urls, 12, 'qr' ), 'Connect inactive' );
+	same( array(), wallet_code_entries( array_merge( $urls, array( 'wallet' => '', 'places' => array() ) ), 12, 'qr', $offered ) );
+} );
+
+test( 'editor options are only passed to a Connect that takes them', function () {
+	same( false, wallet_editor_takes_options( function ( $owner, $ref, $defaults ) {} ) );
+	same( true, wallet_editor_takes_options( function ( $owner, $ref, $defaults, array $options = array() ) {} ) );
+	same( false, wallet_editor_takes_options( 'no_such_function_here' ) );
+} );
+
 test( 'attach check accepts only an existing own place of a normal link', function () {
 	$link = array( 'id' => 12, 'parent_id' => 0, 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ) ) ) );
 	same( true, wallet_attach_allowed( 'csl', '12', $link, true ) );

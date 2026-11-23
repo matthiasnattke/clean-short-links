@@ -19,7 +19,7 @@
 	var warn = box.querySelector( '.csl-qr-warn' );
 	var FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 	var design = { fg: '#0e2440', bg: '#ffffff', transparent: 0, style: 'square', eyes: 'square', cta: '', cta_text: '', logo: 0, logo_size: 22, upper: 1, url: 0 };
-	var logoData = '', logoImg = null, current = null;
+	var logoData = '', logoImg = null, current = null, logoAsked = false;
 
 	try {
 		var saved = JSON.parse( store.value || '{}' );
@@ -127,10 +127,12 @@
 	/**
 	 * Turns the design into shapes.
 	 *
+	 * @param {{url:string,upper:string,print:string}=} src Address to encode; default: the one selected in the designer.
 	 * @return {{W:number,H:number,shapes:Array,q:Object}}
 	 */
-	function layout() {
-		var text = design.upper && box.dataset.upper ? box.dataset.upper : box.dataset.url;
+	function layout( src ) {
+		src = src || box.dataset;
+		var text = design.upper && src.upper ? src.upper : src.url;
 		var q = window.CleanShortLinksQR.encode( text, { ec: design.logo ? 'H' : 'M' } );
 		var n = q.size, m = q.modules, shapes = [], fg = design.fg, i, x, y;
 		var ox = 4, W = n + 8, H = n + 8;
@@ -213,8 +215,8 @@
 			shapes.push( { t: 'text', x: sx + ic + gapI, y: pill.cy + fsz * 0.36, size: fsz, text: label, w: tw, c: ink } );
 		}
 		// The address in plain text below everything, for people who want to type it.
-		if ( design.url && box.dataset.print ) {
-			var addr = box.dataset.print, asz = Math.max( 2.2, n * 0.075 ), aw = textWidth( addr, asz, 400 );
+		if ( design.url && src.print ) {
+			var addr = src.print, asz = Math.max( 2.2, n * 0.075 ), aw = textWidth( addr, asz, 400 );
 			if ( aw > W - 4 ) {
 				asz *= ( W - 4 ) / aw;
 				aw = W - 4;
@@ -426,6 +428,7 @@
 		var lf = luminance( design.fg ), lb = design.transparent ? 1 : luminance( design.bg ), ratio = ( Math.max( lf, lb ) + 0.05 ) / ( Math.min( lf, lb ) + 0.05 );
 		warn.textContent = design.transparent ? ( lf > 0.4 ? T.contrast : '' ) : ( lf > lb ? T.inverted : ( ratio < 4 ? T.contrast : '' ) );
 		store.value = JSON.stringify( design );
+		document.dispatchEvent( new CustomEvent( 'csl-qr-render' ) );
 	}
 
 	/* ---- Export ---- */
@@ -500,15 +503,35 @@
 		box.hidden = false;
 		document.querySelector( '.csl-qr-start .csl-qr-open' ).hidden = true;
 		logoUi();
-		if ( design.logo && window.wp.media ) {
+		ensureLogo();
+		render();
+	}
+	function ensureLogo() {
+		if ( design.logo && ! logoImg && ! logoAsked && window.wp && window.wp.media ) {
+			logoAsked = true;
 			var att = window.wp.media.attachment( design.logo );
 			att.fetch().then( function () {
 				var s = att.get( 'sizes' );
 				loadLogo( s && s.medium ? s.medium.url : att.get( 'url' ) );
 			} );
 		}
-		render();
 	}
+	/* For other parts of the page (Wallet section): the saved design applied to another address. */
+	window.CleanShortLinksDesigner = {
+		svg: function ( url, upper, print ) {
+			ensureLogo();
+			return buildSvg( layout( { url: url, upper: upper, print: print } ) );
+		},
+		show: function ( value ) {
+			if ( box.hidden ) {
+				open();
+			}
+			if ( codeFor && codeFor.querySelector( 'option[value="' + value + '"]' ) ) {
+				codeFor.value = value;
+				codeFor.dispatchEvent( new Event( 'change' ) );
+			}
+		}
+	};
 	document.querySelector( '.csl-qr-open' ).addEventListener( 'click', open );
 	if ( '#csl-sec-qr' === window.location.hash || ( store.value.length > 2 && ( design.logo || design.cta || design.url || 'square' !== design.style || design.transparent ) ) ) {
 		open();

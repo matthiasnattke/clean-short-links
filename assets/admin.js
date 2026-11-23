@@ -413,6 +413,21 @@
 	var walletPanels = $$( '.csl-wallet-panel' );
 	if ( walletPanels.length ) {
 		var walletQr = function ( box ) {
+			var designer = window.CleanShortLinksDesigner;
+			if ( designer ) {
+				// In the link's own QR design, encoded as the designer would encode it.
+				try {
+					box.innerHTML = designer.svg( box.dataset.url, box.dataset.upper || '', box.dataset.print || '' );
+					var drawn = box.firstChild;
+					if ( drawn ) {
+						drawn.setAttribute( 'role', 'img' );
+						drawn.setAttribute( 'aria-label', box.dataset.url );
+					}
+					return;
+				} catch ( err ) {
+					box.textContent = '';
+				}
+			}
 			if ( box.firstChild || ! window.CleanShortLinksQR ) {
 				return;
 			}
@@ -452,6 +467,21 @@
 				walletShow( walletFor.value );
 			} );
 		}
+		// The designer repaints the previews when its design changes.
+		document.addEventListener( 'csl-qr-render', function () {
+			$$( '.csl-wallet-panel:not([hidden]) .csl-wallet-qr' ).forEach( walletQr );
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			var go = e.target.closest( '.csl-wallet-design' );
+			if ( ! go || ! window.CleanShortLinksDesigner ) {
+				return;
+			}
+			var sec = document.getElementById( 'csl-sec-qr' );
+			if ( sec ) {
+				sec.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+			}
+			window.CleanShortLinksDesigner.show( go.dataset.entry );
+		} );
 		// The QR encoder is loaded after this script.
 		window.addEventListener( 'load', function () {
 			walletShow( walletFor ? walletFor.value : walletPanels[ 0 ].dataset.walletPanel );

@@ -661,36 +661,21 @@ function hosts_card( array $link ) {
 /**
  * Choice of the address a code is made for: the short link or one of its locations.
  *
- * For nfc, the Wallet addresses of the entries whose card is offered are listed too.
+ * The Wallet addresses of the entries whose card is offered are listed too.
  *
  * @param array  $urls    Short URLs of the link.
  * @param string $for     qr or nfc.
  * @param int    $link_id Link ID (finds the cards for the Wallet entries), 0 for none.
  */
 function code_for_select( array $urls, $for, $link_id = 0 ) {
-	$wallet = array();
-	if ( 'nfc' === $for && $link_id > 0 && wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_card' ) ) {
-		$offered = static function ( $ref ) {
-			$card = \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
-			return $card && 'active' === ( $card['status'] ?? '' );
-		};
-		if ( '' !== (string) $urls['wallet'] && $offered( wallet_ref( $link_id ) ) ) {
-			$wallet[] = array( __( 'Wallet card: the short link itself', 'clean-short-links' ), (string) $urls['wallet'], $urls );
-		}
-		foreach ( $urls['places'] as $key => $pl ) {
-			if ( '' !== (string) $pl['wallet'] && $offered( wallet_ref( $link_id, (string) $key ) ) ) {
-				/* translators: %s: name of a location */
-				$wallet[] = array( sprintf( __( 'Wallet card: %s', 'clean-short-links' ), $pl['name'] ), (string) $pl['wallet'], $pl );
-			}
-		}
-	}
+	$wallet = wallet_code_entries( $urls, (int) $link_id, $for );
 	if ( ! $urls['places'] && ! $wallet ) {
 		return;
 	}
-	$opt = function ( $label, array $u, $slug, $selected = false ) use ( $for ) {
+	$opt = function ( $label, array $u, $slug, $selected = false, $value = null ) use ( $for ) {
 		printf(
 			'<option value="%1$s" data-url="%2$s" data-upper="%3$s" data-print="%4$s" data-slug="%5$s"%6$s>%7$s</option>',
-			esc_attr( $slug ),
+			esc_attr( $value ?? $slug ),
 			esc_attr( 'nfc' === $for ? $u['nfc'] : $u['qr'] ),
 			esc_attr( $u['qr_upper'] ),
 			esc_attr( preg_replace( '#^https?://#', '', $u['link'] ) ),
@@ -709,7 +694,8 @@ function code_for_select( array $urls, $for, $link_id = 0 ) {
 				$opt( sprintf( __( 'Location: %s', 'clean-short-links' ), $pl['name'] ), $pl, $pl['slug'] );
 			}
 			foreach ( $wallet as $w ) {
-				$opt( $w[0], array_merge( $w[2], array( 'nfc' => $w[1] ) ), $w[2]['slug'] ?? '' );
+				// The Wallet address is both the code and what is printed under it.
+				$opt( $w[0], array( 'nfc' => $w[1], 'qr' => $w[1], 'qr_upper' => $w[2], 'link' => $w[1] ), 'wallet-' . basename( (string) wp_parse_url( $w[1], PHP_URL_PATH ) ), false, 'wallet:' . $w[3] );
 			}
 			?>
 		</select>
@@ -1358,7 +1344,7 @@ function page_edit() {
 								<p class="csl-qr-warn" aria-live="polite"></p>
 							</div>
 							<div class="csl-qr-controls">
-								<?php code_for_select( $urls, 'qr' ); ?>
+								<?php code_for_select( $urls, 'qr', (int) $link['id'] ); ?>
 								<div class="csl-qr-group">
 									<span class="csl-field-label"><?php esc_html_e( 'Dots', 'clean-short-links' ); ?></span>
 									<?php

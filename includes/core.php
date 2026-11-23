@@ -1325,3 +1325,30 @@ function clean_hosts( $in ) {
 	}
 	return array_values( $out );
 }
+
+/**
+ * The QR address in capitals if that fits the compact alphanumeric QR mode – scheme, host
+ * and short links are case-insensitive, so the uppercase form works the same.
+ *
+ * @param string $url URL.
+ * @return string Uppercase URL, or the URL unchanged if it does not fit.
+ */
+function qr_uppercase( $url ) {
+	$upper = strtoupper( $url );
+	return preg_match( '#^[0-9A-Z $%*+\-./:]+$#', $upper ) && ! is_multisite_path_case_sensitive( $url ) ? $upper : $url;
+}
+
+/**
+ * In a subdirectory network the site path is part of the URL and compared as typed by
+ * WordPress – keep those URLs as they are.
+ *
+ * @param string $url URL.
+ * @return bool
+ */
+function is_multisite_path_case_sensitive( $url ) {
+	if ( ! is_multisite() || is_subdomain_install() ) {
+		return false;
+	}
+	$path = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+	return '/' !== $path && '' !== $path && false !== strpos( $url, $path );
+}

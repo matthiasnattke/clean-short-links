@@ -477,7 +477,14 @@ textarea.csl-wide { max-width: none; }
 .csl-wallet-panel { display: grid; gap: 16px; }
 .csl-wallet-panel[hidden] { display: none; }
 .csl-wallet-address { display: grid; gap: 8px; justify-items: start; }
-.csl-wallet-qr svg { display: block; width: 160px; height: 160px; border: 1px solid #dcdcde; border-radius: 8px; }
+.csl-wallet-qr svg { display: block; width: 180px; max-width: 100%; height: auto; border: 1px solid #dcdcde; border-radius: 8px; }
+.csl-wallet-qr:empty { display: none; }
+/* The editor of Clean Mobile Connect sits in the card of the section: its sections lose
+   their own frames, so no box stands inside another box. */
+.csl-wallet-panel .cmc-sec { margin: 0; border: 0; border-top: 1px solid var(--csl-line); border-radius: 0; background: none; }
+.csl-wallet-panel .cmc-sec > summary { padding-left: 0; padding-right: 0; border-radius: 0; }
+.csl-wallet-panel .cmc-sec-body { padding: 0 0 14px; }
+.csl-wallet-panel .cmc-editor { padding: 0; border: 0; box-shadow: none; background: none; }
 .csl-wallet-anew { margin: 0; }
 .csl-wallet-anew-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .csl-wallet-anew-confirm[hidden] { display: none; }
