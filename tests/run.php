@@ -732,7 +732,7 @@ test( 'wallet refs', function () {
 	same( '12:home', wallet_ref( 12, 'home' ) );
 	same( array( 'link_id' => 12, 'place' => 'home' ), parse_wallet_ref( '12:home' ) );
 	same( array( 'link_id' => 12, 'place' => '' ), parse_wallet_ref( '12' ) );
-	foreach ( array( '0', 'x', '12:', '12:Bad Key', '' ) as $bad ) {
+	foreach ( array( '0', 'x', '12:', '12:Bad Key', '', "12\n", "12:home\n" ) as $bad ) {
 		same( null, parse_wallet_ref( $bad ), $bad );
 	}
 	same( array( '12', '12:home', '12:shop' ), wallet_refs_of( array( 'id' => 12, 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Home' ), array( 'key' => 'shop', 'name' => 'Shop' ) ) ) ) ) );
@@ -746,7 +746,8 @@ test( 'wallet target', function () {
 	}
 	same( 'home', wallet_target( array( $link, 'place' ), 'fest-home' )['place'] );
 	same( 410, wallet_target( array( null, 'retired' ), 'fest' )['status'] );
-	same( 410, wallet_target( null, 'fest' )['status'] );
+	same( 404, wallet_target( null, 'fest' )['status'] );
+	same( null, wallet_target( null, 'fest' )['link'] );
 	same( null, wallet_target( array( array( 'id' => 13, 'slug' => 'inv', 'parent_id' => 12 ), 'main' ), 'inv' ) );
 } );
 

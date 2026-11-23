@@ -31,7 +31,7 @@ function wallet_ref( $link_id, $place = '' ) {
  * @return array{link_id:int,place:string}|null
  */
 function parse_wallet_ref( $ref ) {
-	if ( ! preg_match( '/^([1-9][0-9]*)(?::([a-z0-9]+(?:-[a-z0-9]+)*))?$/', (string) $ref, $m ) ) {
+	if ( ! preg_match( '/^([1-9][0-9]*)(?::([a-z0-9]+(?:-[a-z0-9]+)*))?\z/', (string) $ref, $m ) ) {
 		return null;
 	}
 	return array(
@@ -62,14 +62,14 @@ function wallet_refs_of( array $link ) {
  *
  * @param array|null $found Result of find_slug(): array( link|null, kind ).
  * @param string     $slug  The requested short address.
- * @return array{link:array|null,place:string,status:int}|null Null: no cards (invitations, unknown).
+ * @return array{link:array|null,place:string,status:int}|null Null: no cards (invitations). Status 404 means the address is unknown: the caller follows the unknown short address path; 410 means retired.
  */
 function wallet_target( $found, $slug ) {
 	if ( ! $found ) {
 		return array(
 			'link'   => null,
 			'place'  => '',
-			'status' => 410,
+			'status' => 404,
 		);
 	}
 	list( $link, $kind ) = $found;

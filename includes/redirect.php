@@ -104,6 +104,7 @@ add_action(
  */
 function handle_alias( $host ) {
 	list( , $q, $w ) = prefixes();
+
 	$req    = parse_alias_path( request_path(), $q, $w );
 	$route  = $req ? find_route( $host, $req[1] ) : null;
 	$status = 0;
