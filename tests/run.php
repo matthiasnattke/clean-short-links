@@ -886,6 +886,16 @@ test( 'wallet field keys', function () {
 	same( 'place-home', wallet_field_key( 'home' ) );
 } );
 
+test( 'anew only for cards of the link', function () {
+	$l = link( array( 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Home' ) ) ) ) );
+	same( true, wallet_anew_valid( $l, '' ) );
+	same( true, wallet_anew_valid( $l, 'home' ) );
+	same( false, wallet_anew_valid( $l, 'gone' ) );
+	same( false, wallet_anew_valid( null, '' ) );
+	$l['parent_id'] = 5;
+	same( false, wallet_anew_valid( $l, '' ) );
+} );
+
 test( 'offer switch maps to card status', function () {
 	same( 'active', wallet_save_input( true, false ) );
 	same( 'active', wallet_save_input( true, true ) );

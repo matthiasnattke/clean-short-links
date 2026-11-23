@@ -234,8 +234,8 @@ function action_notice() {
 		'settings' => __( 'Settings saved.', 'clean-short-links' ),
 		'alias'    => __( 'Short address removed.', 'clean-short-links' ),
 		'checked'  => __( 'Link check done.', 'clean-short-links' ),
-		'wallet-anew'  => __( 'A new Wallet card was issued.', 'clean-short-links' ),
-		'wallet-none'  => __( 'There was no Wallet card to issue anew.', 'clean-short-links' ),
+		'wallet-anew' => __( 'A new Wallet card was issued.', 'clean-short-links' ),
+		'wallet-none' => __( 'There was no Wallet card to issue anew.', 'clean-short-links' ),
 	);
 	if ( isset( $messages[ $msg ] ) ) {
 		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $msg ] ) );
@@ -1132,7 +1132,7 @@ function page_edit() {
 		$sections['csl-sec-places']  = __( 'Locations', 'clean-short-links' );
 		$sections['csl-sec-qr']      = __( 'QR code', 'clean-short-links' );
 		$sections['csl-sec-nfc']     = __( 'NFC tag', 'clean-short-links' );
-		if ( wallet_enabled() ) {
+		if ( wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_card' ) ) {
 			$sections['csl-sec-wallet'] = __( 'Wallet card', 'clean-short-links' );
 		}
 		$sections['csl-sec-stats'] = __( 'Visits', 'clean-short-links' );
@@ -1470,6 +1470,11 @@ function page_edit() {
 				</div>
 			</div>
 		</form>
+		<?php
+		if ( $urls ) {
+			wallet_anew_forms( $link, $urls );
+		}
+		?>
 	</div>
 	<?php
 }

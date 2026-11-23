@@ -484,5 +484,9 @@
 	"Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”.": "Ausgeschaltet bleiben Karten auf iPhones, wie sie sind, und die Wallet-Adresse zeigt „nicht verfügbar“.",
 	"Wallet address": "Wallet-Adresse",
 	"Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card.": "Bereits ausgegebene Karten werden beendet und auf jedem iPhone ausgegraut. Die Wallet-Adresse funktioniert weiter, mit einer neuen Karte.",
-	"Issue anew": "Neu ausstellen"
+	"Issue anew": "Neu ausstellen",
+	"Really issue anew?": "Wirklich neu ausstellen?",
+	"Yes, issue anew": "Ja, neu ausstellen",
+	"Cancel": "Abbrechen",
+	"A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available.": "Es konnte keine neue Wallet-Karte ausgestellt werden: Der Kurzlink oder Ort existiert nicht oder Wallet-Karten sind nicht verfügbar."
 }

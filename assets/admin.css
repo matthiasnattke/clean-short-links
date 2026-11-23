@@ -479,6 +479,9 @@ textarea.csl-wide { max-width: none; }
 .csl-wallet-address { display: grid; gap: 8px; justify-items: start; }
 .csl-wallet-qr svg { display: block; width: 160px; height: 160px; border: 1px solid #dcdcde; border-radius: 8px; }
 .csl-wallet-anew { margin: 0; }
+.csl-wallet-anew-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.csl-wallet-anew-confirm[hidden] { display: none; }
+.csl-wallet-anew-confirm .csl-help { flex-basis: 100%; }
 .csl-nfc-write { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 12px 0 4px; }
 .csl-nfc-status { flex-basis: 100%; margin: 0; font-weight: 600; }
 .csl-nfc-status:empty { display: none; }

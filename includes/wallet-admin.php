@@ -130,9 +130,17 @@ function wallet_card( array $link, array $urls ) {
 				<?php
 			}
 			if ( $card ) {
-				$anew = wp_nonce_url( admin_url( 'admin-post.php?action=clean_short_links_wallet_anew&id=' . (int) $link['id'] . '&place=' . rawurlencode( $e['place'] ) ), 'clean_short_links_wallet_anew_' . (int) $link['id'] );
+				// Two steps without window.confirm(); the submit button belongs to the form printed after the editor form.
 				?>
-				<p class="csl-wallet-anew"><a class="button csl-btn" href="<?php echo esc_url( $anew ); ?>" data-confirm="<?php esc_attr_e( 'Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card.', 'clean-short-links' ); ?>"><?php esc_html_e( 'Issue anew', 'clean-short-links' ); ?></a></p>
+				<div class="csl-wallet-anew">
+					<button type="button" class="button csl-btn csl-wallet-anew-start"><?php esc_html_e( 'Issue anew', 'clean-short-links' ); ?></button>
+					<span class="csl-wallet-anew-confirm" role="alert" hidden>
+						<strong><?php esc_html_e( 'Really issue anew?', 'clean-short-links' ); ?></strong>
+						<span class="csl-help"><?php esc_html_e( 'Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card.', 'clean-short-links' ); ?></span>
+						<button type="submit" form="<?php echo esc_attr( 'csl-wallet-anew-' . $e['key'] ); ?>" class="button button-primary csl-btn"><?php esc_html_e( 'Yes, issue anew', 'clean-short-links' ); ?></button>
+						<button type="button" class="button csl-btn csl-wallet-anew-cancel"><?php esc_html_e( 'Cancel', 'clean-short-links' ); ?></button>
+					</span>
+				</div>
 				<?php
 			}
 			?>
@@ -178,19 +186,63 @@ function wallet_save_posted( int $link_id, array $posted ): void {
 	}
 }
 
+/**
+ * Is this a card of the link that can be issued anew?
+ *
+ * @param array|null $link  Link, null if it does not exist.
+ * @param string     $place Location key, '' for the link itself.
+ * @return bool
+ */
+function wallet_anew_valid( ?array $link, string $place ): bool {
+	if ( ! $link || ! empty( $link['parent_id'] ) ) {
+		return false;
+	}
+	return '' === $place || in_array( $place, array_column( (array) ( $link['meta']['places'] ?? array() ), 'key' ), true );
+}
+
+/**
+ * The small forms of "Issue anew" – printed after the editor form, because forms cannot be nested.
+ * The confirm buttons in the Wallet section point at them with the form attribute.
+ *
+ * @param array $link Link.
+ * @param array $urls Short URLs.
+ */
+function wallet_anew_forms( array $link, array $urls ) {
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) || ! function_exists( 'clean_mobile_connect_wallet_issue_anew' ) ) {
+		return;
+	}
+	foreach ( wallet_entries( $link, $urls ) as $e ) {
+		if ( ! \clean_mobile_connect_wallet_card( WALLET_OWNER, $e['ref'] ) ) {
+			continue;
+		}
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="<?php echo esc_attr( 'csl-wallet-anew-' . $e['key'] ); ?>">
+			<input type="hidden" name="action" value="clean_short_links_wallet_anew">
+			<input type="hidden" name="_wpnonce" value="<?php echo esc_attr( wp_create_nonce( 'clean_short_links_wallet_anew_' . (int) $link['id'] ) ); ?>">
+			<input type="hidden" name="id" value="<?php echo esc_attr( (string) (int) $link['id'] ); ?>">
+			<input type="hidden" name="place" value="<?php echo esc_attr( $e['place'] ); ?>">
+		</form>
+		<?php
+	}
+}
+
 add_action(
 	'admin_post_clean_short_links_wallet_anew',
 	function () {
-		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The ID is part of the nonce action checked right below.
+		if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
+			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ), '', array( 'response' => 405 ) );
+		}
+		$id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- The ID is part of the nonce action checked right below.
 		if ( ! current_user_can( capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
 		}
 		check_admin_referer( 'clean_short_links_wallet_anew_' . $id );
-		$place = isset( $_GET['place'] ) ? sanitize_key( wp_unslash( $_GET['place'] ) ) : '';
-		$link  = link_by_id( $id );
+		$place = isset( $_POST['place'] ) ? sanitize_key( wp_unslash( $_POST['place'] ) ) : '';
 		$args  = array( 'id' => $id );
-		if ( $link && empty( $link['parent_id'] ) && wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_issue_anew' ) && ( '' === $place || in_array( $place, array_column( (array) $link['meta']['places'], 'key' ), true ) ) ) {
+		if ( wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_issue_anew' ) && wallet_anew_valid( link_by_id( $id ), $place ) ) {
 			$args['csl-msg'] = \clean_mobile_connect_wallet_issue_anew( WALLET_OWNER, wallet_ref( $id, $place ) ) ? 'wallet-anew' : 'wallet-none';
+		} else {
+			$args['csl-error'] = __( 'A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available.', 'clean-short-links' );
 		}
 		wp_safe_redirect( admin_page_url( 'edit', $args ) . '#csl-sec-wallet' );
 		exit;

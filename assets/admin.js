@@ -457,9 +457,30 @@
 			walletShow( walletFor ? walletFor.value : walletPanels[ 0 ].dataset.walletPanel );
 		} );
 		document.addEventListener( 'click', function ( e ) {
-			var a = e.target.closest( '.csl-wallet-anew a[data-confirm]' );
-			if ( a && ! window.confirm( a.dataset.confirm ) ) {
-				e.preventDefault();
+			var box = e.target.closest( '.csl-wallet-anew' ), open = e.target.closest( '.csl-wallet-anew-start' ), cancel = e.target.closest( '.csl-wallet-anew-cancel' );
+			// Only one question at a time.
+			$$( '.csl-wallet-anew' ).forEach( function ( b ) {
+				if ( b !== box || cancel ) {
+					$( '.csl-wallet-anew-confirm', b ).hidden = true;
+					$( '.csl-wallet-anew-start', b ).hidden = false;
+				}
+			} );
+			if ( open ) {
+				open.hidden = true;
+				$( '.csl-wallet-anew-confirm', box ).hidden = false;
+				$( '.csl-wallet-anew-confirm .button-primary', box ).focus();
+			}
+			if ( cancel ) {
+				$( '.csl-wallet-anew-start', box ).focus();
+			}
+		} );
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				$$( '.csl-wallet-anew-cancel' ).forEach( function ( c ) {
+					if ( ! c.closest( '.csl-wallet-anew-confirm' ).hidden ) {
+						c.click();
+					}
+				} );
 			}
 		} );
 	}
