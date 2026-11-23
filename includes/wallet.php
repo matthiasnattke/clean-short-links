@@ -253,3 +253,130 @@ function handle_found( array $found, $source, $slug, $fast = false ) {
 	}
 	return handle( $found, $source, $slug, $fast );
 }
+
+/**
+ * Fills the values a card leaves empty from the short link. Deterministic: no translation, no user.
+ *
+ * @param array  $data     Stored card data.
+ * @param array  $link     Link.
+ * @param string $place    Location key, '' for the link itself.
+ * @param array  $urls     short_urls() of the link.
+ * @param int    $image_id Featured image of the target post, 0 if none.
+ * @return array
+ */
+function wallet_live_data( array $data, array $link, string $place, array $urls, int $image_id ): array {
+	$title = '' !== (string) ( $link['title'] ?? '' ) ? (string) $link['title'] : (string) ( $link['slug'] ?? '' );
+	$link_url = (string) ( $urls['link'] ?? '' );
+	if ( '' !== $place ) {
+		$name     = (string) ( $urls['places'][ $place ]['name'] ?? $place );
+		$title   .= ' – ' . $name;
+		$link_url = (string) ( $urls['places'][ $place ]['link'] ?? $link_url );
+	}
+	$live = array(
+		'title' => $title,
+		'image' => $image_id,
+		'qr'    => $link_url . '?w',
+		'link'  => $link_url,
+	);
+	foreach ( $live as $key => $value ) {
+		if ( empty( $data[ $key ] ) ) {
+			$data[ $key ] = $value;
+		}
+	}
+	return $data;
+}
+
+/**
+ * Live data of a card of this plugin (filter clean_mobile_connect_wallet_card_data).
+ *
+ * @param mixed $data Stored card data.
+ * @param mixed $card Card.
+ * @return mixed
+ */
+function wallet_card_data_filter( $data, $card ) {
+	if ( ! is_array( $data ) || ! is_array( $card ) || WALLET_OWNER !== ( $card['owner'] ?? '' ) ) {
+		return $data;
+	}
+	$ref  = parse_wallet_ref( $card['owner_ref'] ?? '' );
+	$link = $ref ? link_by_id( $ref['link_id'] ) : null;
+	if ( ! $link ) {
+		return $data;
+	}
+	$post  = target_post_id( $link['target'] );
+	$image = $post ? (int) get_post_thumbnail_id( $post ) : 0;
+	return wallet_live_data( $data, $link, $ref['place'], short_urls( $link ), $image );
+}
+
+/**
+ * Owner entry for Clean Mobile Connect.
+ *
+ * @param mixed $owners Owners.
+ * @return array
+ */
+function wallet_owners_filter( $owners ) {
+	$owners = is_array( $owners ) ? $owners : array();
+	$owners[ WALLET_OWNER ] = array(
+		'label' => 'Clean Short Links',
+		'file'  => plugin_basename( CLEAN_SHORT_LINKS_FILE ),
+	);
+	return $owners;
+}
+
+/**
+ * The link of a card of this plugin, null for other owners.
+ *
+ * @param mixed $card Card.
+ * @return array|null
+ */
+function wallet_card_link( $card ) {
+	if ( ! is_array( $card ) || WALLET_OWNER !== ( $card['owner'] ?? '' ) ) {
+		return null;
+	}
+	$ref = parse_wallet_ref( $card['owner_ref'] ?? '' );
+	return $ref ? link_by_id( $ref['link_id'] ) : null;
+}
+
+/**
+ * Edit screen of the link behind a card.
+ *
+ * @param mixed $url  URL.
+ * @param mixed $card Card.
+ * @return mixed
+ */
+function wallet_edit_url_filter( $url, $card ) {
+	$link = wallet_card_link( $card );
+	return $link ? admin_page_url( 'edit', array( 'id' => $link['id'] ) ) . '#csl-sec-wallet' : $url;
+}
+
+/**
+ * Readable name of the owner of a card.
+ *
+ * @param mixed $label Label.
+ * @param mixed $card  Card.
+ * @return mixed
+ */
+function wallet_label_filter( $label, $card ) {
+	$link = wallet_card_link( $card );
+	if ( ! $link ) {
+		return $label;
+	}
+	/* translators: %s: title of the short link */
+	return sprintf( __( 'Short link: %s', 'clean-short-links' ), '' !== $link['title'] ? $link['title'] : $link['slug'] );
+}
+
+/**
+ * Who may download cards of this plugin.
+ *
+ * @param mixed $allowed Allowed.
+ * @param mixed $card    Card.
+ * @return mixed
+ */
+function wallet_can_download_filter( $allowed, $card ) {
+	return WALLET_OWNER === ( is_array( $card ) ? ( $card['owner'] ?? '' ) : '' ) ? current_user_can( capability() ) : $allowed;
+}
+
+add_filter( 'clean_mobile_connect_wallet_card_data', __NAMESPACE__ . '\\wallet_card_data_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_wallet_owners', __NAMESPACE__ . '\\wallet_owners_filter' );
+add_filter( 'clean_mobile_connect_wallet_owner_edit_url', __NAMESPACE__ . '\\wallet_edit_url_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_wallet_owner_label', __NAMESPACE__ . '\\wallet_label_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_wallet_owner_can_download', __NAMESPACE__ . '\\wallet_can_download_filter', 10, 2 );

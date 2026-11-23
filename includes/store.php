@@ -1245,7 +1245,7 @@ function target_label( $target ) {
  * @return array{link:string,qr:string,root:string,qr_upper:string,nfc:string,hosts:array,places:array}
  */
 function short_urls( array $link ) {
-	list( $p, $q ) = prefixes();
+	list( $p, $q, $w ) = prefixes();
 	$qr_slug       = '' !== ( $link['qr_slug'] ?? '' ) ? $link['qr_slug'] : $link['slug'];
 	$qr            = home_url( '/' . $q . '/' . $qr_slug );
 	$hosts = array();
@@ -1264,6 +1264,7 @@ function short_urls( array $link ) {
 			'qr'       => home_url( '/' . $q . '/' . $s ),
 			'qr_upper' => qr_uppercase( home_url( '/' . $q . '/' . $s ) ),
 			'nfc'      => home_url( '/' . $p . '/' . $s ) . '?nfc',
+			'wallet'   => '' !== $w ? home_url( '/' . $w . '/' . $s ) : '',
 		);
 	}
 	return array(
@@ -1272,6 +1273,7 @@ function short_urls( array $link ) {
 		'root'     => ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '',
 		'qr_upper' => qr_uppercase( $qr ),
 		'nfc'      => home_url( '/' . $p . '/' . $link['slug'] ) . '?nfc',
+		'wallet'   => '' !== $w ? home_url( '/' . $w . '/' . $link['slug'] ) : '',
 		'hosts'    => $hosts,
 		'places'   => $places,
 	);

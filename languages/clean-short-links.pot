@@ -1911,3 +1911,9 @@ msgstr ""
 msgid "Version %s"
 msgstr ""
 
+#. translators: %s: title of the short link
+#: includes/wallet.php:364
+#, php-format
+msgid "Short link: %s"
+msgstr ""
+

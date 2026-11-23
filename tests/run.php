@@ -796,6 +796,27 @@ test( 'wallet origin only from a plain host', function () {
 	}
 } );
 
+test( 'live data fills only what the card leaves empty', function () {
+	$link = array( 'title' => 'Fest', 'slug' => 'fest', 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ) ) ) );
+	$urls = array(
+		'link'   => 'https://example.test/s/fest',
+		'places' => array( 'home' => array( 'name' => 'Rathaus', 'slug' => 'fest-home', 'link' => 'https://example.test/s/fest-home' ) ),
+	);
+	$d = wallet_live_data( array(), $link, '', $urls, 33 );
+	same( 'Fest', $d['title'] );
+	same( 'https://example.test/s/fest?w', $d['qr'] );
+	same( 'https://example.test/s/fest', $d['link'] );
+	same( 33, $d['image'] );
+	same( 'Own', wallet_live_data( array( 'title' => 'Own' ), $link, '', $urls, 33 )['title'] );
+	$d = wallet_live_data( array(), $link, 'home', $urls, 0 );
+	same( 'Fest – Rathaus', $d['title'] );
+	same( 'https://example.test/s/fest-home?w', $d['qr'] );
+	same( 'https://example.test/s/fest-home', $d['link'] );
+	same( true, empty( $d['image'] ) );
+	$d = wallet_live_data( array(), array( 'title' => '', 'slug' => 'x', 'meta' => array() ), '', array( 'link' => 'https://e.test/s/x' ), 0 );
+	same( 'x', $d['title'] );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

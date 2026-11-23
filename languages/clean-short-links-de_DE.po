@@ -1912,3 +1912,9 @@ msgstr "Abschnitte"
 msgid "Version %s"
 msgstr "Version %s"
 
+#. translators: %s: title of the short link
+#: includes/wallet.php:364
+#, php-format
+msgid "Short link: %s"
+msgstr "Kurzlink: %s"
+
