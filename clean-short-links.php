@@ -31,6 +31,7 @@ require_once __DIR__ . '/includes/checker.php';
 require_once __DIR__ . '/includes/social.php';
 require_once __DIR__ . '/includes/maintenance.php';
 require_once __DIR__ . '/includes/calendar.php';
+require_once __DIR__ . '/includes/wallet.php';
 
 if ( is_admin() ) {
 	require_once __DIR__ . '/includes/ui.php';

@@ -52,3 +52,4 @@ require dirname( __DIR__ ) . '/includes/checker.php';
 require dirname( __DIR__ ) . '/includes/social.php';
 require dirname( __DIR__ ) . '/includes/maintenance.php';
 require dirname( __DIR__ ) . '/includes/calendar.php';
+require dirname( __DIR__ ) . '/includes/wallet.php';

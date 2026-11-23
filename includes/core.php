@@ -15,11 +15,11 @@ defined( 'ABSPATH' ) || exit;
 const RANDOM_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
 /** Where a visit came from. */
-const SOURCE_LINK = 0;
-const SOURCE_QR   = 1;
-const SOURCE_ROOT = 2;
-const SOURCE_BIO  = 3;
-const SOURCE_NFC  = 4;
+const SOURCE_LINK       = 0;
+const SOURCE_QR         = 1;
+const SOURCE_ROOT       = 2;
+const SOURCE_BIO        = 3;
+const SOURCE_NFC        = 4;
 const SOURCE_WALLET     = 5;
 const SOURCE_WALLET_ADD = 6;
 
@@ -135,8 +135,8 @@ function clean_alias_home( $v ) {
  * The short address of a request on a subdomain without a site: /slug, /<prefix>/slug or
  * /<qr prefix>/slug.
  *
- * @param string $path      Request path.
- * @param string $qr_prefix QR prefix.
+ * @param string $path          Request path.
+ * @param string $qr_prefix     QR prefix.
  * @param string $wallet_prefix Wallet prefix, '' without Clean Mobile Connect.
  * @return array{0:int,1:string}|null Source and short address.
  */
@@ -412,10 +412,10 @@ function title_slug( $title ) {
 /**
  * Splits a request path into the kind of short link it addresses.
  *
- * @param string $path      Request path without query string, e.g. "/s/blaue-couch/".
- * @param string $home_path Path of the site's home URL, e.g. "/" or "/blog/".
- * @param string $prefix    Link prefix.
- * @param string $qr_prefix QR prefix.
+ * @param string $path          Request path without query string, e.g. "/s/blaue-couch/".
+ * @param string $home_path     Path of the site's home URL, e.g. "/" or "/blog/".
+ * @param string $prefix        Link prefix.
+ * @param string $qr_prefix     QR prefix.
  * @param string $wallet_prefix Wallet prefix, '' without Clean Mobile Connect.
  * @return array{0:int,1:string}|null Source and short address, or null.
  */
@@ -834,9 +834,9 @@ function utm_params( array $link, $source, $channel = '' ) {
 		$src    = $channel;
 	} else {
 		$names  = array(
-			SOURCE_QR  => array( 'qr', 'qr' ),
-			SOURCE_BIO => array( 'linkinbio', 'social' ),
-			SOURCE_NFC => array( 'nfc', 'nfc' ),
+			SOURCE_QR     => array( 'qr', 'qr' ),
+			SOURCE_BIO    => array( 'linkinbio', 'social' ),
+			SOURCE_NFC    => array( 'nfc', 'nfc' ),
 			SOURCE_WALLET => array( 'wallet', 'wallet' ),
 		);
 		$src    = $names[ $source ][0] ?? 'shortlink';

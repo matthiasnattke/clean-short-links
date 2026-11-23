@@ -103,7 +103,8 @@ add_action(
  * @param string $host Host.
  */
 function handle_alias( $host ) {
-	$req    = parse_alias_path( request_path(), prefixes()[1], prefixes()[2] );
+	list( , $q, $w ) = prefixes();
+	$req    = parse_alias_path( request_path(), $q, $w );
 	$route  = $req ? find_route( $host, $req[1] ) : null;
 	$status = 0;
 	if ( $route && site_serves( $route['blog_id'] ) ) {

@@ -725,6 +725,40 @@ test( 'No permanent redirect with variants', function () {
 	same( false, permanent_allowed( $l ) );
 } );
 
+echo "\nWallet\n";
+
+test( 'wallet refs', function () {
+	same( '12', wallet_ref( 12 ) );
+	same( '12:home', wallet_ref( 12, 'home' ) );
+	same( array( 'link_id' => 12, 'place' => 'home' ), parse_wallet_ref( '12:home' ) );
+	same( array( 'link_id' => 12, 'place' => '' ), parse_wallet_ref( '12' ) );
+	foreach ( array( '0', 'x', '12:', '12:Bad Key', '' ) as $bad ) {
+		same( null, parse_wallet_ref( $bad ), $bad );
+	}
+	same( array( '12', '12:home', '12:shop' ), wallet_refs_of( array( 'id' => 12, 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Home' ), array( 'key' => 'shop', 'name' => 'Shop' ) ) ) ) ) );
+	same( array( '12' ), wallet_refs_of( array( 'id' => 12, 'meta' => array() ) ) );
+} );
+
+test( 'wallet target', function () {
+	$link = array( 'id' => 12, 'slug' => 'fest', 'parent_id' => 0 );
+	foreach ( array( 'main', 'alias', 'qr', 'channel' ) as $kind ) {
+		same( array( 'link' => $link, 'place' => '', 'status' => 200 ), wallet_target( array( $link, $kind ), 'fest' ), $kind );
+	}
+	same( 'home', wallet_target( array( $link, 'place' ), 'fest-home' )['place'] );
+	same( 410, wallet_target( array( null, 'retired' ), 'fest' )['status'] );
+	same( 410, wallet_target( null, 'fest' )['status'] );
+	same( null, wallet_target( array( array( 'id' => 13, 'slug' => 'inv', 'parent_id' => 12 ), 'main' ), 'inv' ) );
+} );
+
+test( 'wallet decision follows the link', function () {
+	same( 'no_card', wallet_decision( false, 302, false ) );
+	same( 'no_card', wallet_decision( false, 404, false ) );
+	same( 'dead', wallet_decision( true, 404, false ) );
+	same( 'dead', wallet_decision( true, 410, false ) );
+	same( 'dead', wallet_decision( true, 302, true ) );
+	same( 'page', wallet_decision( true, 302, false ) );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {
