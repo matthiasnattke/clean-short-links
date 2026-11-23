@@ -760,6 +760,42 @@ test( 'wallet decision follows the link', function () {
 	same( 'page', wallet_decision( true, 302, false ) );
 } );
 
+test( 'wallet shows no card on the way to a fallback', function () {
+	foreach ( array( 'waiting', 'expired', 'exhausted', 'unavailable' ) as $state ) {
+		same( true, wallet_fallback_only( array( 'status' => 302, 'state' => $state ) ), $state );
+	}
+	same( false, wallet_fallback_only( array( 'status' => 302, 'state' => 'default' ) ) );
+	same( false, wallet_fallback_only( array( 'status' => 302, 'state' => 'rule-2' ) ) );
+	same( false, wallet_fallback_only( array( 'status' => 410, 'state' => 'expired' ) ) );
+} );
+
+test( 'wallet addresses on the requested host', function () {
+	same(
+		array(
+			'page' => 'https://example.com/w/fest',
+			'pass' => 'https://example.com/w/fest?pkpass',
+			'back' => 'https://example.com/s/fest',
+		),
+		wallet_urls( 'https://example.com', '/w/Fest/', 'fest', 's' )
+	);
+	// Site in a subdirectory, a location, a different wallet prefix.
+	$u = wallet_urls( 'http://localhost:8888', '/blog/wallet/fest-home', 'fest-home', 'go' );
+	same( 'http://localhost:8888/blog/wallet/fest-home', $u['page'] );
+	same( 'http://localhost:8888/blog/go/fest-home', $u['back'] );
+	// Subdomain without a site: short links have no prefix there.
+	$u = wallet_urls( 'https://go.example.com', '/w/fest', 'fest', '' );
+	same( 'https://go.example.com/w/fest?pkpass', $u['pass'] );
+	same( 'https://go.example.com/fest', $u['back'] );
+} );
+
+test( 'wallet origin only from a plain host', function () {
+	same( 'https://example.com', wallet_origin( 'Example.com', true, 'https://fallback.test' ) );
+	same( 'http://localhost:8888', wallet_origin( 'localhost:8888', false, 'https://fallback.test' ) );
+	foreach ( array( '', 'evil.com/x', 'a b', 'evil.com:80:1', 'evil.com@x' ) as $bad ) {
+		same( 'https://fallback.test', wallet_origin( $bad, true, 'https://fallback.test' ), $bad );
+	}
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

@@ -12,6 +12,8 @@
  *   (a 404), so existing content always wins.
  * - Short addresses of other sites of the network that are also offered on this host are
  *   found through the network-wide routes table.
+ * - example.com/w/slug (with Clean Mobile Connect) shows the link's Wallet card; it
+ *   follows the same ways and dead ends as /s/, see handle_wallet().
  *
  * @package CleanShortLinks
  */
@@ -112,7 +114,8 @@ function handle_alias( $host ) {
 		switch_to_blog( $route['blog_id'] );
 		$link = link_by_id( $route['link_id'] );
 		if ( $link ) {
-			$status = (int) handle( array( $link, $route['kind'] ), 'qr' === $route['kind'] ? SOURCE_QR : $req[0], $req[1], true ); // Returns only for a dead link.
+			$source = 'qr' === $route['kind'] && SOURCE_WALLET_ADD !== $req[0] ? SOURCE_QR : $req[0];
+			$status = (int) handle_found( array( $link, $route['kind'] ), $source, $req[1], true ); // Returns only for a dead link.
 			$status = $status > 0 ? $status : 404;
 		}
 		restore_current_blog();
@@ -149,7 +152,7 @@ add_action(
 		}
 		$found = find_slug( $req[1] );
 		if ( $found ) {
-			handle( $found, $req[0], $req[1], true );
+			handle_found( $found, $req[0], $req[1], true );
 			return;
 		}
 		handle_route( current_host(), $req[1], $req[0], true );
@@ -199,7 +202,7 @@ function handle_route( $host, $slug, $source, $fast ) {
 	$link  = link_by_id( $route['link_id'] );
 	$found = $link && ( SOURCE_ROOT !== $source || ! empty( $link['root'] ) );
 	if ( $found ) {
-		handle( array( $link, $route['kind'] ), $source, $slug, $fast ); // Returns only for a dead link.
+		handle_found( array( $link, $route['kind'] ), $source, $slug, $fast ); // Returns only for a dead link.
 	}
 	restore_current_blog();
 	return $found;
@@ -234,7 +237,7 @@ add_action(
 			maybe_maintenance_for_dead_link( 404 );
 			return;
 		}
-		$result = handle( $found, $req[0], $req[1] );
+		$result = handle_found( $found, $req[0], $req[1] );
 		if ( $result ) {
 			// Dead link: let WordPress render its 404 page with our status.
 			$wp->query_vars = array( 'error' => '404' );

@@ -1713,7 +1713,7 @@ msgstr ""
 msgid "Never used as a short form on any site, separated by spaces or commas. WordPress’ own paths like wp-admin, login and feed are always reserved."
 msgstr ""
 
-#: includes/redirect.php:120
+#: includes/redirect.php:125
 msgid "This short link is not available."
 msgstr ""
 

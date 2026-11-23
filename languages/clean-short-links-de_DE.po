@@ -1714,7 +1714,7 @@ msgstr "Reservierte Wörter"
 msgid "Never used as a short form on any site, separated by spaces or commas. WordPress’ own paths like wp-admin, login and feed are always reserved."
 msgstr "Werden auf keiner Website als Kurzform vergeben, getrennt durch Leerzeichen oder Kommas. WordPress-eigene Pfade wie wp-admin, login und feed sind immer reserviert."
 
-#: includes/redirect.php:120
+#: includes/redirect.php:125
 msgid "This short link is not available."
 msgstr "Dieser Kurzlink ist nicht verfügbar."
 
