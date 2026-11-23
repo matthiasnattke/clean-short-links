@@ -117,6 +117,9 @@ function handle_alias( $host ) {
 
 	$req    = parse_alias_path( request_path(), $q, $w );
 	$route  = $req ? find_route( $host, $req[1] ) : null;
+	if ( $req && ! $route ) {
+		nextcloud_gone_redirect( $host, $req[1] ); // A deleted Nextcloud link: to the Nextcloud instance.
+	}
 	$status = 0;
 	if ( $route && site_serves( $route['blog_id'] ) ) {
 		switch_to_blog( $route['blog_id'] );
@@ -326,6 +329,9 @@ function handle( array $found, $source, $slug = '', $fast = false ) {
 		$link   = $parent ? merge_parent( $link, $parent ) : null;
 	}
 	if ( 'retired' === $kind || ! $link ) {
+		if ( 'retired' === $kind ) {
+			nextcloud_gone_redirect( current_host(), $slug ); // Returns only when it was no Nextcloud link.
+		}
 		return dead_end( 410, $link, $source, $fast );
 	}
 	if ( 'qr' === $kind ) {

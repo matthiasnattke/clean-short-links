@@ -89,6 +89,20 @@ For a separate short domain (e.g. a short .de domain), create an empty site in t
 
 If the short address is already taken on a chosen domain (by a link of another site), the editor says so while you type and suggests up to three alternatives that are free on this site and on every chosen domain; a click takes one over.
 
+## Nextcloud share links
+
+With a Nextcloud, every public share link can get a short link automatically. Set in wp-config.php:
+
+```php
+define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_URL', 'https://cloud.example.com' );
+define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_USER', 'name' );
+define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_PASS', 'xxxxx-xxxxx-xxxxx-xxxxx-xxxxx' ); // app password: Nextcloud → Personal settings → Security
+```
+
+Every five minutes (or with *Network admin → Short links → Nextcloud → Sync now*) the main site reads that user's public link shares. A new share gets a short link named after the file (or the share's label), on the first short domain (`short.de/contract`). Its end is the share's expiry date, and the short address is written into the share's label, so it shows in Nextcloud. These links carry the badge **Nextcloud**.
+
+When the share is deleted or has expired, the short link is deleted. For 60 days its address leads to the Nextcloud instance and is not handed out again; after that it is free. A Nextcloud link deleted by hand is not created again.
+
 ## Rules from a calendar
 
 Below the rules, *Rules from a calendar* takes an iCal file (.ics, imported once) or a calendar address (also `webcal://`, fetched again twice a day – e.g. the public iCal address of a Google, Apple, Nextcloud or Outlook calendar).

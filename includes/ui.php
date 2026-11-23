@@ -30,6 +30,7 @@ function icon( $name ) {
 		'bolt'     => '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
 		'calendar' => '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/>',
 		'page'     => '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+		'cloud'    => '<path d="M7 18.5h10.5a4 4 0 0 0 .6-8 5.5 5.5 0 0 0-10.6-1.3A4.7 4.7 0 0 0 7 18.5z"/>',
 		'split'    => '<path d="M4 12h6l4-6h6M14 18h6M10 12l4 6"/><path d="m18 4 2 2-2 2M18 16l2 2-2 2"/>',
 		'qr'       => '<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"/><path d="M14 14h2.5v2.5H14zM18.5 18.5H20.5V20.5M14 20h2M20 14v2"/>',
 		'chart'    => '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',

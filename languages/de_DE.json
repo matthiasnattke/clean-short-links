@@ -498,5 +498,14 @@
 	"Title, image, date, colours and logo come from this link. Anything you enter here replaces them.": "Titel, Bild, Datum, Farben und Logo kommen aus diesem Link. Was du hier einträgst, ersetzt sie.",
 	"Next": "Nächster Termin",
 	"This short address is already taken on %s.": "Diese Kurzadresse ist auf %s schon vergeben.",
-	"Free on all chosen domains:": "Frei auf allen gewählten Domains:"
+	"Free on all chosen domains:": "Frei auf allen gewählten Domains:",
+	"Made for a Nextcloud share – deleted with it": "Für eine Nextcloud-Freigabe angelegt – wird mit ihr gelöscht",
+	"This short link was made for a Nextcloud share. It ends with the share and is then deleted; for 60 days its address leads to Nextcloud, then it is free again.": "Dieser Kurzlink wurde für eine Nextcloud-Freigabe angelegt. Er endet mit der Freigabe und wird dann gelöscht; 60 Tage lang führt seine Adresse danach zur Nextcloud, dann ist sie wieder frei.",
+	"A short link on the short domain for every public share link – named after the file, ending with the share, written into the share's label.": "Ein Kurzlink auf der Kurzdomain für jeden öffentlichen Freigabelink – benannt nach der Datei, endet mit der Freigabe und steht in deren Bezeichnung.",
+	"Off. Set CLEAN_SHORT_LINKS_NEXTCLOUD_URL, CLEAN_SHORT_LINKS_NEXTCLOUD_USER and CLEAN_SHORT_LINKS_NEXTCLOUD_PASS (an app password from Nextcloud → Personal settings → Security) in wp-config.php.": "Aus. In der wp-config.php CLEAN_SHORT_LINKS_NEXTCLOUD_URL, CLEAN_SHORT_LINKS_NEXTCLOUD_USER und CLEAN_SHORT_LINKS_NEXTCLOUD_PASS setzen (ein App-Passwort aus Nextcloud → Persönliche Einstellungen → Sicherheit).",
+	"last sync %s ago": "zuletzt abgeglichen vor %s",
+	"No short domain is marked: the links are created on the main site with prefix.": "Keine Kurzdomain markiert: Die Links entstehen auf der Hauptseite mit Präfix.",
+	"Sync now": "Jetzt abgleichen",
+	"Nextcloud is not set up in wp-config.php.": "Nextcloud ist in der wp-config.php nicht eingerichtet.",
+	"Nextcloud refused the sign-in (app password?).": "Nextcloud hat die Anmeldung abgelehnt (App-Passwort?)."
 }

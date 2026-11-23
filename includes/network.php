@@ -232,9 +232,65 @@ function page_network() {
 			<?php card_close(); ?>
 			<div class="csl-savebar"><?php submit_button( __( 'Save settings', 'clean-short-links' ), 'primary', 'submit', false ); ?></div>
 		</form>
+		<?php nextcloud_card(); ?>
 	</div>
 	<?php
 }
+
+/**
+ * Network card: the Nextcloud sync, its state and "Sync now".
+ */
+function nextcloud_card() {
+	$c  = nextcloud_config();
+	$st = nextcloud_state();
+	card_open( 'csl-net-nextcloud', 'cloud', 'Nextcloud', __( 'A short link on the short domain for every public share link – named after the file, ending with the share, written into the share\'s label.', 'clean-short-links' ) );
+	if ( ! $c ) :
+		?>
+		<p class="csl-help"><?php esc_html_e( 'Off. Set CLEAN_SHORT_LINKS_NEXTCLOUD_URL, CLEAN_SHORT_LINKS_NEXTCLOUD_USER and CLEAN_SHORT_LINKS_NEXTCLOUD_PASS (an app password from Nextcloud → Personal settings → Security) in wp-config.php.', 'clean-short-links' ); ?></p>
+		<?php
+	else :
+		$host = short_hosts();
+		?>
+		<p><span class="csl-dot csl-dot-<?php echo '' === $st['error'] ? 'ok' : 'bad'; ?>" aria-hidden="true"></span>
+			<?php
+			echo esc_html( $c['url'] . ' · ' . $c['user'] );
+			echo ' · ';
+			/* translators: %d: number of short links */
+			echo esc_html( sprintf( _n( '%d short link', '%d short links', $st['count'], 'clean-short-links' ), $st['count'] ) );
+			if ( $st['at'] ) {
+				echo ' · ';
+				/* translators: %s: time span, e.g. "3 minutes" */
+				echo esc_html( sprintf( __( 'last sync %s ago', 'clean-short-links' ), human_time_diff( $st['at'] ) ) );
+			}
+			?>
+		</p>
+		<?php if ( '' !== $st['error'] ) : ?>
+			<p class="csl-host-warn"><?php echo esc_html( $st['error'] ); ?></p>
+		<?php endif; ?>
+		<?php if ( ! $host ) : ?>
+			<p class="csl-help"><?php esc_html_e( 'No short domain is marked: the links are created on the main site with prefix.', 'clean-short-links' ); ?></p>
+		<?php endif; ?>
+		<form method="post" action="<?php echo esc_url( network_admin_url( 'edit.php?action=clean_short_links_nextcloud' ) ); ?>">
+			<?php wp_nonce_field( 'clean_short_links_nextcloud' ); ?>
+			<button type="submit" class="button csl-btn"><?php the_icon( 'cloud' ); ?><?php esc_html_e( 'Sync now', 'clean-short-links' ); ?></button>
+		</form>
+		<?php
+	endif;
+	card_close();
+}
+
+add_action(
+	'network_admin_edit_clean_short_links_nextcloud',
+	function () {
+		if ( ! current_user_can( 'manage_network_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do this.', 'clean-short-links' ) );
+		}
+		check_admin_referer( 'clean_short_links_nextcloud' );
+		nextcloud_sync();
+		wp_safe_redirect( network_admin_url( 'admin.php?page=clean-short-links-network#csl-net-nextcloud' ) );
+		exit;
+	}
+);
 
 add_action(
 	'network_admin_edit_clean_short_links_network',

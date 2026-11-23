@@ -37,6 +37,7 @@ function wp_timezone() { return new DateTimeZone( 'Europe/Berlin' ); }
 function wp_timezone_string() { return 'Europe/Berlin'; }
 function wp_date( $format, $ts = null, $tz = null ) { return ( new DateTimeImmutable( '@' . ( $ts ?? time() ) ) )->setTimezone( $tz ? $tz : wp_timezone() )->format( $format ); }
 function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
+if ( ! function_exists( 'CleanShortLinks\home_url' ) ) { function home_url( $path = '' ) { return 'https://example.org' . $path; } }
 function wp_parse_str( $str, &$out ) { parse_str( (string) $str, $out ); }
 function map_deep( $v, $cb ) { return is_array( $v ) ? array_map( fn( $x ) => map_deep( $x, $cb ), $v ) : $cb( $v ); }
 function add_query_arg( array $args, $url ) { return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 ); }
@@ -54,6 +55,7 @@ require dirname( __DIR__ ) . '/includes/maintenance.php';
 require dirname( __DIR__ ) . '/includes/calendar.php';
 require dirname( __DIR__ ) . '/includes/wallet.php';
 require dirname( __DIR__ ) . '/includes/wallet-admin.php';
+require dirname( __DIR__ ) . '/includes/nextcloud.php';
 
 /* Stand-ins for uninstall.php and Connect's card API (test: uninstall ends the cards). */
 function clean_mobile_connect_wallet_end_card( $owner, $ref ) { $GLOBALS['csl_ended'][] = $owner . '|' . $ref; }

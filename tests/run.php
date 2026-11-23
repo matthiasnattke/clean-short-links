@@ -1079,6 +1079,59 @@ test( 'short domains leave sign-in, admin and files to WordPress', function () {
 	}
 } );
 
+test( 'Nextcloud: public link shares are read from the OCS answer', function () {
+	$body = json_encode( array( 'ocs' => array( 'data' => array(
+		array( 'id' => '12', 'share_type' => 3, 'url' => 'https://cloud.example.com/s/AbC', 'file_target' => '/Vertrag 2027.pdf', 'label' => '', 'expiration' => '2027-01-31 00:00:00' ),
+		array( 'id' => '13', 'share_type' => 0, 'url' => '', 'file_target' => '/intern' ),
+		array( 'id' => '14', 'share_type' => 3, 'url' => 'https://cloud.example.com/s/XyZ', 'path' => '/Fotos', 'label' => 'Sommerfest', 'expiration' => null ),
+		array( 'id' => '../x', 'share_type' => 3, 'url' => 'https://cloud.example.com/s/bad' ),
+		array( 'id' => '15', 'share_type' => 3, 'url' => 'javascript:alert(1)' ),
+	) ) ) );
+	$s = nextcloud_parse_shares( $body, 3600 );
+	same( array( '12', '14' ), array_map( 'strval', array_keys( $s ) ), 'only public links with a valid ID and https address' );
+	same( 'Vertrag 2027.pdf', $s['12']['name'] );
+	same( strtotime( '2027-01-31 23:59:59 UTC' ) - 3600, $s['12']['ends'], 'ends at the end of the expiry day, site time' );
+	same( 0, $s['14']['ends'] );
+	same( 'Sommerfest', $s['14']['label'] );
+	same( null, nextcloud_parse_shares( 'nonsense' ) );
+} );
+
+test( 'Nextcloud: sync plan creates, keeps and deletes', function () {
+	$now    = 2000000000;
+	$shares = array(
+		'1' => array( 'url' => 'u1', 'name' => 'a', 'label' => '', 'ends' => 0 ),
+		'2' => array( 'url' => 'u2', 'name' => 'b', 'label' => '', 'ends' => $now - 10 ),
+		'3' => array( 'url' => 'u3', 'name' => 'c', 'label' => '', 'ends' => $now + 10 ),
+		'4' => array( 'url' => 'u4', 'name' => 'd', 'label' => '', 'ends' => $now - 10 ),
+	);
+	$links = array(
+		10 => array( 'ends_at' => null ),
+		20 => array( 'ends_at' => null ),
+		50 => array( 'ends_at' => null ),
+		60 => array( 'ends_at' => $now - 5 ),
+		70 => array( 'ends_at' => null ),
+	);
+	$map  = array( '1' => 10, '2' => 20, '5' => 50, '6' => 60, '7' => 99, '3' => 70 );
+	$plan = nextcloud_plan( $shares, $map, fn( $id ) => $links[ $id ] ?? null, $now );
+	same( array( '1' => 10, '3' => 70 ), $plan['update'] );
+	same( array( '2' => 20, '5' => 50, '6' => 60 ), $plan['delete'], 'share expired, share gone, link ended' );
+	same( array(), $plan['create'], 'expired new share 4 is not created, deleted-by-hand 7 not again' );
+	same( array( '1', '3' ), nextcloud_plan( $shares, array(), fn() => null, $now )['create'], 'new shares; expired ones are skipped' );
+} );
+
+test( 'Nextcloud: deleted addresses are free again after 60 days', function () {
+	$now  = 2000000000;
+	$main = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+	$gone = array(
+		$main . '/alt'    => $now - 61 * DAY_IN_SECONDS,
+		'cou.li/alt'      => $now - 61 * DAY_IN_SECONDS,
+		$main . '/frisch' => $now - 5 * DAY_IN_SECONDS,
+	);
+	$r = nextcloud_expire_gone( $gone, $now );
+	same( array( $main . '/frisch' ), array_keys( $r['keep'] ) );
+	same( array( 'alt' ), $r['free'], 'only the main site has a short-address row to free' );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

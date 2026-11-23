@@ -692,6 +692,8 @@ function clean_meta( $meta ) {
 		'hosts'        => clean_hosts( $meta['hosts'] ?? array() ),
 		// Locations with addresses of their own ("<short address>-<key>").
 		'places'       => clean_places( $meta['places'] ?? array() ),
+		// ID of the Nextcloud share this link was made for (see nextcloud.php).
+		'nextcloud'    => preg_match( '/^[A-Za-z0-9_-]{1,64}$/', (string) ( $meta['nextcloud'] ?? '' ) ) ? (string) $meta['nextcloud'] : '',
 	);
 }
 

@@ -410,6 +410,9 @@ function page_list() {
 							<?php /* translators: %d: number of invitation links */ ?>
 							<span class="csl-badge csl-badge-soft"><?php the_icon( 'tag' ); ?><?php echo esc_html( sprintf( _n( '%d invitation', '%d invitations', $inv[ $l['id'] ], 'clean-short-links' ), $inv[ $l['id'] ] ) ); ?></span>
 						<?php endif; ?>
+						<?php if ( '' !== ( $l['meta']['nextcloud'] ?? '' ) ) : ?>
+							<span class="csl-badge csl-badge-soft" title="<?php esc_attr_e( 'Made for a Nextcloud share – deleted with it', 'clean-short-links' ); ?>"><?php the_icon( 'cloud' ); ?>Nextcloud</span>
+						<?php endif; ?>
 						<?php if ( $l['rules'] ) : ?>
 							<span class="csl-badge csl-badge-soft"><?php the_icon( 'split' ); ?><?php /* translators: %d: number of rules */ echo esc_html( sprintf( _n( '%d rule', '%d rules', count( $l['rules'] ), 'clean-short-links' ), count( $l['rules'] ) ) ); ?></span>
 						<?php endif; ?>
@@ -1213,6 +1216,9 @@ function page_edit() {
 			<?php side_nav( $sections ); ?>
 
 			<div class="csl-main">
+				<?php if ( '' !== ( $link['meta']['nextcloud'] ?? '' ) ) : ?>
+					<div class="notice notice-info inline"><p><?php the_icon( 'cloud' ); ?> <?php esc_html_e( 'This short link was made for a Nextcloud share. It ends with the share and is then deleted; for 60 days its address leads to Nextcloud, then it is free again.', 'clean-short-links' ); ?></p></div>
+				<?php endif; ?>
 				<?php card_open( 'csl-sec-target', 'target', __( 'Target', 'clean-short-links' ), __( 'Where should the short link lead?', 'clean-short-links' ) ); ?>
 					<label class="csl-field" for="csl-target"><span><?php esc_html_e( 'Leads to', 'clean-short-links' ); ?></span></label>
 					<?php target_picker( 'target', $link['target'], 'csl-target', true ); ?>
