@@ -180,6 +180,10 @@ function page_network() {
 						<span class="csl-slug-input"><span class="csl-slug-pre">example.com/</span><input type="text" name="prefix" value="<?php echo esc_attr( $n['prefix'] ); ?>" class="csl-short" required><span class="csl-slug-pre">/…</span></span></label>
 					<label class="csl-field"><span><?php esc_html_e( 'Prefix for QR codes', 'clean-short-links' ); ?></span>
 						<span class="csl-slug-input"><span class="csl-slug-pre">example.com/</span><input type="text" name="qr_prefix" value="<?php echo esc_attr( $n['qr_prefix'] ); ?>" class="csl-short" required><span class="csl-slug-pre">/…</span></span></label>
+					<?php if ( wallet_enabled() ) : ?>
+					<label class="csl-field"><span><?php esc_html_e( 'Prefix for Wallet cards', 'clean-short-links' ); ?></span>
+						<span class="csl-slug-input"><span class="csl-slug-pre">example.com/</span><input type="text" name="wallet_prefix" value="<?php echo esc_attr( $n['wallet_prefix'] ); ?>" class="csl-short" required><span class="csl-slug-pre">/…</span></span></label>
+					<?php endif; ?>
 				</div>
 				<div class="csl-sub"><?php toggle( 'site_prefix', ! empty( $n['site_prefix'] ), __( 'Sites may choose their own prefixes', 'clean-short-links' ) ); ?></div>
 				<div class="csl-sub"><?php toggle( 'allow_root', ! empty( $n['allow_root'] ), __( 'Allow the short form without prefix (example.com/slug) – only used where the site has no content', 'clean-short-links' ) ); ?></div>
@@ -242,6 +246,7 @@ add_action(
 		$p      = wp_unslash( $_POST );
 		$prefix = clean_prefix( $p['prefix'] ?? '' );
 		$qr     = clean_prefix( $p['qr_prefix'] ?? '' );
+		$wal    = clean_prefix( $p['wallet_prefix'] ?? '' );
 		$d      = network_defaults();
 		$alias  = clean_alias_hosts(
 			(string) ( $p['alias_hosts'] ?? '' ),
@@ -258,6 +263,7 @@ add_action(
 		$new    = array(
 			'prefix'         => '' !== $prefix ? $prefix : $d['prefix'],
 			'qr_prefix'      => '' !== $qr ? $qr : $d['qr_prefix'],
+			'wallet_prefix'  => '' !== $wal ? $wal : $d['wallet_prefix'],
 			'site_prefix'    => empty( $p['site_prefix'] ) ? 0 : 1,
 			'allow_root'     => empty( $p['allow_root'] ) ? 0 : 1,
 			'retention_days' => in_array( (int) ( $p['retention_days'] ?? 730 ), array( 0, 90, 365, 730 ), true ) ? (int) $p['retention_days'] : 730,
@@ -281,6 +287,10 @@ add_action(
 		if ( $new['prefix'] === $new['qr_prefix'] ) {
 			$new['qr_prefix'] = 's' === $new['prefix'] ? 'q' : $d['qr_prefix'];
 		}
+		if ( ! wallet_enabled() ) {
+			$new['wallet_prefix'] = network_settings()['wallet_prefix'];
+		}
+		$new['wallet_prefix'] = resolve_prefixes( $new['prefix'], $new['qr_prefix'], $new['wallet_prefix'] )[2];
 		update_site_option( 'clean_short_links_network', $new );
 		wp_safe_redirect( network_admin_url( 'admin.php?page=clean-short-links-network&updated=1' ) );
 		exit;

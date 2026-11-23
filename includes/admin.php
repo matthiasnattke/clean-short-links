@@ -1703,7 +1703,7 @@ function page_settings() {
 	$n     = network_settings();
 	$types = get_post_types( array( 'public' => true ), 'objects' );
 	unset( $types['attachment'] );
-	list( $p, $q ) = prefixes();
+	list( $p, $q, $w ) = prefixes();
 	$own_prefix    = ! is_multisite() || ! empty( $n['site_prefix'] );
 	$home          = preg_replace( '#^https?://#', '', home_url( '/' ) );
 	$retention     = array(
@@ -1739,8 +1739,12 @@ function page_settings() {
 				<a class="button csl-btn" href="<?php echo esc_url( admin_page_url( '' ) ); ?>"><?php esc_html_e( 'All short links', 'clean-short-links' ); ?></a>
 				<?php
 			},
-			function () use ( $home, $p, $q ) {
-				echo '<div class="csl-hero-urls"><span class="csl-copy"><code>' . esc_html( $home . $p . '/…' ) . '</code></span><span class="csl-copy"><code>' . esc_html( $home . $q . '/…' ) . '</code></span></div>';
+			function () use ( $home, $p, $q, $w ) {
+				echo '<div class="csl-hero-urls"><span class="csl-copy"><code>' . esc_html( $home . $p . '/…' ) . '</code></span><span class="csl-copy"><code>' . esc_html( $home . $q . '/…' ) . '</code></span>';
+				if ( '' !== $w ) {
+					echo '<span class="csl-copy"><code>' . esc_html( $home . $w . '/…' ) . '</code></span>';
+				}
+				echo '</div>';
 			}
 		);
 		action_notice();
@@ -1759,10 +1763,14 @@ function page_settings() {
 									<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home ); ?></span><input type="text" name="prefix" value="<?php echo esc_attr( $s['prefix'] ); ?>" placeholder="<?php echo esc_attr( $n['prefix'] ); ?>" class="csl-short"><span class="csl-slug-pre">/…</span></span></label>
 								<label class="csl-field"><span><?php esc_html_e( 'QR codes', 'clean-short-links' ); ?></span>
 									<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home ); ?></span><input type="text" name="qr_prefix" value="<?php echo esc_attr( $s['qr_prefix'] ); ?>" placeholder="<?php echo esc_attr( $n['qr_prefix'] ); ?>" class="csl-short"><span class="csl-slug-pre">/…</span></span></label>
+								<?php if ( '' !== $w ) : ?>
+								<label class="csl-field"><span><?php esc_html_e( 'Wallet cards', 'clean-short-links' ); ?></span>
+									<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home ); ?></span><input type="text" name="wallet_prefix" value="<?php echo esc_attr( $s['wallet_prefix'] ); ?>" placeholder="<?php echo esc_attr( $n['wallet_prefix'] ); ?>" class="csl-short"><span class="csl-slug-pre">/…</span></span></label>
+								<?php endif; ?>
 							</div>
 							<span class="csl-help"><?php esc_html_e( 'Changing a prefix changes all short links – printed QR codes then stop working. Best decide once.', 'clean-short-links' ); ?></span>
 						<?php else : ?>
-							<p><code><?php echo esc_html( $home . $p . '/…' ); ?></code> · <code><?php echo esc_html( $home . $q . '/…' ); ?></code></p>
+							<p><code><?php echo esc_html( $home . $p . '/…' ); ?></code> · <code><?php echo esc_html( $home . $q . '/…' ); ?></code><?php if ( '' !== $w ) : ?> · <code><?php echo esc_html( $home . $w . '/…' ); ?></code><?php endif; ?></p>
 							<span class="csl-help"><?php esc_html_e( 'Set for the whole network.', 'clean-short-links' ); ?></span>
 						<?php endif; ?>
 						<?php if ( ! is_multisite() ) : ?>
@@ -1930,6 +1938,7 @@ add_action(
 		$new   = array(
 			'prefix'        => clean_prefix( $p['prefix'] ?? '' ),
 			'qr_prefix'     => clean_prefix( $p['qr_prefix'] ?? '' ),
+			'wallet_prefix' => clean_prefix( $p['wallet_prefix'] ?? '' ),
 			'auto_types'    => array_values( array_intersect( array_map( 'sanitize_key', (array) ( $p['auto_types'] ?? array() ) ), $types ) ),
 			'post_kind'     => in_array( $p['post_kind'] ?? '', array( 'random', 'memorable', 'title' ), true ) ? $p['post_kind'] : 'title',
 			'other_kind'    => 'memorable' === ( $p['other_kind'] ?? '' ) ? 'memorable' : 'random',
@@ -1953,9 +1962,18 @@ add_action(
 		if ( is_multisite() && empty( network_settings()['site_prefix'] ) ) {
 			$new['prefix']    = $s['prefix'];
 			$new['qr_prefix'] = $s['qr_prefix'];
+			$new['wallet_prefix'] = $s['wallet_prefix'];
 		}
 		if ( '' !== $new['prefix'] && $new['prefix'] === $new['qr_prefix'] ) {
 			$new['qr_prefix'] = '';
+		}
+		if ( ! wallet_enabled() ) {
+			$new['wallet_prefix'] = $s['wallet_prefix'];
+		} elseif ( '' !== $new['wallet_prefix'] ) {
+			// Stored value must not clash with the prefixes in effect after this save.
+			$n   = network_settings();
+			$eff = resolve_prefixes( '' !== $new['prefix'] ? $new['prefix'] : $n['prefix'], '' !== $new['qr_prefix'] ? $new['qr_prefix'] : $n['qr_prefix'], $new['wallet_prefix'] );
+			$new['wallet_prefix'] = $eff[2] === $new['wallet_prefix'] ? $new['wallet_prefix'] : '';
 		}
 		update_option( 'clean_short_links_site', $new );
 		if ( maintenance_available() && ! empty( $p['cm_rules']['present'] ) ) {

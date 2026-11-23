@@ -153,6 +153,8 @@
 	"Settings for the whole network": "Einstellungen für das ganze Netzwerk",
 	"Prefix for links": "Präfix für Links",
 	"Prefix for QR codes": "Präfix für QR-Codes",
+	"Prefix for Wallet cards": "Präfix für Wallet-Karten",
+	"Wallet cards": "Wallet-Karten",
 	"QR codes lead through their own prefix, so the statistics can tell scans from clicks. Letters and digits only keep the compact QR mode.": "QR-Codes laufen über ein eigenes Präfix, damit die Statistik Scans von Klicks unterscheiden kann. Nur Buchstaben und Ziffern erhalten den kompakten QR-Modus.",
 	"Sites": "Websites",
 	"Sites may choose their own prefixes": "Websites dürfen eigene Präfixe wählen",

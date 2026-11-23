@@ -49,6 +49,7 @@ function network_defaults() {
 	return array(
 		'prefix'         => 's',
 		'qr_prefix'      => 'q',
+		'wallet_prefix'  => 'w',
 		'site_prefix'    => 0,
 		'allow_root'     => 1,
 		'retention_days' => 730,
@@ -156,6 +157,7 @@ function site_defaults() {
 	return array(
 		'prefix'        => '',
 		'qr_prefix'     => '',
+		'wallet_prefix' => '',
 		'auto_types'    => array(),
 		'post_kind'     => 'title',
 		'other_kind'    => 'random',
@@ -184,20 +186,64 @@ function site_settings() {
 }
 
 /**
- * The two path prefixes in effect on this site.
+ * Is the Apple Wallet integration available (Clean Mobile Connect with API 2)?
  *
- * @return array{0:string,1:string} Link prefix and QR prefix.
+ * @param int|null  $api     Connect API level; null reads the constant (tests pass a value).
+ * @param bool|null $page_fn Whether the guest page function exists; null checks for it.
+ * @return bool
+ */
+function wallet_enabled( ?int $api = null, ?bool $page_fn = null ) {
+	if ( null === $api ) {
+		$api = defined( 'CLEAN_MOBILE_CONNECT_API' ) ? (int) CLEAN_MOBILE_CONNECT_API : 0;
+	}
+	if ( null === $page_fn ) {
+		$page_fn = function_exists( 'clean_mobile_connect_wallet_guest_page' );
+	}
+	return $api >= 2 && $page_fn;
+}
+
+/**
+ * Makes the wallet prefix differ from the link and QR prefix. An empty or clashing
+ * value becomes the first of w, wallet, card that is free.
+ *
+ * @param string $p Link prefix.
+ * @param string $q QR prefix.
+ * @param string $w Wallet prefix.
+ * @return array{0:string,1:string,2:string}
+ */
+function resolve_prefixes( $p, $q, $w ) {
+	if ( '' === $w || $w === $p || $w === $q ) {
+		$w = '';
+		foreach ( array( 'w', 'wallet', 'card' ) as $candidate ) {
+			if ( $candidate !== $p && $candidate !== $q ) {
+				$w = $candidate;
+				break;
+			}
+		}
+	}
+	return array( $p, $q, $w );
+}
+
+/**
+ * The path prefixes in effect on this site.
+ *
+ * @return array{0:string,1:string,2:string} Link, QR and wallet prefix; the wallet prefix is '' without Connect.
  */
 function prefixes() {
 	$n = network_settings();
 	$s = site_settings();
 	$p = $n['prefix'];
 	$q = $n['qr_prefix'];
+	$w = $n['wallet_prefix'];
 	if ( ! empty( $n['site_prefix'] ) || ! is_multisite() ) {
 		$p = '' !== $s['prefix'] ? $s['prefix'] : $p;
 		$q = '' !== $s['qr_prefix'] ? $s['qr_prefix'] : $q;
+		$w = '' !== $s['wallet_prefix'] ? $s['wallet_prefix'] : $w;
 	}
-	return array( $p, $q );
+	if ( ! wallet_enabled() ) {
+		return array( $p, $q, '' );
+	}
+	return resolve_prefixes( $p, $q, $w );
 }
 
 /**
@@ -237,9 +283,12 @@ function reserved_words() {
 			$words[] = $w;
 		}
 	}
-	list( $p, $q ) = prefixes();
-	$words[]       = $p;
-	$words[]       = $q;
+	list( $p, $q, $w ) = prefixes();
+	$words[]           = $p;
+	$words[]           = $q;
+	if ( '' !== $w ) {
+		$words[] = $w;
+	}
 	return array_values( array_unique( $words ) );
 }
 

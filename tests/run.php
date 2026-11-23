@@ -138,6 +138,41 @@ test( 'Prefixes are cleaned', function () {
 	same( '', clean_prefix( '' ) );
 } );
 
+test( 'wallet prefix never equals the other prefixes', function () {
+	same( array( 's', 'q', 'w' ), resolve_prefixes( 's', 'q', 'w' ) );
+	same( 'w', resolve_prefixes( 's', 'q', 's' )[2] );
+	same( 'wallet', resolve_prefixes( 'w', 'q', 'w' )[2] );
+	same( 'card', resolve_prefixes( 'w', 'wallet', 'w' )[2] );
+	same( 'w', resolve_prefixes( 's', 'q', '' )[2] );
+	$all = array( 's', 'q', 'w', 'wallet', 'card' );
+	foreach ( $all as $p ) {
+		foreach ( $all as $q ) {
+			if ( $p === $q ) {
+				continue;
+			}
+			foreach ( array_merge( $all, array( '' ) ) as $w ) {
+				$r = resolve_prefixes( $p, $q, $w );
+				same( true, $r[2] !== $r[0] && $r[2] !== $r[1], "$p $q $w" );
+				same( array( $p, $q ), array( $r[0], $r[1] ), "unchanged $p $q $w" );
+			}
+		}
+	}
+} );
+
+test( 'wallet is only enabled with Connect API 2', function () {
+	same( false, wallet_enabled( 1, true ) );
+	same( false, wallet_enabled( 2, false ) );
+	same( true, wallet_enabled( 2, true ) );
+	same( false, wallet_enabled() );
+} );
+
+test( 'prefixes without Connect', function () {
+	same( '', prefixes()[2] );
+	same( 3, count( prefixes() ) );
+	same( 'w', network_defaults()['wallet_prefix'] );
+	same( '', site_defaults()['wallet_prefix'] );
+} );
+
 echo "\nTargets and rules\n";
 
 test( 'Targets', function () {
