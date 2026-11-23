@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,10 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.4.1 =
+* A short domain answers its own short links first (without prefix), so it can be a link site of its own.
+* Nextcloud links belong to the first short domain (managed in its dashboard) instead of the main site; links already made on the main site are moved on the next sync.
 
 = 0.4.0 =
 * Nextcloud (optional, set up in wp-config.php): a short link on the short domain for every public share link, named after the file, ending with the share and written into its label. Marked "Nextcloud"; deleted when the share is gone or has expired – its address then leads to Nextcloud for 60 days and is free again afterwards.

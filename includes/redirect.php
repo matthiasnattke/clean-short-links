@@ -116,6 +116,15 @@ function handle_alias( $host ) {
 	list( , $q, $w ) = prefixes();
 
 	$req    = parse_alias_path( request_path(), $q, $w );
+	// A short domain first answers its own links (e.g. those of the Nextcloud sync), without prefix.
+	if ( $req && ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && is_short_site() ) {
+		$own = find_slug( $req[1] );
+		if ( $own ) {
+			$status = (int) handle_found( $own, $req[0], $req[1], true ); // Returns only for a dead link.
+			nocache_headers();
+			wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status > 0 ? $status : 404 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
+		}
+	}
 	$route  = $req ? find_route( $host, $req[1] ) : null;
 	if ( $req && ! $route ) {
 		nextcloud_gone_redirect( $host, $req[1] ); // A deleted Nextcloud link: to the Nextcloud instance.

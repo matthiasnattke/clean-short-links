@@ -8,10 +8,10 @@
  *     define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_USER', 'name' );
  *     define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_PASS', 'app-password' ); // an app password, never the real one
  *
- * Every five minutes (and on "Sync now") the main site reads the public link shares of that user
- * through Nextcloud's sharing API. A new share gets a short link on the main site, named after the
- * file, offered on the first short domain of the network (so it reads `short.de/contract`), ending
- * with the share. The short address is written into the share's label, so it shows in Nextcloud.
+ * Every five minutes (and on "Sync now") the public link shares of that user are read through
+ * Nextcloud's sharing API. A new share gets a short link on the first short domain of the network
+ * (its own link there, so it reads `short.de/contract`; without a short domain on the main site),
+ * named after the file, ending with the share. The short address is written into the share's label, so it shows in Nextcloud.
  * A link whose share is gone or whose end has passed is deleted; for 60 days its addresses lead to the
  * Nextcloud instance and are not handed out, then they are free again.
  * These links carry `meta.nextcloud` (the share ID) and show a "Nextcloud" badge.
@@ -138,7 +138,7 @@ function nextcloud_config() {
 /**
  * Saved state of the sync.
  *
- * @return array{map:array,at:int,error:string,count:int}
+ * @return array{map:array,at:int,error:string,count:int,blog:int}
  */
 function nextcloud_state() {
 	$s = is_multisite() ? get_site_option( NEXTCLOUD_OPTION, array() ) : get_option( NEXTCLOUD_OPTION, array() );
@@ -148,6 +148,7 @@ function nextcloud_state() {
 		'at'    => (int) ( $s['at'] ?? 0 ),
 		'error' => (string) ( $s['error'] ?? '' ),
 		'count' => (int) ( $s['count'] ?? 0 ),
+		'blog'  => (int) ( $s['blog'] ?? 0 ),
 	);
 }
 
@@ -264,7 +265,25 @@ function nextcloud_request( array $c, $method, $path, array $body = array() ) {
 }
 
 /**
- * Runs the sync on the main site. Returns the number of links created, updated and deleted, or an error.
+ * The site that owns the Nextcloud links: the first short domain of the network, else the main site.
+ *
+ * @return int
+ */
+function nextcloud_blog_id() {
+	if ( ! is_multisite() ) {
+		return get_current_blog_id();
+	}
+	foreach ( array_map( 'intval', (array) network_settings()['short_sites'] ) as $id ) {
+		$site = get_site( $id );
+		if ( $site && '/' === $site->path && ! is_main_site( $id ) && ! $site->deleted && ! $site->archived ) {
+			return $id;
+		}
+	}
+	return get_main_site_id();
+}
+
+/**
+ * Runs the sync on the owning site. Returns the number of links created, updated and deleted, or an error.
  *
  * @return array{created:int,updated:int,deleted:int}|\WP_Error
  */
@@ -273,9 +292,22 @@ function nextcloud_sync() {
 	if ( ! $c ) {
 		return new \WP_Error( 'config', __( 'Nextcloud is not set up in wp-config.php.', 'clean-short-links' ) );
 	}
-	$switched = is_multisite() && ! is_main_site();
+	$blog  = nextcloud_blog_id();
+	$state = nextcloud_state();
+	// The owning site changed (e.g. a short domain was marked): the old links go, the sync makes them anew there.
+	if ( is_multisite() && $state['map'] && (int) $state['blog'] !== $blog ) {
+		switch_to_blog( $state['blog'] ? (int) $state['blog'] : get_main_site_id() );
+		foreach ( $state['map'] as $id ) {
+			delete_link( (int) $id, false );
+		}
+		restore_current_blog();
+		$state['map'] = array();
+	}
+	$state['blog'] = $blog;
+	nextcloud_save_state( $state );
+	$switched = is_multisite() && get_current_blog_id() !== $blog;
 	if ( $switched ) {
-		switch_to_blog( get_main_site_id() );
+		switch_to_blog( $blog );
 	}
 	try {
 		return nextcloud_sync_here( $c );
@@ -307,7 +339,8 @@ function nextcloud_sync_here( array $c ) {
 
 	$now   = time();
 	$plan  = nextcloud_plan( $list, $state['map'], __NAMESPACE__ . '\\link_by_id', $now );
-	$hosts = array_slice( short_hosts(), 0, 1 );
+	// On a short domain the links are its own; on the main site they are offered on the first short domain.
+	$hosts = is_short_site() ? array() : array_slice( short_hosts(), 0, 1 );
 	$done  = array(
 		'created' => 0,
 		'updated' => 0,

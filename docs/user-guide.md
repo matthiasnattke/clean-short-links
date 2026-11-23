@@ -85,7 +85,7 @@ WordPress decides which site answers a host before any plugin is loaded, so this
 
 While registration is switched off, *Sign-up page leads to the home page* sends visitors of the sign-up page – and of unknown subdomains, which WordPress sends there – to the home page instead of the notice "Registration has been disabled".
 
-For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there. On a short domain a link always reads without prefix (`short.de/sommer`), whether or not the link has the short form ticked; `q/…` and `w/…` work there for QR codes and Wallet, and the normal prefix keeps working as a fallback. Everything else on the short domain – the home page, the site's own posts and pages – leads to the main site; sign-in and the admin of that site stay reachable.
+For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there. On a short domain a link always reads without prefix (`short.de/sommer`), whether or not the link has the short form ticked; `q/…` and `w/…` work there for QR codes and Wallet, and the normal prefix keeps working as a fallback. A short domain can also have short links of its own (created in its dashboard); they read without prefix too and are looked up first. Everything else on the short domain – the home page, the site's own posts and pages – leads to the main site; sign-in and the admin of that site stay reachable.
 
 If the short address is already taken on a chosen domain (by a link of another site), the editor says so while you type and suggests up to three alternatives that are free on this site and on every chosen domain; a click takes one over.
 
@@ -99,7 +99,7 @@ define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_USER', 'name' );
 define( 'CLEAN_SHORT_LINKS_NEXTCLOUD_PASS', 'xxxxx-xxxxx-xxxxx-xxxxx-xxxxx' ); // app password: Nextcloud → Personal settings → Security
 ```
 
-Every five minutes (or with *Network admin → Short links → Nextcloud → Sync now*) the main site reads that user's public link shares. A new share gets a short link named after the file (or the share's label), on the first short domain (`short.de/contract`). Its end is the share's expiry date, and the short address is written into the share's label, so it shows in Nextcloud. These links carry the badge **Nextcloud**.
+Every five minutes (or with *Network admin → Short links → Nextcloud → Sync now*) that user's public link shares are read. A new share gets a short link named after the file (or the share's label). The links belong to the first short domain of the network – they are its own links (`short.de/contract`), managed in that site's dashboard under *Short links*; without a short domain they belong to the main site. Its end is the share's expiry date, and the short address is written into the share's label, so it shows in Nextcloud. These links carry the badge **Nextcloud**.
 
 When the share is deleted or has expired, the short link is deleted. For 60 days its address leads to the Nextcloud instance and is not handed out again; after that it is free. A Nextcloud link deleted by hand is not created again.
 

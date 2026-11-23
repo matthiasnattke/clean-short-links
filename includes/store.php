@@ -1353,7 +1353,7 @@ function short_urls( array $link ) {
 		);
 	}
 	return array(
-		'link'     => home_url( '/' . $p . '/' . $link['slug'] ),
+		'link'     => home_url( '/' . ( is_short_site() ? '' : $p . '/' ) . $link['slug'] ),
 		'qr'       => $qr,
 		'root'     => ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '',
 		'qr_upper' => qr_uppercase( $qr ),
