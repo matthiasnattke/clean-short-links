@@ -52,6 +52,21 @@ Under *Locations* one short link gets addresses of its own for several posters, 
 
 NFC stickers, cards and key rings open the short link when a phone touches them – on iPhone and Android, without an app. The card *NFC tag* shows the address for the tag (the short link with `?nfc`, so visits count as *NFC tag* in the statistics). In Chrome on Android, *Write to NFC tag* writes it directly; on an iPhone or in other browsers, copy the address into an NFC app and write it as a URL record. Locking the tag afterwards is possible but cannot be undone – the short link itself can still be changed at any time, so a locked tag never needs rewriting. Short addresses fit on every common tag (NTAG213).
 
+## Wallet cards for short links
+
+With the plugin *Clean Mobile Connect* (version 0.2 or later) a short link – and each of its locations – can be handed out as a card for Apple Wallet. The card shows the title, an image and a QR code that opens the short link. Without Clean Mobile Connect nothing of this appears.
+
+- **Wallet address** – cards have their own prefix, `/w/` by default (`example.com/w/blue-couch`; change it in the site settings or, in a network, under *Prefix for Wallet cards*). Visitors who open it see a page where they add the card to Apple Wallet. The page follows the rules of the short link: before the start, after the end, when the click limit is used up or the target cannot be reached, the address does the same as `/s/` (fallback, default target, "not found" or "gone") and shows no card. Calling the page counts no visit.
+- **Editor section** – in the link editor the section *Wallet card* has the switch *Offer a Wallet card* for the short link itself and for every location (choose with *Code for*), the card design of Clean Mobile Connect and the Wallet address with its QR code. Switched off, cards on iPhones stay as they are and the address shows "not available".
+- **Live data** – title, image, QR code and link are not stored on the card: they follow the short link. A new title, target, short address, location name or featured image of the target post reaches the cards that are already on iPhones within a short time. Changing the prefix or the domains updates all cards of the site in the background.
+- **Locations** – every location has its own card, titled "link – location". Removing a location ends its card; deleting a short link ends all its cards.
+- **Issue anew** – ends the card that was handed out (it greys out on every iPhone that has it) and creates a new one under the same Wallet address. Use it when a card was passed on where it should not be. The button asks once more before it acts.
+- **Statistics** – *Wallet* under the sources counts visits that come from the QR code on a card; *Wallet: added* counts the moments an iPhone adds the card to Wallet. Opening the Wallet address itself is not counted as a visit.
+- **Attach a card from Clean Mobile Connect** – a card created there on its own can be attached to a short link: Clean Mobile Connect offers your short links and locations to choose from. The card keeps its devices; its address and QR code then follow the short link.
+- **NFC** – a tag can carry the Wallet address too; the NFC card offers it next to the short address. It opens the page where visitors add the card.
+
+Deactivating Clean Short Links leaves all cards as they are. Uninstalling the plugin ends the cards of all its short links (on every site of a network), as long as Clean Mobile Connect is active.
+
 ## Different targets by device and screen
 
 Under *Different targets by device and screen* a short link can lead elsewhere depending on the visitor: by device (phone, tablet, computer), operating system (iOS/iPadOS, Android, Windows, macOS, Linux/ChromeOS) and screen width in pixels. The first variant that fits decides; rules by date and time come first, variants apply to the main target. Typical: one QR code that sends iPhones to the App Store, Android phones to Google Play and everyone else to the website.
@@ -139,7 +154,7 @@ The card *Sharing* on each short link:
 
 ## Statistics
 
-Per link: visits per day (7, 30, 90 or 365 days), split by source (link, QR code, short form), device (desktop, mobile, tablet) and referring site (host only). CSV export at the bottom.
+Per link: visits per day (7, 30, 90 or 365 days), split by source (link, QR code, short form, Wallet), device (desktop, mobile, tablet) and referring site (host only). CSV export at the bottom.
 
 Not counted: bots, link previews (WhatsApp, Telegram, …), tools like curl, HEAD requests and – unless enabled in the settings – logged-in authors and editors.
 

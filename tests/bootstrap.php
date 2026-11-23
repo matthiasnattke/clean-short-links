@@ -54,3 +54,9 @@ require dirname( __DIR__ ) . '/includes/maintenance.php';
 require dirname( __DIR__ ) . '/includes/calendar.php';
 require dirname( __DIR__ ) . '/includes/wallet.php';
 require dirname( __DIR__ ) . '/includes/wallet-admin.php';
+
+/* Stand-ins for uninstall.php and Connect's card API (test: uninstall ends the cards). */
+function clean_mobile_connect_wallet_end_card( $owner, $ref ) { $GLOBALS['csl_ended'][] = $owner . '|' . $ref; }
+function delete_option( $name ) {}
+function wp_clear_scheduled_hook( $hook ) { $GLOBALS['csl_cleared'][] = $hook; }
+function wp_unschedule_hook( $hook ) { $GLOBALS['csl_cleared'][] = $hook; }

@@ -105,6 +105,10 @@ Only for the link check and calendar addresses you enter: the link check request
 
 Any iCal file or address (also webcal://), for example the public or secret iCal address of Google Calendar, Apple iCloud, Nextcloud or Outlook. The address is fetched twice a day; nothing is sent to it.
 
+= Do I need Clean Mobile Connect? =
+
+No. Clean Short Links works completely on its own. Only when the plugin Clean Mobile Connect (version 0.2 or later) is active, short links and their locations can also be offered as cards for Apple Wallet, with an address like `example.com/w/blue-couch`. Without it nothing of this shows up. Deactivating Clean Short Links leaves the cards as they are; uninstalling it ends them.
+
 = Is it GDPR-friendly? =
 
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.

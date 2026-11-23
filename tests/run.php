@@ -937,6 +937,26 @@ test( 'offer switch maps to card status', function () {
 	same( null, wallet_save_input( false, false ) );
 } );
 
+test( 'uninstall ends the cards of links and locations when Connect is active', function () {
+	$GLOBALS['csl_ended']   = array();
+	$GLOBALS['csl_cleared'] = array();
+	$GLOBALS['wpdb'] = new class() {
+		public $prefix = 'wp_';
+		public function prepare( $q, ...$a ) { return $q; }
+		public function get_results( $q ) {
+			return array(
+				(object) array( 'id' => 7, 'meta' => '{"places":[{"key":"home"},{"key":"market-1"}]}' ),
+				(object) array( 'id' => 9, 'meta' => '' ),
+			);
+		}
+		public function query( $q ) { return 1; }
+	};
+	define( 'WP_UNINSTALL_PLUGIN', 'clean-short-links/uninstall.php' );
+	require dirname( __DIR__ ) . '/uninstall.php';
+	same( array( 'csl|7', 'csl|7:home', 'csl|7:market-1', 'csl|9' ), $GLOBALS['csl_ended'] );
+	same( true, in_array( 'clean_short_links_wallet_touch_all', $GLOBALS['csl_cleared'], true ) );
+} );
+
 $fail = $GLOBALS['fail'];
 echo "\n" . $GLOBALS['pass'] . ' passed, ' . count( $fail ) . " failed\n";
 exit( $fail ? 1 : 0 );

@@ -19,6 +19,27 @@ GET /blue-couch ───── WordPress resolves the request first
 
 Prefixed links are answered as soon as WordPress can build permalinks – before the theme, `init`, the main query, templates, maintenance plugins and canonical redirects. That saves most of the work of a normal page view. The short form only runs after WordPress decided there is no content at that address, so it can never hide a page, post or archive.
 
+### Wallet cards
+
+With Clean Mobile Connect 0.2 (API 2) active, a third prefix (`/w/` by default, never equal to the link or QR prefix) serves Wallet cards. Without it the prefix is not recognised and requests behave as before.
+
+```
+GET /w/blue-couch      → find the address (main, alias, QR, location) → the link, or its location
+                         ├─ invitation / unknown → 404, retired → 410 (as /s/)
+                         ├─ no card or card off  → 404 dead end
+                         ├─ link not live (window, limit, rules to fallback, broken target)
+                         │                       → the same way as /s/ leads (fallback, default target, error), nothing counted
+                         └─ card live            → guest page, ?pkpass → the .pkpass download (Connect builds both)
+```
+
+The visit is counted as *Wallet: added* (source 6) when a device registers the card; the QR code on a card opens the short address with `?w`, counted as *Wallet* (source 5). `w` is not passed on to the target.
+
+Cards belong to the owner `csl` in Clean Mobile Connect. The reference is the link ID (`12`) or, for a location, `<ID>:<key>` (`12:home`); invitations have none. Connect stores only the design, the guest switch and the status. Title, image, QR content and link come live through the filter `clean_mobile_connect_wallet_card_data` from the short link, so nothing is kept twice.
+
+Sync: when a link is saved, its cards are touched (Connect pushes the new data to the devices) if title, target, short address or hosts changed, and the card of a location whose name changed; the cards of removed locations are ended. Deleting a link ends its cards. A changed featured image of the target post touches the cards of links to that post. Changing prefixes or domains touches all cards in the background, 200 links at a time (`clean_short_links_wallet_touch_all`). Connect asks the plugin through the filters `clean_mobile_connect_wallet_owners`, `clean_mobile_connect_link_choices` (picker) and `clean_mobile_connect_wallet_can_attach` (a stand-alone card may be attached to an existing link or location without a card).
+
+Deactivating Clean Short Links touches nothing: cards stay as they are. `uninstall.php` ends the cards of all links and locations through `clean_mobile_connect_wallet_end_card()` before it drops the tables, on every site of a network, when Clean Mobile Connect is active.
+
 ### Light on the server
 
 - **One lookup per visit:** the short address and its link are kept in the object cache (if the site has a persistent one, e.g. Memcached or Redis) until the next change of any link of the site. Links with a click limit or invitations are always read fresh.

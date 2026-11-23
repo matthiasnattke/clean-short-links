@@ -16,6 +16,7 @@ example.com/blue-couch       optional short form – only where the site has no 
 - **QR codes:** built-in encoder (versions 1–10, compact alphanumeric mode), logo from the media library, colours and shapes, SVG/PNG export.
 - **Statistics:** daily totals per link, source, device and referring host – no IP addresses, no cookies.
 - **Editor:** block editor panel, automatic links on publishing, `wp_get_shortlink()` integration.
+- **Wallet cards:** with Clean Mobile Connect, a short link and each location can be offered as an Apple Wallet card (`/w/…`); title, image and QR code follow the link. Works fully without Connect.
 - **Network:** every site has its own links; the network admin shows all sites and sets prefixes and rules.
 
 ## Languages
