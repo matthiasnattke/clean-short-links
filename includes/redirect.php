@@ -419,7 +419,10 @@ function handle( array $found, $source, $slug = '', $fast = false ) {
 			}
 		}
 	}
-	go_to( final_url( $result['url'], $link, $source, $channel ), $link, $source, $used, $channel, 'default' === $result['state'] && permanent_allowed( $link ) ? 301 : 302, true );
+	$url = final_url( $result['url'], $link, $source, $channel );
+	// "Wallet card first on Apple devices": the card page with a Continue link instead of the redirect.
+	maybe_wallet_first( $link, (string) $kind, (string) $slug, (int) $source, $channel, $result, $url, $used );
+	go_to( $url, $link, $source, $used, $channel, 'default' === $result['state'] && permanent_allowed( $link ) ? 301 : 302, true );
 	return 0;
 }
 
@@ -546,8 +549,9 @@ function go_to( $url, $link, $source, $count, $channel = '', $code = 302, $final
  * @param array|null $link    Link.
  * @param int        $source  Source.
  * @param string     $channel Channel key.
+ * @param bool       $flush   Hand the answer over first (false: the answer is still to be sent).
  */
-function finish_and_count( $count, $link, $source, $channel ) {
+function finish_and_count( $count, $link, $source, $channel, $flush = true ) {
 	if ( ! $count || ! $link ) {
 		return;
 	}
@@ -555,9 +559,9 @@ function finish_and_count( $count, $link, $source, $channel ) {
 	if ( ! $visit ) {
 		return;
 	}
-	if ( function_exists( 'fastcgi_finish_request' ) ) {
+	if ( $flush && function_exists( 'fastcgi_finish_request' ) ) {
 		fastcgi_finish_request();
-	} elseif ( function_exists( 'litespeed_finish_request' ) ) {
+	} elseif ( $flush && function_exists( 'litespeed_finish_request' ) ) {
 		litespeed_finish_request();
 	}
 	record_click( $link['id'], $visit['source'], $visit['device'], $visit['ref'] );

@@ -608,6 +608,8 @@ function clean_meta( $meta ) {
 		'permanent' => empty( $meta['permanent'] ) ? 0 : 1,
 		'bio'       => empty( $meta['bio'] ) ? 0 : 1,
 		'bio_order' => (int) ( $meta['bio_order'] ?? 0 ),
+		// Wallet card first on Apple devices (QR scans).
+		'wallet_first' => empty( $meta['wallet_first'] ) ? 0 : 1,
 		// Calendar: address, target for events without a link, last sync.
 		'ical_url'     => preg_match( '#^(https?|webcals?)://\S+$#i', trim( (string) ( $meta['ical_url'] ?? '' ) ) ) ? esc_url_raw( preg_replace( '#^webcals?://#i', 'https://', trim( (string) $meta['ical_url'] ) ) ) : '',
 		'ical_default' => clean_target( $meta['ical_default'] ?? '' ),
@@ -764,7 +766,9 @@ function permanent_allowed( array $link ) {
 		&& empty( $link['starts_at'] ) && in_array( $link['start_mode'] ?? '', array( '', 'publish' ), true )
 		&& empty( $link['ends_at'] )
 		&& empty( $link['max_clicks'] )
-		&& empty( $link['meta']['variants'] );
+		&& empty( $link['meta']['variants'] )
+		// Apple devices may get the Wallet card page instead: a remembered 301 would skip it.
+		&& empty( $link['meta']['wallet_first'] );
 }
 
 /**

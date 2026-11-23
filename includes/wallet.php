@@ -336,6 +336,113 @@ function handle_wallet( array $found, string $slug, bool $fast, ?string $request
 }
 
 /**
+ * Does Clean Mobile Connect offer the continue link on the guest page (0.2.2 and later)?
+ *
+ * @param string|null $version Connect's version, null when Connect is not active.
+ * @return bool
+ */
+function wallet_continue_supported( ?string $version ): bool {
+	return null !== $version && version_compare( $version, '0.2.2', '>=' );
+}
+
+/**
+ * The platform as the guest page sees it: Connect's own check when available.
+ *
+ * @param string $ua User agent.
+ * @return string apple, inapp (Apple device in another app's browser) or other.
+ */
+function wallet_platform( string $ua ): string {
+	if ( function_exists( 'CleanMobileConnect\\guest_platform' ) ) {
+		return (string) \CleanMobileConnect\guest_platform( $ua );
+	}
+	return 1 === preg_match( '/iPhone|iPad|iPod|Macintosh/', $ua ) ? 'apple' : 'other';
+}
+
+/**
+ * Does a QR scan get the Wallet card page first ("Wallet card first on Apple devices")?
+ * Only when the option is on, the scan comes from an iPhone, iPad or Mac, the card is
+ * offered and active, and the link leads to its target right now – never on the way to a
+ * fallback, to an unreachable target's replacement or to a dead end.
+ *
+ * @param array      $link     Link.
+ * @param string     $place    Location key, '' for the link itself.
+ * @param int        $source   Source of the visit.
+ * @param string     $platform wallet_platform().
+ * @param array|null $card     The card of the link or location.
+ * @param array      $resolved Result of resolve() after the link check.
+ * @return bool
+ */
+function wallet_first_decision( array $link, string $place, int $source, string $platform, ?array $card, array $resolved ): bool {
+	unset( $place ); // The card passed in is already the one of the location.
+	if ( empty( $link['meta']['wallet_first'] ) || ! empty( $link['parent_id'] ) || SOURCE_QR !== $source || 'apple' !== $platform ) {
+		return false;
+	}
+	if ( ! wallet_card_available( $card, time() ) ) {
+		return false;
+	}
+	$state = (string) ( $resolved['state'] ?? '' );
+	return in_array( (int) ( $resolved['status'] ?? 0 ), array( 301, 302, 307 ), true )
+		&& ( 'default' === $state || 0 === strpos( $state, 'rule-' ) );
+}
+
+/**
+ * Answers a QR scan with the Wallet card page instead of the redirect when the link wants
+ * that (see wallet_first_decision()). The visit is counted as a normal QR visit before the
+ * page is sent (a click limit was claimed already); "Continue" goes straight to the target.
+ * Returns when the redirect should happen as usual; never returns otherwise.
+ *
+ * @param array  $link    Link.
+ * @param string $kind    Kind of the requested address (find_slug()).
+ * @param string $slug    The requested short address.
+ * @param int    $source  Source of the visit.
+ * @param string $channel Channel key of the visit.
+ * @param array  $result  Result of resolve() after the link check.
+ * @param string $url     The final target address (final_url()).
+ * @param bool   $count   Count the visit (as go_to() would).
+ */
+function maybe_wallet_first( array $link, string $kind, string $slug, int $source, string $channel, array $result, string $url, bool $count ): void {
+	if ( empty( $link['meta']['wallet_first'] ) || SOURCE_QR !== $source || ! empty( $link['parent_id'] ) ) {
+		return;
+	}
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) || ! function_exists( 'clean_mobile_connect_wallet_guest_page' )
+		|| ! wallet_continue_supported( defined( 'CLEAN_MOBILE_CONNECT_VERSION' ) ? (string) CLEAN_MOBILE_CONNECT_VERSION : null ) ) {
+		return;
+	}
+	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+	if ( is_bot( $ua ) || is_preview_bot( $ua ) ) {
+		return; // Robots and link previews follow the redirect.
+	}
+	$place = '';
+	if ( 'place' === $kind ) {
+		$target = wallet_target( array( $link, $kind ), $slug );
+		$place  = $target ? (string) $target['place'] : '';
+	}
+	$card = \clean_mobile_connect_wallet_card( WALLET_OWNER, wallet_ref( $link['id'], $place ) );
+	if ( ! wallet_first_decision( $link, $place, $source, wallet_platform( $ua ), $card, $result ) ) {
+		return;
+	}
+	$urls   = short_urls( $link );
+	$wallet = '' !== $place ? (string) ( $urls['places'][ $place ]['wallet'] ?? '' ) : (string) ( $urls['wallet'] ?? '' );
+	$back   = '' !== $place ? (string) ( $urls['places'][ $place ]['link'] ?? '' ) : (string) ( $urls['link'] ?? '' );
+	if ( '' === $wallet ) {
+		return;
+	}
+	// Counted exactly like the redirect would count it, but before the page is sent.
+	finish_and_count( $count, $link, $source, $channel, false );
+	\clean_mobile_connect_wallet_guest_page(
+		$card,
+		array(
+			'pass_url'       => $wallet . '?pkpass',
+			'page_url'       => $wallet,
+			'back_url'       => $back,
+			'continue_url'   => $url,
+			'continue_label' => '' !== (string) ( $link['title'] ?? '' ) ? (string) $link['title'] : (string) ( $link['slug'] ?? '' ),
+		)
+	);
+	exit;
+}
+
+/**
  * Answers a found short address: wallet addresses go to handle_wallet(), all others to handle().
  *
  * @param array  $found  Result of find_slug() (or of a route).

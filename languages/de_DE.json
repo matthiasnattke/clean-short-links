@@ -460,6 +460,8 @@
 	"Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag. Tags with a Wallet address open the guest page, where visitors add the card to Apple Wallet.": "Aufkleber, Karten oder Schlüsselanhänger mit NFC: Telefone öffnen den Kurzlink, sobald sie den Tag berühren – iPhone und Android, ohne App. Besuche werden als NFC-Tag gezählt. Tags mit einer Wallet-Adresse öffnen die Gästeseite, auf der Besucher die Karte zu Apple Wallet hinzufügen.",
 	"Wallet card: the short link itself": "Wallet-Karte: der Kurzlink selbst",
 	"Wallet card: %s": "Wallet-Karte: %s",
+	"On iPhone, iPad and Mac, offer the Wallet card first": "Auf iPhone, iPad und Mac zuerst die Wallet-Karte anbieten",
+	"Every scan on these devices shows the card page with a Continue button; others go straight to the target.": "Jeder Scan auf diesen Geräten zeigt die Kartenseite mit einem Weiter-Button; alle anderen kommen direkt zum Ziel.",
 	"%d characters – fits on every common tag (NTAG213 holds about 130).": "%d Zeichen – passt auf jeden üblichen Tag (NTAG213 fasst etwa 130).",
 	"%d characters – please use a tag with more memory (NTAG215 or NTAG216).": "%d Zeichen – bitte einen Tag mit mehr Speicher verwenden (NTAG215 oder NTAG216).",
 	"Write to NFC tag": "Auf NFC-Tag schreiben",

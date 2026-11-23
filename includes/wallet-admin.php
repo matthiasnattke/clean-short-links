@@ -221,6 +221,27 @@ function wallet_card( array $link, array $urls ) {
 }
 
 /**
+ * QR section: "Wallet card first on Apple devices". Shown only while a card of the link or
+ * of one of its locations is offered; without Connect the stored choice is kept as it is.
+ *
+ * @param array $link Link.
+ * @param array $urls short_urls() of the link.
+ */
+function wallet_first_option( array $link, array $urls ): void {
+	$on = ! empty( $link['meta']['wallet_first'] );
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) || ! empty( $link['parent_id'] ) ) {
+		printf( '<input type="hidden" name="meta[wallet_first]" value="%s">', $on ? '1' : '0' );
+		return;
+	}
+	$offered = (bool) wallet_code_entries( $urls, (int) $link['id'], 'qr' );
+	?>
+	<div class="csl-wallet-first"<?php echo $offered ? '' : ' hidden'; ?>>
+		<?php toggle( 'meta[wallet_first]', $on, __( 'On iPhone, iPad and Mac, offer the Wallet card first', 'clean-short-links' ), __( 'Every scan on these devices shows the card page with a Continue button; others go straight to the target.', 'clean-short-links' ) ); ?>
+	</div>
+	<?php
+}
+
+/**
  * Save the cards posted with the link form.
  *
  * @param int   $link_id Saved link.

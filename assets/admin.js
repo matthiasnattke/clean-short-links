@@ -461,6 +461,17 @@
 				}
 			} );
 		};
+		// "Wallet card first" in the QR section only while a card is offered.
+		var walletFirst = $( '.csl-wallet-first' );
+		if ( walletFirst ) {
+			document.addEventListener( 'change', function ( e ) {
+				if ( e.target.matches && e.target.matches( '.csl-wallet-panel input[name$="[offer]"]' ) ) {
+					walletFirst.hidden = ! $$( '.csl-wallet-panel input[name$="[offer]"]' ).some( function ( box ) {
+						return box.checked;
+					} );
+				}
+			} );
+		}
 		var walletFor = $( 'select[data-code-for="wallet"]' );
 		if ( walletFor ) {
 			walletFor.addEventListener( 'change', function () {

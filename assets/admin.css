@@ -241,6 +241,7 @@ textarea.csl-wide { max-width: none; }
 
 /* QR designer */
 .csl-qr-start { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.csl-wallet-first { margin-top: 12px; }
 .csl-designer { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 24px; margin-top: 18px; }
 .csl-designer[hidden] { display: none; }
 .csl-qr-stage { position: sticky; top: 60px; align-self: start; }

@@ -426,6 +426,7 @@ test( 'Permanent redirects only for links that cannot change by themselves', fun
 	same( true, permanent_allowed( array_merge( $l, array( 'start_mode' => 'publish' ) ) ), 'publish start' );
 	same( false, permanent_allowed( array_merge( $l, array( 'start_mode' => 'date', 'starts_at' => 5 ) ) ), 'date start' );
 	same( false, permanent_allowed( link() ) );
+	same( false, permanent_allowed( link( array( 'meta' => array( 'permanent' => 1, 'wallet_first' => 1 ) ) ) ), 'wallet first' );
 } );
 
 test( 'Extra settings are cleaned', function () {
@@ -1011,6 +1012,49 @@ test( 'a card is available to guests only while active, offered and not expired'
 	same( false, wallet_card_available( array_merge( $card, array( 'data' => array( 'expires' => '2026-11-22T12:00:00+00:00' ) ) ), $now ) );
 	same( true, wallet_card_available( array_merge( $card, array( 'data' => array( 'expires' => '2026-11-24T12:00:00+00:00' ) ) ), $now ) );
 	same( false, wallet_card_available( null, $now ) );
+} );
+
+test( 'wallet card first only for Apple QR scans that reach the target', function () {
+	$link = array( 'id' => 12, 'slug' => 'fest', 'meta' => array( 'wallet_first' => 1 ) );
+	$card = array( 'status' => 'active', 'guest' => 1, 'data' => array() );
+	$ok   = array( 'status' => 302, 'url' => 'https://t.test/', 'state' => 'default', 'target' => 'https://t.test/' );
+	same( true, wallet_first_decision( $link, '', SOURCE_QR, 'apple', $card, $ok ) );
+	same( true, wallet_first_decision( $link, 'home', SOURCE_QR, 'apple', $card, $ok ), 'location' );
+	same( true, wallet_first_decision( $link, '', SOURCE_QR, 'apple', $card, array_merge( $ok, array( 'state' => 'rule-1' ) ) ), 'rule' );
+	same( true, wallet_first_decision( $link, '', SOURCE_QR, 'apple', $card, array_merge( $ok, array( 'status' => 301 ) ) ), '301' );
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'other', $card, $ok ), 'android' );
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'inapp', $card, $ok ), 'in-app' );
+	foreach ( array( 'expired', 'not-started', 'used-up', 'no-rule', 'unreachable' ) as $state ) {
+		same( false, wallet_first_decision( $link, '', SOURCE_QR, 'apple', $card, array_merge( $ok, array( 'state' => $state ) ) ), $state );
+	}
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'apple', $card, array( 'status' => 410, 'state' => 'expired' ) ), 'dead end' );
+	same( false, wallet_first_decision( array_merge( $link, array( 'meta' => array( 'wallet_first' => 0 ) ) ), '', SOURCE_QR, 'apple', $card, $ok ), 'option off' );
+	same( false, wallet_first_decision( array_merge( $link, array( 'meta' => array() ) ), '', SOURCE_QR, 'apple', $card, $ok ), 'option missing' );
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'apple', array_merge( $card, array( 'status' => 'off' ) ), $ok ), 'card off' );
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'apple', array_merge( $card, array( 'guest' => 0 ) ), $ok ), 'not offered' );
+	same( false, wallet_first_decision( $link, '', SOURCE_QR, 'apple', null, $ok ), 'no card' );
+	same( false, wallet_first_decision( $link, '', SOURCE_LINK, 'apple', $card, $ok ), 'source link' );
+	same( false, wallet_first_decision( $link, '', SOURCE_NFC, 'apple', $card, $ok ), 'nfc' );
+	same( false, wallet_first_decision( array_merge( $link, array( 'parent_id' => 3 ) ), '', SOURCE_QR, 'apple', $card, $ok ), 'invitation' );
+} );
+
+test( 'wallet card first needs the continue link of Connect 0.2.2', function () {
+	same( false, wallet_continue_supported( null ) );
+	same( false, wallet_continue_supported( '0.2.1' ) );
+	same( true, wallet_continue_supported( '0.2.2' ) );
+	same( true, wallet_continue_supported( '0.3.0' ) );
+} );
+
+test( 'wallet platform', function () {
+	same( 'apple', wallet_platform( 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1' ) );
+	same( 'apple', wallet_platform( 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15' ) );
+	same( 'other', wallet_platform( 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130.0 Mobile Safari/537.36' ) );
+	same( 'other', wallet_platform( '' ) );
+} );
+
+test( 'wallet first is stored in the link meta', function () {
+	same( 1, clean_meta( array( 'wallet_first' => '1' ) )['wallet_first'] );
+	same( 0, clean_meta( array() )['wallet_first'] );
 } );
 
 test( 'offer switch maps to card status', function () {
