@@ -474,6 +474,11 @@ textarea.csl-wide { max-width: none; }
 .csl-code-for select { max-width: 100%; }
 
 /* NFC tag. */
+.csl-wallet-panel { display: grid; gap: 16px; }
+.csl-wallet-panel[hidden] { display: none; }
+.csl-wallet-address { display: grid; gap: 8px; justify-items: start; }
+.csl-wallet-qr svg { display: block; width: 160px; height: 160px; border: 1px solid #dcdcde; border-radius: 8px; }
+.csl-wallet-anew { margin: 0; }
 .csl-nfc-write { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 12px 0 4px; }
 .csl-nfc-status { flex-basis: 100%; margin: 0; font-weight: 600; }
 .csl-nfc-status:empty { display: none; }

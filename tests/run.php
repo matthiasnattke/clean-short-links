@@ -881,6 +881,18 @@ test( 'Version numbers agree', function () {
 	same( $h[1], $s[1], 'readme' );
 } );
 
+test( 'wallet field keys', function () {
+	same( 'link', wallet_field_key( '' ) );
+	same( 'place-home', wallet_field_key( 'home' ) );
+} );
+
+test( 'offer switch maps to card status', function () {
+	same( 'active', wallet_save_input( true, false ) );
+	same( 'active', wallet_save_input( true, true ) );
+	same( 'off', wallet_save_input( false, true ) );
+	same( null, wallet_save_input( false, false ) );
+} );
+
 $fail = $GLOBALS['fail'];
 echo "\n" . $GLOBALS['pass'] . ' passed, ' . count( $fail ) . " failed\n";
 exit( $fail ? 1 : 0 );

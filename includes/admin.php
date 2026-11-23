@@ -33,6 +33,9 @@ add_action(
 		if ( false !== strpos( (string) $hook, 'clean-short-links-edit' ) ) {
 			wp_enqueue_media();
 			wp_enqueue_script( 'clean-short-links-qr', $url . 'qr.js', array(), asset_ver( 'qr.js' ), true );
+			if ( wallet_enabled() && function_exists( 'CleanMobileConnect\\enqueue_editor_assets' ) ) {
+				\CleanMobileConnect\enqueue_editor_assets();
+			}
 			wp_enqueue_script( 'clean-short-links-designer', $url . 'qr-designer.js', array( 'clean-short-links-qr', 'wp-api-fetch' ), asset_ver( 'qr-designer.js' ), true );
 		}
 	}
@@ -231,6 +234,8 @@ function action_notice() {
 		'settings' => __( 'Settings saved.', 'clean-short-links' ),
 		'alias'    => __( 'Short address removed.', 'clean-short-links' ),
 		'checked'  => __( 'Link check done.', 'clean-short-links' ),
+		'wallet-anew'  => __( 'A new Wallet card was issued.', 'clean-short-links' ),
+		'wallet-none'  => __( 'There was no Wallet card to issue anew.', 'clean-short-links' ),
 	);
 	if ( isset( $messages[ $msg ] ) ) {
 		printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $msg ] ) );
@@ -1127,6 +1132,9 @@ function page_edit() {
 		$sections['csl-sec-places']  = __( 'Locations', 'clean-short-links' );
 		$sections['csl-sec-qr']      = __( 'QR code', 'clean-short-links' );
 		$sections['csl-sec-nfc']     = __( 'NFC tag', 'clean-short-links' );
+		if ( wallet_enabled() ) {
+			$sections['csl-sec-wallet'] = __( 'Wallet card', 'clean-short-links' );
+		}
 		$sections['csl-sec-stats'] = __( 'Visits', 'clean-short-links' );
 	}
 	?>
@@ -1400,6 +1408,7 @@ function page_edit() {
 						</div>
 					<?php card_close(); ?>
 					<?php nfc_card( $urls ); ?>
+					<?php wallet_card( $link, $urls ); ?>
 
 					<?php
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Chooses the period of the chart.
@@ -1552,6 +1561,7 @@ add_action(
 		if ( ! empty( $p['reset_clicks'] ) ) {
 			reset_clicks( $result );
 		}
+		wallet_save_posted( (int) $result, $p );
 		// Calendar: an uploaded file, or the calendar address when asked or when it changed.
 		$cal_msg = null;
 		$saved   = link_by_id( $result );

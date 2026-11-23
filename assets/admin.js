@@ -409,4 +409,58 @@
 			} );
 		}
 	}
+	/* ---- Wallet card ---- */
+	var walletPanels = $$( '.csl-wallet-panel' );
+	if ( walletPanels.length ) {
+		var walletQr = function ( box ) {
+			if ( box.firstChild || ! window.CleanShortLinksQR ) {
+				return;
+			}
+			var q = window.CleanShortLinksQR.encode( box.dataset.url, { ec: 'M' } ), n = q.size, d = '', x, y, ns = 'http://www.w3.org/2000/svg';
+			for ( y = 0; y < n; y++ ) {
+				for ( x = 0; x < n; x++ ) {
+					if ( q.modules[ y ][ x ] ) {
+						d += 'M' + ( x + 2 ) + ' ' + ( y + 2 ) + 'h1v1h-1z';
+					}
+				}
+			}
+			var svg = document.createElementNS( ns, 'svg' ), bg = document.createElementNS( ns, 'rect' ), path = document.createElementNS( ns, 'path' );
+			svg.setAttribute( 'viewBox', '0 0 ' + ( n + 4 ) + ' ' + ( n + 4 ) );
+			svg.setAttribute( 'role', 'img' );
+			svg.setAttribute( 'aria-label', box.dataset.url );
+			bg.setAttribute( 'width', String( n + 4 ) );
+			bg.setAttribute( 'height', String( n + 4 ) );
+			bg.setAttribute( 'fill', '#fff' );
+			path.setAttribute( 'd', d );
+			path.setAttribute( 'fill', '#0e2440' );
+			svg.appendChild( bg );
+			svg.appendChild( path );
+			box.appendChild( svg );
+		};
+		var walletShow = function ( key ) {
+			walletPanels.forEach( function ( panel ) {
+				var on = panel.dataset.walletPanel === key;
+				panel.hidden = ! on;
+				if ( on ) {
+					$$( '.csl-wallet-qr', panel ).forEach( walletQr );
+				}
+			} );
+		};
+		var walletFor = $( 'select[data-code-for="wallet"]' );
+		if ( walletFor ) {
+			walletFor.addEventListener( 'change', function () {
+				walletShow( walletFor.value );
+			} );
+		}
+		// The QR encoder is loaded after this script.
+		window.addEventListener( 'load', function () {
+			walletShow( walletFor ? walletFor.value : walletPanels[ 0 ].dataset.walletPanel );
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			var a = e.target.closest( '.csl-wallet-anew a[data-confirm]' );
+			if ( a && ! window.confirm( a.dataset.confirm ) ) {
+				e.preventDefault();
+			}
+		} );
+	}
 } )();

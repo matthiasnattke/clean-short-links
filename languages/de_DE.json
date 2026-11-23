@@ -474,5 +474,15 @@
 	"other websites": "andere Websites",
 	"Sites may also offer short links on the domains of other sites": "Websites dürfen Kurzlinks auch auf den Domains anderer Websites anbieten",
 	"Off: only short domains and subdomains without a site. On: the administrators of every site can also use the domains of all other sites, including the main site – only for networks whose sites all belong to you.": "Aus: nur Kurzdomains und Subdomains ohne eigene Website. An: Die Administratoren jeder Website können auch die Domains aller anderen Websites nutzen, auch die der Hauptseite – nur für Netzwerke, deren Websites alle dir gehören.",
-	"Short link: %s": "Kurzlink: %s"
+	"Short link: %s": "Kurzlink: %s",
+	"A new Wallet card was issued.": "Eine neue Wallet-Karte wurde ausgestellt.",
+	"There was no Wallet card to issue anew.": "Es gab keine Wallet-Karte, die neu ausgestellt werden könnte.",
+	"Wallet card": "Wallet-Karte",
+	"Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. Title, image and QR code follow the link on their own.": "Besucher legen den Kurzlink als Karte in Apple Wallet ab: Sie zeigt Titel, Bild und einen QR-Code, der den Link öffnet. Titel, Bild und QR-Code folgen dem Link von selbst.",
+	"Wallet cards are not available yet. Please check the settings of Clean Mobile Connect.": "Wallet-Karten sind noch nicht verfügbar. Bitte prüfe die Einstellungen von Clean Mobile Connect.",
+	"Offer a Wallet card": "Wallet-Karte anbieten",
+	"Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”.": "Ausgeschaltet bleiben Karten auf iPhones, wie sie sind, und die Wallet-Adresse zeigt „nicht verfügbar“.",
+	"Wallet address": "Wallet-Adresse",
+	"Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card.": "Bereits ausgegebene Karten werden beendet und auf jedem iPhone ausgegraut. Die Wallet-Adresse funktioniert weiter, mit einer neuen Karte.",
+	"Issue anew": "Neu ausstellen"
 }
