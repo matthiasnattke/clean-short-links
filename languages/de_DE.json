@@ -455,6 +455,8 @@
 	"Add location": "Standort hinzufügen",
 	"Addresses look like %s and keep working when you rename the location. QR code and NFC tag can be made for each location below.": "Die Adressen sehen aus wie %s und funktionieren weiter, wenn du den Standort umbenennst. QR-Code und NFC-Tag lassen sich unten für jeden Standort erstellen.",
 	"NFC tag": "NFC-Tag",
+	"Wallet": "Wallet",
+	"Wallet: added": "Wallet: hinzugefügt",
 	"Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag.": "Aufkleber, Karten oder Schlüsselanhänger mit NFC: Telefone öffnen den Kurzlink, sobald sie den Tag berühren – iPhone und Android, ohne App. Besuche werden als NFC-Tag gezählt.",
 	"%d characters – fits on every common tag (NTAG213 holds about 130).": "%d Zeichen – passt auf jeden üblichen Tag (NTAG213 fasst etwa 130).",
 	"%d characters – please use a tag with more memory (NTAG215 or NTAG216).": "%d Zeichen – bitte einen Tag mit mehr Speicher verwenden (NTAG215 oder NTAG216).",

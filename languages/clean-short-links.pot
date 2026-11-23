@@ -1191,6 +1191,14 @@ msgstr ""
 msgid "Link-in-bio page"
 msgstr ""
 
+#: includes/admin.php:1412
+msgid "Wallet"
+msgstr ""
+
+#: includes/admin.php:1412
+msgid "Wallet: added"
+msgstr ""
+
 #: includes/admin.php:1413
 msgid "Desktop"
 msgstr ""

@@ -1409,7 +1409,7 @@ function page_edit() {
 					$dev    = breakdown( $link['id'], 'device', $days );
 					$ref    = breakdown( $link['id'], 'referrer', $days );
 					$total  = array_sum( $series );
-					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ), __( 'Link-in-bio page', 'clean-short-links' ), __( 'NFC tag', 'clean-short-links' ) );
+					$snames = array( __( 'Link', 'clean-short-links' ), __( 'QR code', 'clean-short-links' ), __( 'Short form', 'clean-short-links' ), __( 'Link-in-bio page', 'clean-short-links' ), __( 'NFC tag', 'clean-short-links' ), __( 'Wallet', 'clean-short-links' ), __( 'Wallet: added', 'clean-short-links' ) );
 					$dnames = array( __( 'Desktop', 'clean-short-links' ), __( 'Mobile', 'clean-short-links' ), __( 'Tablet', 'clean-short-links' ) );
 					card_open( 'csl-sec-stats', 'chart', __( 'Visits', 'clean-short-links' ), __( 'Counted without IP addresses or cookies. Bots and link previews are left out.', 'clean-short-links' ) );
 					?>

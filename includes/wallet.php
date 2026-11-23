@@ -375,8 +375,42 @@ function wallet_can_download_filter( $allowed, $card ) {
 	return WALLET_OWNER === ( is_array( $card ) ? ( $card['owner'] ?? '' ) : '' ) ? current_user_can( capability() ) : $allowed;
 }
 
+/**
+ * What a registered card counts as in the statistics.
+ *
+ * @param array $card Card as passed by Connect.
+ * @return array{link_id:int,source:int,ref:string}|null Null: not a card of this plugin.
+ */
+function wallet_click_args( array $card ) {
+	if ( WALLET_OWNER !== ( $card['owner'] ?? '' ) ) {
+		return null;
+	}
+	$p = parse_wallet_ref( (string) ( $card['owner_ref'] ?? '' ) );
+	if ( ! $p ) {
+		return null;
+	}
+	return array(
+		'link_id' => $p['link_id'],
+		'source'  => SOURCE_WALLET_ADD,
+		'ref'     => '' !== $p['place'] ? '@p:' . $p['place'] : '',
+	);
+}
+
+/**
+ * A device registered a card: counted as a statistic only, click limits stay untouched.
+ *
+ * @param mixed $card Card.
+ */
+function wallet_registered_action( $card ) {
+	$args = is_array( $card ) ? wallet_click_args( $card ) : null;
+	if ( $args ) {
+		record_click( $args['link_id'], $args['source'], DEVICE_MOBILE, $args['ref'] );
+	}
+}
+
 add_filter( 'clean_mobile_connect_wallet_card_data', __NAMESPACE__ . '\\wallet_card_data_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owners', __NAMESPACE__ . '\\wallet_owners_filter' );
 add_filter( 'clean_mobile_connect_wallet_owner_edit_url', __NAMESPACE__ . '\\wallet_edit_url_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owner_label', __NAMESPACE__ . '\\wallet_label_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owner_can_download', __NAMESPACE__ . '\\wallet_can_download_filter', 10, 2 );
+add_action( 'clean_mobile_connect_wallet_registered', __NAMESPACE__ . '\\wallet_registered_action' );

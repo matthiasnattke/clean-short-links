@@ -739,6 +739,14 @@ test( 'wallet refs', function () {
 	same( array( '12' ), wallet_refs_of( array( 'id' => 12, 'meta' => array() ) ) );
 } );
 
+test( 'registered card counts as Wallet: added', function () {
+	same( array( 'link_id' => 12, 'source' => 6, 'ref' => '@p:home' ), wallet_click_args( array( 'owner' => 'csl', 'owner_ref' => '12:home' ) ) );
+	same( array( 'link_id' => 12, 'source' => 6, 'ref' => '' ), wallet_click_args( array( 'owner' => 'csl', 'owner_ref' => '12' ) ) );
+	same( null, wallet_click_args( array( 'owner' => '', 'owner_ref' => '12' ) ) );
+	same( null, wallet_click_args( array( 'owner' => 'csl', 'owner_ref' => 'x' ) ) );
+	same( null, wallet_click_args( array() ) );
+} );
+
 test( 'wallet target', function () {
 	$link = array( 'id' => 12, 'slug' => 'fest', 'parent_id' => 0 );
 	foreach ( array( 'main', 'alias', 'qr', 'channel' ) as $kind ) {
