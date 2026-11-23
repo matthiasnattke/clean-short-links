@@ -1960,8 +1960,8 @@ add_action(
 			$new['default_mode'] = '';
 		}
 		if ( is_multisite() && empty( network_settings()['site_prefix'] ) ) {
-			$new['prefix']    = $s['prefix'];
-			$new['qr_prefix'] = $s['qr_prefix'];
+			$new['prefix']        = $s['prefix'];
+			$new['qr_prefix']     = $s['qr_prefix'];
 			$new['wallet_prefix'] = $s['wallet_prefix'];
 		}
 		if ( '' !== $new['prefix'] && $new['prefix'] === $new['qr_prefix'] ) {

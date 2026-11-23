@@ -36,8 +36,8 @@ function request_path() {
  * @return array{0:int,1:string}|null
  */
 function current_request() {
-	list( $p, $q ) = prefixes();
-	return parse_path( request_path(), (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), $p, $q );
+	list( $p, $q, $w ) = prefixes();
+	return parse_path( request_path(), (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), $p, $q, $w );
 }
 
 /**
@@ -103,7 +103,7 @@ add_action(
  * @param string $host Host.
  */
 function handle_alias( $host ) {
-	$req    = parse_alias_path( request_path(), prefixes()[1] );
+	$req    = parse_alias_path( request_path(), prefixes()[1], prefixes()[2] );
 	$route  = $req ? find_route( $host, $req[1] ) : null;
 	$status = 0;
 	if ( $route && site_serves( $route['blog_id'] ) ) {
@@ -341,6 +341,9 @@ function handle( array $found, $source, $slug = '', $fast = false ) {
 	if ( isset( $_GET['nfc'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only marks a visit from an NFC tag.
 		$source = SOURCE_NFC;
 	}
+	if ( isset( $_GET['w'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only marks a visit from a wallet card.
+		$source = SOURCE_WALLET;
+	}
 	$result = resolve(
 		$link,
 		new \DateTimeImmutable( 'now', wp_timezone() ),
@@ -428,8 +431,7 @@ function final_url( $url, $link, $source, $channel = '' ) {
 	if ( $link && ! empty( $link['meta']['utm'] ) ) {
 		$url = add_utm( $url, utm_params( $link, $source, $channel ) );
 	}
-	$query = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
-	unset( $query['cslsrc'], $query['nfc'] );
+	$query = forwarded_query( wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Query parameters are only passed on to the target.
 	if ( ! empty( site_settings()['pass_query'] ) && $query ) {
 		$url = pass_query( $url, $query );
 	}
@@ -438,7 +440,7 @@ function final_url( $url, $link, $source, $channel = '' ) {
 	 *
 	 * @param string     $url    Target URL.
 	 * @param array|null $link   The link, null for an unknown short address.
-	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address, 3 link-in-bio page, 4 NFC tag.
+	 * @param int        $source 0 link, 1 QR code, 2 short form on the main address, 3 link-in-bio page, 4 NFC tag, 5 wallet card, 6 add-to-wallet address.
 	 */
 	return (string) apply_filters( 'clean_short_links_redirect', $url, $link, $source );
 }

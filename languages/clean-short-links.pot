@@ -1562,16 +1562,16 @@ msgstr ""
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
 msgstr ""
 
-#: includes/core.php:557
+#: includes/core.php:567
 msgid "Newsletter"
 msgstr ""
 
 #. translators: E-mail share option
-#: includes/core.php:558 includes/social.php:145
+#: includes/core.php:568 includes/social.php:145
 msgid "E-mail"
 msgstr ""
 
-#: includes/core.php:559
+#: includes/core.php:569
 msgid "Print"
 msgstr ""
 

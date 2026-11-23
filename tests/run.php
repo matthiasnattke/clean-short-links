@@ -344,6 +344,33 @@ test( 'UTM values come from the link, channel and source', function () {
 	same( array( 'utm_source' => 'qr', 'utm_medium' => 'qr', 'utm_campaign' => 'fest', 'utm_content' => 'bahnhof' ), utm_params( $l, SOURCE_QR, 'p:bahnhof' ) );
 } );
 
+test( 'request paths with three prefixes', function () {
+	same( array( SOURCE_WALLET_ADD, 'blaue-couch' ), parse_path( '/w/blaue-couch', '/', 's', 'q', 'w' ) );
+	same( array( SOURCE_WALLET_ADD, 'blaue-couch' ), parse_path( '/W/Blaue-Couch/', '/', 's', 'q', 'w' ) );
+	same( array( SOURCE_WALLET_ADD, 'abc' ), parse_path( '/blog/w/abc', '/blog/', 's', 'q', 'w' ) );
+	same( array( SOURCE_WALLET_ADD, 'abc-home' ), parse_path( '/w/abc-home', '/', 's', 'q', 'w' ) );
+	same( array( SOURCE_LINK, 'abc' ), parse_path( '/s/abc', '/', 's', 'q', 'w' ) );
+	same( array( SOURCE_QR, 'abc' ), parse_path( '/q/abc', '/', 's', 'q', 'w' ) );
+} );
+
+test( 'without Connect the wallet prefix is not recognised', function () {
+	same( null, parse_path( '/w/abc', '/', 's', 'q', '' ) );
+	same( array( SOURCE_LINK, 'abc' ), parse_alias_path( '/w/abc', 'q', '' ) );
+	same( array( SOURCE_WALLET_ADD, 'abc' ), parse_alias_path( '/w/abc', 'q', 'w' ) );
+} );
+
+test( 'w is never passed on', function () {
+	same( array( 'a' => '1' ), forwarded_query( array( 'w' => '', 'nfc' => '', 'cslsrc' => 'bio', 'pkpass' => '', 'a' => '1' ) ) );
+} );
+
+test( 'UTM for Wallet', function () {
+	$u = utm_params( array( 'slug' => 'x' ), SOURCE_WALLET );
+	same( 'wallet', $u['utm_source'] );
+	same( 'wallet', $u['utm_medium'] );
+	same( 'x', $u['utm_campaign'] );
+	same( 'home', utm_params( array( 'slug' => 'x' ), SOURCE_WALLET, 'p:home' )['utm_content'] );
+} );
+
 test( 'Subdomains without a site: clean host list and short addresses', function () {
 	$a = clean_alias_hosts( "https://About.example.org/ /about\n go.example.org\nabout.example.org /x\nbad host\nexample.org\nmedia.example.org = example.net/podcast\nx.example.org javascript:alert(1)", array( 'example.org' ) );
 	same( array( 'about.example.org', 'go.example.org', 'media.example.org', 'x.example.org' ), $a['hosts'] );

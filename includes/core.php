@@ -20,6 +20,8 @@ const SOURCE_QR   = 1;
 const SOURCE_ROOT = 2;
 const SOURCE_BIO  = 3;
 const SOURCE_NFC  = 4;
+const SOURCE_WALLET     = 5;
+const SOURCE_WALLET_ADD = 6;
 
 /** Device class of a visit. */
 const DEVICE_DESKTOP = 0;
@@ -135,14 +137,18 @@ function clean_alias_home( $v ) {
  *
  * @param string $path      Request path.
  * @param string $qr_prefix QR prefix.
+ * @param string $wallet_prefix Wallet prefix, '' without Clean Mobile Connect.
  * @return array{0:int,1:string}|null Source and short address.
  */
-function parse_alias_path( $path, $qr_prefix ) {
+function parse_alias_path( $path, $qr_prefix, $wallet_prefix = '' ) {
 	$parts = array_values( array_filter( explode( '/', strtolower( rawurldecode( (string) $path ) ) ), 'strlen' ) );
 	if ( 1 === count( $parts ) && is_valid_slug( $parts[0] ) ) {
 		return array( SOURCE_LINK, $parts[0] );
 	}
 	if ( 2 === count( $parts ) && is_valid_slug( $parts[1] ) && preg_match( '/^[a-z0-9-]{1,20}$/', $parts[0] ) ) {
+		if ( '' !== $wallet_prefix && $parts[0] === $wallet_prefix ) {
+			return array( SOURCE_WALLET_ADD, $parts[1] );
+		}
 		return array( $parts[0] === $qr_prefix ? SOURCE_QR : SOURCE_LINK, $parts[1] );
 	}
 	return null;
@@ -410,9 +416,10 @@ function title_slug( $title ) {
  * @param string $home_path Path of the site's home URL, e.g. "/" or "/blog/".
  * @param string $prefix    Link prefix.
  * @param string $qr_prefix QR prefix.
+ * @param string $wallet_prefix Wallet prefix, '' without Clean Mobile Connect.
  * @return array{0:int,1:string}|null Source and short address, or null.
  */
-function parse_path( $path, $home_path, $prefix, $qr_prefix ) {
+function parse_path( $path, $home_path, $prefix, $qr_prefix, $wallet_prefix = '' ) {
 	$path      = strtolower( rawurldecode( (string) $path ) );
 	$home_path = '/' . trim( strtolower( (string) $home_path ), '/' ) . '/';
 	$home_path = '//' === $home_path ? '/' : $home_path;
@@ -431,6 +438,9 @@ function parse_path( $path, $home_path, $prefix, $qr_prefix ) {
 		}
 		if ( $parts[0] === $qr_prefix ) {
 			return array( SOURCE_QR, $slug );
+		}
+		if ( '' !== $wallet_prefix && $parts[0] === $wallet_prefix ) {
+			return array( SOURCE_WALLET_ADD, $slug );
 		}
 	}
 	if ( 1 === count( $parts ) && is_valid_slug( $parts[0] ) ) {
@@ -827,6 +837,7 @@ function utm_params( array $link, $source, $channel = '' ) {
 			SOURCE_QR  => array( 'qr', 'qr' ),
 			SOURCE_BIO => array( 'linkinbio', 'social' ),
 			SOURCE_NFC => array( 'nfc', 'nfc' ),
+			SOURCE_WALLET => array( 'wallet', 'wallet' ),
 		);
 		$src    = $names[ $source ][0] ?? 'shortlink';
 		$medium = $names[ $source ][1] ?? 'shortlink';
@@ -836,6 +847,17 @@ function utm_params( array $link, $source, $channel = '' ) {
 		'utm_medium'   => $medium,
 		'utm_campaign' => $link['slug'] ?? '',
 	) + ( '' !== $place ? array( 'utm_content' => $place ) : array() );
+}
+
+/**
+ * Query parameters that are only markers of the short link itself and never passed on.
+ *
+ * @param array $query Query parameters.
+ * @return array
+ */
+function forwarded_query( array $query ) {
+	unset( $query['cslsrc'], $query['nfc'], $query['w'], $query['pkpass'] );
+	return $query;
 }
 
 /**
