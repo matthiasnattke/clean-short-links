@@ -364,6 +364,64 @@ function find_route( $host, $slug ) {
 }
 
 /**
+ * Whether a short address on another host is free for a link: no route there, or the route is this link's.
+ *
+ * @param string $host    Host.
+ * @param string $slug    Short address.
+ * @param int    $link_id Link that wants it (0 for a new one).
+ * @return bool
+ */
+function host_slug_free( $host, $slug, $link_id = 0 ) {
+	if ( (int) get_site_option( 'clean_short_links_routes_db' ) !== ROUTES_VERSION ) {
+		return true;
+	}
+	$route = find_route( $host, $slug );
+	return ! $route || ( (int) $route['blog_id'] === get_current_blog_id() && (int) $link_id > 0 && (int) $route['link_id'] === (int) $link_id );
+}
+
+/**
+ * Hosts among $hosts on which a short address is already taken.
+ *
+ * @param string   $slug    Short address.
+ * @param string[] $hosts   Hosts the link is offered on.
+ * @param int      $link_id Link.
+ * @return string[]
+ */
+function hosts_taken( $slug, array $hosts, $link_id = 0 ) {
+	$offer = offer_hosts();
+	$out   = array();
+	foreach ( $hosts as $host ) {
+		$host = strtolower( (string) $host );
+		if ( isset( $offer[ $host ] ) && ! host_slug_free( $host, $slug, $link_id ) ) {
+			$out[] = $host;
+		}
+	}
+	return $out;
+}
+
+/**
+ * Free alternatives for a short address that is taken on one of the hosts: free on this site and
+ * on every host the link is offered on.
+ *
+ * @param string   $slug    Wished short address.
+ * @param string[] $hosts   Hosts the link is offered on.
+ * @param int      $link_id Link.
+ * @return string[]
+ */
+function host_alternatives( $slug, array $hosts, $link_id = 0 ) {
+	$locale = determine_locale();
+	return alternatives_for(
+		$slug,
+		function ( $c ) use ( $hosts, $link_id ) {
+			return is_valid_slug( $c ) && slug_available( $c, $link_id ) && ! in_array( $c, reserved_words(), true ) && ! hosts_taken( $c, $hosts, $link_id );
+		},
+		function () use ( $locale ) {
+			return memorable_slug( $locale );
+		}
+	);
+}
+
+/**
  * Cache generation of the routes, raised on every change.
  *
  * @return int
@@ -1278,8 +1336,8 @@ function short_urls( array $link ) {
 	$hosts = array();
 	$aliases = alias_hosts();
 	foreach ( (array) ( $link['meta']['hosts'] ?? array() ) as $host ) {
-		// Subdomains without a site have no content of their own: no prefix needed.
-		$hosts[ $host ] = 'https://' . $host . '/' . ( in_array( $host, $aliases, true ) ? '' : $p . '/' ) . $link['slug'];
+		// Subdomains without a site and short domains have no content of their own: no prefix needed.
+		$hosts[ $host ] = 'https://' . $host . '/' . ( in_array( $host, $aliases, true ) || in_array( $host, short_hosts(), true ) ? '' : $p . '/' ) . $link['slug'];
 	}
 	$places = array();
 	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {

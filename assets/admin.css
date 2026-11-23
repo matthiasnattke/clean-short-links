@@ -529,3 +529,7 @@ textarea.csl-wide { max-width: none; }
 .csl-wallet-custom { margin: 12px 0 0; }
 .csl-wallet-custom > summary { cursor: pointer; font-weight: 600; }
 .csl-wallet-custom[open] > summary { margin-bottom: 8px; }
+.csl-hosts-msg { margin: 10px 0 0; }
+.csl-hosts-msg .csl-host-warn { margin: 0 0 6px; }
+.csl-hosts-alts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.csl-hosts-alts > span { color: var(--csl-muted, #646970); font-size: 13px; margin-right: 4px; }

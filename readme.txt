@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,10 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.3.1 =
+* Short domains: a link reads without prefix there (`short.de/sommer`), with or without its own short form; `q/` and `w/` for QR codes and Wallet. Everything else on the short domain leads to the main site, sign-in and admin stay reachable.
+* Further domains: the editor checks while you type whether the short address is taken on a chosen domain and suggests free alternatives.
 
 = 0.3.0 =
 * Wallet cards (with the Clean Mobile Connect plugin): a link and each of its locations can offer an Apple Wallet card. The card fills itself from the link – title, image and description from sharing, date and expiry from the time window, colours and logo from the QR design, the next calendar event – and anything entered under "Customize card" takes precedence.

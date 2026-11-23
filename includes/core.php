@@ -74,6 +74,75 @@ function network_settings() {
 }
 
 /**
+ * Whether the current site is a short domain of the network (marked under Short domains).
+ * Never the main site: it keeps its content.
+ *
+ * @return bool
+ */
+function is_short_site() {
+	return is_multisite() && ! is_main_site() && in_array( get_current_blog_id(), array_map( 'intval', (array) network_settings()['short_sites'] ), true );
+}
+
+/**
+ * Domains of the short domain sites (lower case). On them a short link reads without prefix.
+ *
+ * @return string[]
+ */
+function short_hosts() {
+	static $cache = null;
+	if ( null !== $cache || ! is_multisite() ) {
+		return null !== $cache ? $cache : array();
+	}
+	$cache = array();
+	foreach ( array_map( 'intval', (array) network_settings()['short_sites'] ) as $id ) {
+		$site = get_site( $id );
+		if ( $site && '/' === $site->path && ! is_main_site( $id ) ) {
+			$cache[] = strtolower( $site->domain );
+		}
+	}
+	return $cache;
+}
+
+/**
+ * Paths a short domain or a subdomain without a site leaves to WordPress: sign-in, admin,
+ * REST, files – so the site stays manageable.
+ *
+ * @param string $path Request path.
+ * @return bool
+ */
+function is_system_path( $path ) {
+	return 1 === preg_match( '#^/(wp-[a-z-]+(\.php)?(/|$)|xmlrpc\.php$|favicon\.ico$|robots\.txt$)#i', (string) $path );
+}
+
+/**
+ * Up to $max free alternatives for a short address: numbered first (blue-couch-2 …), then
+ * $extra ones (e.g. memorable). $free decides whether a candidate is free everywhere it is needed.
+ *
+ * @param string   $slug  Wished short address.
+ * @param callable $free  Receives a candidate, returns whether it is free.
+ * @param callable $extra Returns one more candidate (called a few times).
+ * @param int      $max   Most suggestions.
+ * @return string[]
+ */
+function alternatives_for( $slug, callable $free, callable $extra, $max = 3 ) {
+	$out  = array();
+	$base = substr( (string) $slug, 0, 58 );
+	for ( $n = 2; $n < 40 && count( $out ) < max( 1, $max - 1 ); $n++ ) {
+		$c = $base . '-' . $n;
+		if ( $free( $c ) ) {
+			$out[] = $c;
+		}
+	}
+	for ( $i = 0; $i < 10 && count( $out ) < $max; $i++ ) {
+		$c = (string) $extra();
+		if ( '' !== $c && ! in_array( $c, $out, true ) && $free( $c ) ) {
+			$out[] = $c;
+		}
+	}
+	return $out;
+}
+
+/**
  * Subdomains without a site of their own that serve short links – only when the sunrise
  * file of the plugin is active (see sunrise.php).
  *

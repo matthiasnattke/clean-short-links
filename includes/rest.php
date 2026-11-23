@@ -218,10 +218,17 @@ add_action(
 						'type'    => 'integer',
 						'default' => 0,
 					),
+					'hosts' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
 				'callback'            => function ( $r ) {
 					$c         = check_slug( $r['slug'], (int) $r['id'] );
 					$c['root'] = $c['ok'] && root_allowed() ? root_collision( $c['slug'] ) : '';
+					$hosts     = array_values( array_filter( array_map( 'trim', explode( ',', strtolower( (string) $r['hosts'] ) ) ) ) );
+					$c['taken_hosts']  = $c['ok'] && $hosts ? hosts_taken( $c['slug'], $hosts, (int) $r['id'] ) : array();
+					$c['alternatives'] = $c['taken_hosts'] ? host_alternatives( $c['slug'], $hosts, (int) $r['id'] ) : array();
 					return $c;
 				},
 			)

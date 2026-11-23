@@ -496,5 +496,7 @@
 	"Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own.": "Besucher legen den Kurzlink als Karte in Apple Wallet ab: Sie zeigt Titel, Bild und einen QR-Code, der den Link öffnet. Die Karte füllt sich aus diesem Link selbst: Titel, Bild, Termine, Farben und Logo folgen ihm von allein.",
 	"Customize card": "Karte anpassen",
 	"Title, image, date, colours and logo come from this link. Anything you enter here replaces them.": "Titel, Bild, Datum, Farben und Logo kommen aus diesem Link. Was du hier einträgst, ersetzt sie.",
-	"Next": "Nächster Termin"
+	"Next": "Nächster Termin",
+	"This short address is already taken on %s.": "Diese Kurzadresse ist auf %s schon vergeben.",
+	"Free on all chosen domains:": "Frei auf allen gewählten Domains:"
 }

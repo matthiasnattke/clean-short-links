@@ -85,7 +85,9 @@ WordPress decides which site answers a host before any plugin is loaded, so this
 
 While registration is switched off, *Sign-up page leads to the home page* sends visitors of the sign-up page – and of unknown subdomains, which WordPress sends there – to the home page instead of the notice "Registration has been disabled".
 
-For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there, also as short form without prefix (`short.de/sommer`); the home page of the short domain leads to the main site.
+For a separate short domain (e.g. a short .de domain), create an empty site in the network with that domain and mark it under *Network admin → Short links → Short domains*. Every site can then offer its links there. On a short domain a link always reads without prefix (`short.de/sommer`), whether or not the link has the short form ticked; `q/…` and `w/…` work there for QR codes and Wallet, and the normal prefix keeps working as a fallback. Everything else on the short domain – the home page, the site's own posts and pages – leads to the main site; sign-in and the admin of that site stay reachable.
+
+If the short address is already taken on a chosen domain (by a link of another site), the editor says so while you type and suggests up to three alternatives that are free on this site and on every chosen domain; a click takes one over.
 
 ## Rules from a calendar
 

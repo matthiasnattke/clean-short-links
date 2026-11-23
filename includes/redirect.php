@@ -85,22 +85,30 @@ add_action(
 );
 
 /*
- * A subdomain without a site of its own (sunrise.php): only short links offered there,
- * everything else leads to the main site. Runs before everything else of the plugin.
+ * A subdomain without a site of its own (sunrise.php) or a short domain: only short links
+ * offered there, everything else leads to the main site. Runs before everything else of the plugin.
  */
 add_action(
 	'setup_theme',
 	function () {
-		if ( ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) || current_host() !== CLEAN_SHORT_LINKS_ALIAS || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+		if ( wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 			return;
 		}
-		handle_alias( CLEAN_SHORT_LINKS_ALIAS );
+		if ( defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && current_host() === CLEAN_SHORT_LINKS_ALIAS ) {
+			handle_alias( CLEAN_SHORT_LINKS_ALIAS );
+		}
+		// A short domain answers like a subdomain without a site: short links without prefix
+		// (q/ and w/ for codes and Wallet, any other prefix as fallback), everything else to the main site.
+		// Sign-in, admin and REST stay with WordPress.
+		if ( is_short_site() && ! is_admin() && ! wp_doing_ajax() && ! isset( $_GET['rest_route'] ) && ! is_system_path( request_path() ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only routing.
+			handle_alias( current_host() );
+		}
 	},
 	0
 );
 
 /**
- * Answers a request on a subdomain without a site. Never returns.
+ * Answers a request on a subdomain without a site or a short domain. Never returns.
  *
  * @param string $host Host.
  */
@@ -158,27 +166,6 @@ add_action(
 		handle_route( current_host(), $req[1], $req[0], true );
 	},
 	1
-);
-
-/*
- * The home page of a short domain leads to the main site of the network.
- */
-add_action(
-	'setup_theme',
-	function () {
-		if ( ! is_multisite() || is_admin() || wp_doing_ajax() || wp_doing_cron() || is_main_site() ) {
-			return;
-		}
-		if ( ! in_array( get_current_blog_id(), array_map( 'intval', (array) network_settings()['short_sites'] ), true ) ) {
-			return;
-		}
-		if ( '/' === request_path() && ! is_user_logged_in() ) {
-			nocache_headers();
-			wp_redirect( network_home_url( '/' ), 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- The main site of the own network.
-			exit;
-		}
-	},
-	2
 );
 
 /**

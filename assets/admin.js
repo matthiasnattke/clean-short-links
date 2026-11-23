@@ -169,7 +169,10 @@
 		}
 		msg.className = 'csl-slug-msg';
 		msg.textContent = T.checking;
-		api( { path: '/clean-short-links/v1/check?id=' + id + '&slug=' + encodeURIComponent( v ) } ).then( function ( r ) {
+		var hosts = $$( 'input[name="meta[hosts][]"]:checked' ).map( function ( c ) {
+			return c.value;
+		} ).join( ',' );
+		api( { path: '/clean-short-links/v1/check?id=' + id + '&slug=' + encodeURIComponent( v ) + '&hosts=' + encodeURIComponent( hosts ) } ).then( function ( r ) {
 			if ( r.slug !== v ) {
 				slug.value = r.slug;
 			}
@@ -179,6 +182,7 @@
 				rootMsg.textContent = r.root ? T.collision.replace( '%s', r.root ) : '';
 				rootMsg.className = 'csl-root-msg' + ( r.root ? ' is-warn' : '' );
 			}
+			showHosts( r );
 			var old = $( '.csl-old-slug' );
 			if ( old ) {
 				old.hidden = ! id || r.slug === original;
@@ -188,6 +192,47 @@
 	slug.addEventListener( 'input', function () {
 		setKind( 'custom' );
 		check();
+	} );
+	// Further domains: the address as it reads there, and free alternatives when it is taken.
+	var hostsMsg = $( '.csl-hosts-msg' );
+	function showHosts( r ) {
+		$$( '.csl-host-slug' ).forEach( function ( el ) {
+			el.textContent = r.slug || '…';
+		} );
+		$$( '.csl-host' ).forEach( function ( l ) {
+			var c = l.querySelector( 'input' );
+			l.classList.toggle( 'is-taken', !! ( c && c.checked && r.taken_hosts && -1 !== r.taken_hosts.indexOf( c.value ) ) );
+		} );
+		if ( ! hostsMsg ) {
+			return;
+		}
+		var taken = r.taken_hosts || [];
+		hostsMsg.hidden = ! taken.length;
+		if ( ! taken.length ) {
+			return;
+		}
+		hostsMsg.querySelector( '.csl-host-warn' ).textContent = T.hostTaken.replace( '%s', taken.join( ', ' ) );
+		var alts = hostsMsg.querySelector( '.csl-hosts-alts' );
+		alts.querySelectorAll( 'button' ).forEach( function ( b ) {
+			alts.removeChild( b );
+		} );
+		alts.hidden = ! ( r.alternatives && r.alternatives.length );
+		( r.alternatives || [] ).forEach( function ( a ) {
+			var b = document.createElement( 'button' );
+			b.type = 'button';
+			b.className = 'button csl-btn csl-alt';
+			b.textContent = a;
+			b.addEventListener( 'click', function () {
+				slug.value = a;
+				setKind( 'custom' );
+				chosen = true;
+				check();
+			} );
+			alts.appendChild( b );
+		} );
+	}
+	$$( 'input[name="meta[hosts][]"]' ).forEach( function ( c ) {
+		c.addEventListener( 'change', check );
 	} );
 	function suggest() {
 		var k = kind();

@@ -1056,6 +1056,29 @@ test( 'sync plan', function () {
 	same( array( 'touch' => array( '12', '12:home' ), 'end' => array( '12:shop' ) ), wallet_sync_plan( $old, $n ) );
 } );
 
+test( 'alternatives for a short address taken on another domain', function () {
+	$taken = array( 'sommer', 'sommer-2', 'blaue-couch' );
+	$free  = function ( $c ) use ( $taken ) {
+		return ! in_array( $c, $taken, true );
+	};
+	$words = array( 'blaue-couch', 'rote-tasse', 'gruene-wiese' );
+	$next  = function () use ( &$words ) {
+		return (string) array_shift( $words );
+	};
+	same( array( 'sommer-3', 'sommer-4', 'rote-tasse' ), alternatives_for( 'sommer', $free, $next ), 'numbered first, then a free memorable one' );
+	same( array(), alternatives_for( 'x', fn( $c ) => false, fn() => 'y' ), 'nothing free: no suggestion' );
+	same( 1, count( alternatives_for( 'x', $free, fn() => '', 1 ) ), 'at most $max' );
+} );
+
+test( 'short domains leave sign-in, admin and files to WordPress', function () {
+	foreach ( array( '/wp-login.php', '/wp-admin/', '/wp-admin/post.php', '/wp-json/x', '/wp-content/uploads/a.jpg', '/wp-includes/x.js', '/wp-cron.php', '/xmlrpc.php', '/favicon.ico', '/robots.txt' ) as $p ) {
+		same( true, is_system_path( $p ), $p );
+	}
+	foreach ( array( '/', '/sommer', '/q/sommer', '/w/sommer', '/wpx', '/wp', '/s/wp-login' ) as $p ) {
+		same( false, is_system_path( $p ), $p );
+	}
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

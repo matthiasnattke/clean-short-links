@@ -76,6 +76,8 @@ function admin_js_data() {
 			'reserved'    => __( 'Available with prefix – as a reserved word it cannot be used as a short form.', 'clean-short-links' ),
 			/* translators: %s: title of the content at that address */
 			'collision'   => __( 'The short form is taken by %s – only the link with prefix works.', 'clean-short-links' ),
+			/* translators: %s: domains, e.g. "cou.li" */
+			'hostTaken'   => __( 'This short address is already taken on %s.', 'clean-short-links' ),
 			'searching'   => __( 'Searching …', 'clean-short-links' ),
 			'noResults'   => __( 'Nothing found. You can also paste a URL.', 'clean-short-links' ),
 			'urlTarget'   => __( 'URL', 'clean-short-links' ),
@@ -640,7 +642,7 @@ function hosts_card( array $link ) {
 			<label class="csl-host<?php echo $taken ? ' is-taken' : ''; ?>">
 				<input type="checkbox" name="meta[hosts][]" value="<?php echo esc_attr( $host ); ?>" <?php checked( $on ); ?>>
 				<span class="csl-host-text">
-					<strong><?php echo esc_html( $host . '/' . ( empty( $h['alias'] ) ? $p . '/' : '' ) . ( '' !== $link['slug'] ? $link['slug'] : '…' ) ); ?></strong>
+					<strong><span class="csl-host-pre"><?php echo esc_html( $host . '/' . ( empty( $h['alias'] ) && empty( $h['short'] ) ? $p . '/' : '' ) ); ?></span><span class="csl-host-slug"><?php echo esc_html( '' !== $link['slug'] ? $link['slug'] : '…' ); ?></span></strong>
 						<small>
 							<?php echo esc_html( empty( $h['alias'] ) ? $h['name'] : __( 'Subdomain without a site', 'clean-short-links' ) ); ?>
 						<?php if ( $h['short'] ) : ?>
@@ -653,6 +655,10 @@ function hosts_card( array $link ) {
 				</span>
 			</label>
 		<?php endforeach; ?>
+	</div>
+	<div class="csl-hosts-msg" aria-live="polite" hidden>
+		<p class="csl-host-warn"></p>
+		<p class="csl-hosts-alts"><span><?php esc_html_e( 'Free on all chosen domains:', 'clean-short-links' ); ?></span></p>
 	</div>
 	<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 		<p class="csl-help"><?php esc_html_e( 'A short domain is a site of the network with its own short domain. Mark it in the network settings of the short links.', 'clean-short-links' ); ?></p>
