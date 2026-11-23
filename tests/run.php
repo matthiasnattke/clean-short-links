@@ -993,6 +993,26 @@ test( 'anew only for cards of the link', function () {
 	same( false, wallet_anew_valid( $l, '' ) );
 } );
 
+test( 'a wallet guest page view counts only for people, not the download', function () {
+	same( true, wallet_view_counts( false, false ) );
+	same( false, wallet_view_counts( true, false ) );
+	same( false, wallet_view_counts( false, true ) );
+	same( false, wallet_view_counts( true, true ) );
+} );
+
+test( 'a card is available to guests only while active, offered and not expired', function () {
+	$now  = strtotime( '2026-11-23 12:00:00 UTC' );
+	$card = array( 'status' => 'active', 'guest' => 1, 'data' => array() );
+	same( true, wallet_card_available( $card, $now ) );
+	same( true, wallet_card_available( array_merge( $card, array( 'guest' => true ) ), $now ) );
+	same( false, wallet_card_available( array_merge( $card, array( 'guest' => 0 ) ), $now ) );
+	same( false, wallet_card_available( array_merge( $card, array( 'status' => 'off' ) ), $now ) );
+	same( false, wallet_card_available( array_merge( $card, array( 'status' => 'voided' ) ), $now ) );
+	same( false, wallet_card_available( array_merge( $card, array( 'data' => array( 'expires' => '2026-11-22T12:00:00+00:00' ) ) ), $now ) );
+	same( true, wallet_card_available( array_merge( $card, array( 'data' => array( 'expires' => '2026-11-24T12:00:00+00:00' ) ) ), $now ) );
+	same( false, wallet_card_available( null, $now ) );
+} );
+
 test( 'offer switch maps to card status', function () {
 	same( 'active', wallet_save_input( true, false ) );
 	same( 'active', wallet_save_input( true, true ) );

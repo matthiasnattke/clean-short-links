@@ -211,8 +211,42 @@ function wallet_urls( $origin, $path, $slug, $link_prefix ) {
 }
 
 /**
+ * Does a view of the wallet address count as a Wallet visit? Only the guest page for a
+ * person: not the .pkpass download, not robots or link previews.
+ *
+ * @param bool $pkpass The request asks for the .pkpass download.
+ * @param bool $bot    The visitor is not counted (robot, preview, prefetch, editor).
+ * @return bool
+ */
+function wallet_view_counts( bool $pkpass, bool $bot ): bool {
+	return ! $pkpass && ! $bot;
+}
+
+/**
+ * Is a card offered to guests right now: active, guest switch on, not expired?
+ *
+ * @param array|null $card Card from Clean Mobile Connect.
+ * @param int        $now  Unix time.
+ * @return bool
+ */
+function wallet_card_available( ?array $card, int $now ): bool {
+	if ( ! $card || 'active' !== ( $card['status'] ?? '' ) || empty( $card['guest'] ) ) {
+		return false;
+	}
+	$expires = (string) ( $card['data']['expires'] ?? '' );
+	if ( '' !== $expires ) {
+		$ts = strtotime( $expires );
+		if ( false !== $ts && $ts <= $now ) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
  * Answers a wallet address (/w/<slug>): the guest page of the card, its .pkpass download
- * (?pkpass), or the link's own dead end. Never counts a visit and never claims a click.
+ * (?pkpass), or the link's own dead end. A view of the guest page by a person counts as
+ * Wallet (statistics only); it never claims a click.
  *
  * @param array  $found Result of find_slug() (or of a route): array( link|null, kind ).
  * @param string $slug  The requested short address.
@@ -280,9 +314,15 @@ function handle_wallet( array $found, string $slug, bool $fast, ?string $request
 		$slug,
 		$alias ? '' : ( null !== $request_prefix ? $request_prefix : prefixes()[0] )
 	);
-	if ( isset( $_GET['pkpass'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only asks for the card download.
+	$pkpass = isset( $_GET['pkpass'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only asks for the card download.
+	if ( $pkpass ) {
 		\clean_mobile_connect_wallet_send_pass( $card );
 	} else {
+		// A scan of the guest code counts as Wallet – statistics only, no click limit is used up.
+		$visit = visit_data( SOURCE_WALLET );
+		if ( wallet_card_available( $card, time() ) && wallet_view_counts( $pkpass, null === $visit ) ) {
+			record_click( $link['id'], SOURCE_WALLET, $visit['device'], '' !== $target['place'] ? '@p:' . $target['place'] : '' );
+		}
 		\clean_mobile_connect_wallet_guest_page(
 			$card,
 			array(

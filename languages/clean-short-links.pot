@@ -1990,7 +1990,7 @@ msgid "A new Wallet card could not be issued: the short link or location does no
 msgstr ""
 
 #. translators: %s: title of the short link
-#: includes/wallet.php:539
+#: includes/wallet.php:579
 #, php-format
 msgid "Short link: %s"
 msgstr ""
