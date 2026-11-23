@@ -825,6 +825,48 @@ test( 'live data fills only what the card leaves empty', function () {
 	same( 'x', $d['title'] );
 } );
 
+test( 'sync plan', function () {
+	$old = array(
+		'id'    => 12,
+		'title' => 'Fest',
+		'slug'  => 'fest',
+		'target' => 'post:1',
+		'rules' => array(),
+		'meta'  => array(
+			'hosts'  => array(),
+			'places' => array(
+				array( 'key' => 'home', 'name' => 'Home' ),
+				array( 'key' => 'shop', 'name' => 'Shop' ),
+			),
+		),
+	);
+	$all = array( '12', '12:home', '12:shop' );
+	$plan = function ( $old, $changes ) {
+		return wallet_sync_plan( $old, array_replace_recursive( $old, $changes ) );
+	};
+	same( array( 'touch' => $all, 'end' => array() ), $plan( $old, array( 'title' => 'Fest 2' ) ) );
+	same( array( 'touch' => $all, 'end' => array() ), $plan( $old, array( 'slug' => 'fest2' ) ) );
+	$n = $old;
+	$n['meta']['places'][0]['name'] = 'Zuhause';
+	same( array( 'touch' => array( '12:home' ), 'end' => array() ), wallet_sync_plan( $old, $n ) );
+	$n = $old;
+	array_pop( $n['meta']['places'] );
+	same( array( 'touch' => array(), 'end' => array( '12:shop' ) ), wallet_sync_plan( $old, $n ) );
+	$n = $old;
+	$n['target'] = 'post:2';
+	$n['rules']  = array( array( 'x' => 1 ) );
+	same( array( 'touch' => array(), 'end' => array() ), wallet_sync_plan( $old, $n ) );
+	$n = $old;
+	$n['meta']['hosts'] = array( 'go.example.com' );
+	same( array( 'touch' => $all, 'end' => array() ), wallet_sync_plan( $old, $n ) );
+	same( array( 'touch' => array(), 'end' => array() ), wallet_sync_plan( null, $old ) );
+	// Title change plus removed location: remaining refs touched, removed one ended only.
+	$n = $old;
+	$n['title'] = 'Neu';
+	array_pop( $n['meta']['places'] );
+	same( array( 'touch' => array( '12', '12:home' ), 'end' => array( '12:shop' ) ), wallet_sync_plan( $old, $n ) );
+} );
+
 echo "\nPlugin\n";
 
 test( 'Version numbers agree', function () {

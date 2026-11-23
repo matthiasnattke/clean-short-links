@@ -291,7 +291,11 @@ add_action(
 			$new['wallet_prefix'] = network_settings()['wallet_prefix'];
 		}
 		$new['wallet_prefix'] = resolve_prefixes( $new['prefix'], $new['qr_prefix'], $new['wallet_prefix'] )[2];
+		$was = network_settings();
 		update_site_option( 'clean_short_links_network', $new );
+		if ( $new['prefix'] !== $was['prefix'] || $new['qr_prefix'] !== $was['qr_prefix'] || $new['wallet_prefix'] !== $was['wallet_prefix'] || (array) $new['alias_hosts'] !== (array) $was['alias_hosts'] ) {
+			schedule_wallet_touch( true );
+		}
 		wp_safe_redirect( network_admin_url( 'admin.php?page=clean-short-links-network&updated=1' ) );
 		exit;
 	}

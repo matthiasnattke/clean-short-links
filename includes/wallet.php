@@ -408,6 +408,196 @@ function wallet_registered_action( $card ) {
 	}
 }
 
+/**
+ * What a change of a link means for its cards.
+ *
+ * @param array|null $old Link before the change, null for a new link.
+ * @param array      $new Link after the change.
+ * @return array{touch:string[],end:string[]}
+ */
+function wallet_sync_plan( ?array $old, array $new ): array {
+	$plan = array(
+		'touch' => array(),
+		'end'   => array(),
+	);
+	if ( null === $old ) {
+		return $plan;
+	}
+	$id        = (int) ( $new['id'] ?? $old['id'] ?? 0 );
+	$names_old = array();
+	foreach ( (array) ( $old['meta']['places'] ?? array() ) as $pl ) {
+		if ( ! empty( $pl['key'] ) ) {
+			$names_old[ $pl['key'] ] = (string) ( $pl['name'] ?? '' );
+		}
+	}
+	$names_new = array();
+	foreach ( (array) ( $new['meta']['places'] ?? array() ) as $pl ) {
+		if ( ! empty( $pl['key'] ) ) {
+			$names_new[ $pl['key'] ] = (string) ( $pl['name'] ?? '' );
+		}
+	}
+	$wide = ( $old['title'] ?? '' ) !== ( $new['title'] ?? '' )
+		|| ( $old['slug'] ?? '' ) !== ( $new['slug'] ?? '' )
+		|| (array) ( $old['meta']['hosts'] ?? array() ) !== (array) ( $new['meta']['hosts'] ?? array() );
+	if ( $wide ) {
+		$plan['touch'][] = wallet_ref( $id );
+	}
+	foreach ( $names_new as $key => $name ) {
+		if ( $wide || ( isset( $names_old[ $key ] ) && $names_old[ $key ] !== $name ) ) {
+			$plan['touch'][] = wallet_ref( $id, $key );
+		}
+	}
+	foreach ( array_keys( $names_old ) as $key ) {
+		if ( ! isset( $names_new[ $key ] ) ) {
+			$plan['end'][] = wallet_ref( $id, $key );
+		}
+	}
+	return $plan;
+}
+
+/**
+ * Tells Clean Mobile Connect that the live values of cards changed.
+ *
+ * @param string[] $refs Card references.
+ */
+function wallet_touch_refs( array $refs ): void {
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_touch' ) ) {
+		return;
+	}
+	foreach ( $refs as $ref ) {
+		\clean_mobile_connect_wallet_touch( WALLET_OWNER, $ref );
+	}
+}
+
+/**
+ * Ends cards.
+ *
+ * @param string[] $refs Card references.
+ */
+function wallet_end_refs( array $refs ): void {
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_end_card' ) ) {
+		return;
+	}
+	foreach ( $refs as $ref ) {
+		\clean_mobile_connect_wallet_end_card( WALLET_OWNER, $ref );
+	}
+}
+
+/**
+ * A link was saved: update or end its cards.
+ *
+ * @param int        $id  Link ID.
+ * @param array|null $old Link before the change.
+ */
+function wallet_link_saved( $id, $old ) {
+	if ( ! wallet_enabled() || ! is_array( $old ) ) {
+		return;
+	}
+	$link = link_by_id( (int) $id );
+	if ( ! $link || ! empty( $link['parent_id'] ) ) {
+		return;
+	}
+	$plan = wallet_sync_plan( $old, $link );
+	wallet_touch_refs( $plan['touch'] );
+	wallet_end_refs( $plan['end'] );
+}
+
+/**
+ * A link is deleted: end all its cards (invitations have none).
+ *
+ * @param array $link Link.
+ */
+function wallet_link_deleted( $link ) {
+	if ( ! wallet_enabled() || ! is_array( $link ) || ! empty( $link['parent_id'] ) ) {
+		return;
+	}
+	wallet_end_refs( wallet_refs_of( $link ) );
+}
+
+/**
+ * The featured image of a post changed: touch the cards of its links.
+ *
+ * @param mixed $unused  Meta ID(s).
+ * @param mixed $post_id Post ID.
+ * @param mixed $key     Meta key.
+ */
+function wallet_thumbnail_changed( $unused, $post_id = 0, $key = '' ) {
+	if ( '_thumbnail_id' !== $key || ! wallet_enabled() ) {
+		return;
+	}
+	foreach ( links_for_post( (int) $post_id ) as $id ) {
+		$link = link_by_id( $id );
+		if ( $link ) {
+			wallet_touch_refs( wallet_refs_of( $link ) );
+		}
+	}
+}
+
+/**
+ * Touches every card of this site, 200 links at a time.
+ *
+ * @param int $page Page of the link list.
+ */
+function wallet_touch_all( $page = 1 ) {
+	if ( ! wallet_enabled() ) {
+		return;
+	}
+	$page = max( 1, (int) $page );
+	$list = list_links(
+		array(
+			'per_page' => 200,
+			'paged'    => $page,
+		)
+	);
+	foreach ( $list['items'] as $link ) {
+		wallet_touch_refs( wallet_refs_of( $link ) );
+	}
+	if ( $page * 200 < (int) $list['total'] ) {
+		wp_schedule_single_event( time() + 5, 'clean_short_links_wallet_touch_all', array( $page + 1 ) );
+	}
+}
+
+/**
+ * Schedules a touch of all cards (addresses on the cards changed).
+ *
+ * @param bool $network On every site that serves short links instead of only this one.
+ */
+function schedule_wallet_touch( bool $network ): void {
+	if ( ! wallet_enabled() ) {
+		return;
+	}
+	$one = static function () {
+		if ( ! wp_next_scheduled( 'clean_short_links_wallet_touch_all' ) ) {
+			wp_schedule_single_event( time() + 5, 'clean_short_links_wallet_touch_all' );
+		}
+	};
+	if ( ! $network || ! is_multisite() ) {
+		$one();
+		return;
+	}
+	foreach ( get_sites(
+		array(
+			'number'   => 1000,
+			'deleted'  => 0,
+			'archived' => 0,
+			'fields'   => 'ids',
+		)
+	) as $blog_id ) {
+		switch_to_blog( (int) $blog_id );
+		if ( (int) get_option( 'clean_short_links_db' ) === DB_VERSION ) {
+			$one();
+		}
+		restore_current_blog();
+	}
+}
+
+add_action( 'clean_short_links_link_saved', __NAMESPACE__ . '\\wallet_link_saved', 10, 2 );
+add_action( 'clean_short_links_link_deleted', __NAMESPACE__ . '\\wallet_link_deleted' );
+add_action( 'added_post_meta', __NAMESPACE__ . '\\wallet_thumbnail_changed', 10, 4 );
+add_action( 'updated_post_meta', __NAMESPACE__ . '\\wallet_thumbnail_changed', 10, 4 );
+add_action( 'deleted_post_meta', __NAMESPACE__ . '\\wallet_thumbnail_changed', 10, 4 );
+add_action( 'clean_short_links_wallet_touch_all', __NAMESPACE__ . '\\wallet_touch_all' );
+
 add_filter( 'clean_mobile_connect_wallet_card_data', __NAMESPACE__ . '\\wallet_card_data_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owners', __NAMESPACE__ . '\\wallet_owners_filter' );
 add_filter( 'clean_mobile_connect_wallet_owner_edit_url', __NAMESPACE__ . '\\wallet_edit_url_filter', 10, 2 );

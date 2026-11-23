@@ -141,11 +141,11 @@ msgstr "Die Adresse ist zu lang für einen QR-Code."
 msgid "Remove this rule?"
 msgstr "Diese Regel entfernen?"
 
-#: includes/admin.php:95 includes/admin.php:468 includes/admin.php:851 includes/admin.php:2125 includes/rest.php:90 includes/rest.php:327 includes/rest.php:449 includes/rest.php:473
+#: includes/admin.php:95 includes/admin.php:468 includes/admin.php:851 includes/admin.php:2128 includes/rest.php:90 includes/rest.php:327 includes/rest.php:449 includes/rest.php:473
 msgid "Short link"
 msgstr "Kurzlink"
 
-#: includes/admin.php:96 includes/admin.php:469 includes/admin.php:1789 includes/store.php:1217
+#: includes/admin.php:96 includes/admin.php:469 includes/admin.php:1789 includes/store.php:1244
 msgid "Home page"
 msgstr "Startseite"
 
@@ -1239,7 +1239,7 @@ msgstr "Als CSV exportieren"
 msgid "Save short link"
 msgstr "Kurzlink speichern"
 
-#: includes/admin.php:1456 includes/admin.php:2127 includes/rest.php:333
+#: includes/admin.php:1456 includes/admin.php:2130 includes/rest.php:333
 msgid "Create short link"
 msgstr "Kurzlink anlegen"
 
@@ -1247,7 +1247,7 @@ msgstr "Kurzlink anlegen"
 msgid "Delete short link"
 msgstr "Kurzlink löschen"
 
-#: includes/admin.php:1499 includes/admin.php:1605 includes/admin.php:1629 includes/admin.php:1650 includes/admin.php:1669 includes/admin.php:1683 includes/admin.php:1932 includes/admin.php:1997 includes/admin.php:2057 includes/network.php:243
+#: includes/admin.php:1499 includes/admin.php:1605 includes/admin.php:1629 includes/admin.php:1650 includes/admin.php:1669 includes/admin.php:1683 includes/admin.php:1932 includes/admin.php:2000 includes/admin.php:2060 includes/network.php:243
 msgid "You are not allowed to do this."
 msgstr "Dazu fehlt dir die Berechtigung."
 
@@ -1893,21 +1893,21 @@ msgstr "Bitte ein Ziel wählen – einen Beitrag, eine Seite oder eine URL."
 msgid "A short link cannot lead to itself."
 msgstr "Ein Kurzlink kann nicht zu sich selbst führen."
 
-#: includes/store.php:1223
+#: includes/store.php:1250
 msgid "(deleted short link)"
 msgstr "(gelöschter Kurzlink)"
 
 #. translators: 1: title of the short link, 2: its short address
-#: includes/store.php:1227
+#: includes/store.php:1254
 #, php-format
 msgid "Short link %1$s (/%2$s)"
 msgstr "Kurzlink %1$s (/%2$s)"
 
-#: includes/store.php:1233
+#: includes/store.php:1260
 msgid "(deleted content)"
 msgstr "(gelöschter Inhalt)"
 
-#: includes/store.php:1236
+#: includes/store.php:1263
 msgid "(no title)"
 msgstr "(ohne Titel)"
 

@@ -801,6 +801,13 @@ function save_link( array $data ) {
 	if ( $saved && ( $saved['meta']['hosts'] || ( $old && $old['meta']['hosts'] ) ) ) {
 		sync_routes( $saved );
 	}
+	/**
+	 * A link was saved.
+	 *
+	 * @param int        $id  Link ID.
+	 * @param array|null $old The link before the change, null for a new one.
+	 */
+	do_action( 'clean_short_links_link_saved', $id, $old );
 	return $id;
 }
 
@@ -895,6 +902,15 @@ function delete_link( $id, $retire = true ) {
 	foreach ( child_ids( $id ) as $child ) {
 		delete_link( $child, $retire );
 	}
+	$gone = link_by_id( $id );
+	if ( $gone ) {
+		/**
+		 * A link is about to be deleted.
+		 *
+		 * @param array $link The link.
+		 */
+		do_action( 'clean_short_links_link_deleted', $gone );
+	}
 	$wpdb->delete( $t['links'], array( 'id' => (int) $id ) );
 	$wpdb->delete( $t['clicks'], array( 'link_id' => (int) $id ) );
 	if ( $retire ) {
@@ -950,6 +966,17 @@ function list_links( array $args = array() ) {
 		'items' => array_map( __NAMESPACE__ . '\\row_to_link', $rows ),
 		'total' => $total,
 	);
+}
+
+/**
+ * IDs of the links that lead to a post.
+ *
+ * @param int $post_id Post ID.
+ * @return int[]
+ */
+function links_for_post( int $post_id ): array {
+	global $wpdb;
+	return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( 'SELECT id FROM %i WHERE post_id = %d AND parent_id = 0', tables()['links'], $post_id ) ) );
 }
 
 /**

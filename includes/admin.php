@@ -1976,6 +1976,9 @@ add_action(
 			$new['wallet_prefix'] = $eff[2] === $new['wallet_prefix'] ? $new['wallet_prefix'] : '';
 		}
 		update_option( 'clean_short_links_site', $new );
+		if ( $new['prefix'] !== $s['prefix'] || $new['qr_prefix'] !== $s['qr_prefix'] || $new['wallet_prefix'] !== $s['wallet_prefix'] ) {
+			schedule_wallet_touch( false );
+		}
 		if ( maintenance_available() && ! empty( $p['cm_rules']['present'] ) ) {
 			update_option( 'clean_maintenance_short_links', clean_maintenance_rules( $p['cm_rules'] ) );
 		}
