@@ -1283,7 +1283,7 @@ function short_urls( array $link ) {
 	}
 	$places = array();
 	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
-		$s                    = substr( $link['slug'], 0, 64 - strlen( $pl['key'] ) - 1 ) . '-' . $pl['key'];
+		$s                    = place_slug( $link['slug'], $pl['key'] );
 		$places[ $pl['key'] ] = array(
 			'name'     => $pl['name'],
 			'slug'     => $s,

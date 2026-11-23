@@ -198,11 +198,12 @@ function handle_route( $host, $slug, $source, $fast ) {
 	if ( ! $route || ! site_serves( $route['blog_id'] ) ) {
 		return false;
 	}
+	$request_prefix = prefixes()[0]; // The host answers with the prefixes of the site it belongs to.
 	switch_to_blog( $route['blog_id'] );
 	$link  = link_by_id( $route['link_id'] );
 	$found = $link && ( SOURCE_ROOT !== $source || ! empty( $link['root'] ) );
 	if ( $found ) {
-		handle_found( array( $link, $route['kind'] ), $source, $slug, $fast ); // Returns only for a dead link.
+		handle_found( array( $link, $route['kind'] ), $source, $slug, $fast, $request_prefix ); // Returns only for a dead link.
 	}
 	restore_current_blog();
 	return $found;

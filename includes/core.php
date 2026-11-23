@@ -253,6 +253,17 @@ function prefixes() {
 }
 
 /**
+ * The short address of a location of a link (cut so that it fits 64 characters).
+ *
+ * @param string $slug Slug of the link.
+ * @param string $key  Key of the location.
+ * @return string
+ */
+function place_slug( $slug, $key ) {
+	return substr( $slug, 0, 64 - strlen( $key ) - 1 ) . '-' . $key;
+}
+
+/**
  * Is the short form on the main address (example.com/slug) allowed on this site?
  *
  * @return bool

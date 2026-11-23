@@ -752,7 +752,14 @@ test( 'wallet target', function () {
 	foreach ( array( 'main', 'alias', 'qr', 'channel' ) as $kind ) {
 		same( array( 'link' => $link, 'place' => '', 'status' => 200 ), wallet_target( array( $link, $kind ), 'fest' ), $kind );
 	}
+	$link['meta'] = array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ) ) );
 	same( 'home', wallet_target( array( $link, 'place' ), 'fest-home' )['place'] );
+	// A long slug is cut for the location: still the location's card, not the link's.
+	$long = array( 'id' => 14, 'slug' => str_repeat( 'a', 64 ), 'meta' => array( 'places' => array( array( 'key' => 'rathaus', 'name' => 'R' ) ) ) );
+	$cut  = place_slug( $long['slug'], 'rathaus' );
+	same( 64, strlen( $cut ) );
+	same( 'rathaus', wallet_target( array( $long, 'place' ), $cut )['place'] );
+	same( '', wallet_target( array( $long, 'main' ), $long['slug'] )['place'] );
 	same( 410, wallet_target( array( null, 'retired' ), 'fest' )['status'] );
 	same( 404, wallet_target( null, 'fest' )['status'] );
 	same( null, wallet_target( null, 'fest' )['link'] );
@@ -777,6 +784,24 @@ test( 'wallet shows no card on the way to a fallback', function () {
 	same( false, wallet_fallback_only( array( 'status' => 410, 'state' => 'expired' ) ) );
 } );
 
+test( 'wallet follows the link check like the short link', function () {
+	$ok = array( 'status' => 302, 'url' => 'https://t.test/a', 'state' => 'default', 'target' => 'post:12' );
+	// Target works, or the site does not skip broken ones: unchanged.
+	same( $ok, wallet_apply_broken( $ok, true, false, 'https://f.test', false, 'https://f.test' ) );
+	same( $ok, wallet_apply_broken( $ok, false, true, 'https://f.test', false, 'https://f.test' ) );
+	// Broken target, working fallback: the fallback way (no card), as /s/.
+	$r = wallet_apply_broken( $ok, true, true, 'https://f.test', false, 'https://f.test' );
+	same( 'unreachable', $r['state'] );
+	same( 'https://f.test', $r['url'] );
+	same( true, wallet_fallback_only( $r ) );
+	// Broken target without fallback, with a broken fallback, or fallback is the target: dead end.
+	same( null, wallet_apply_broken( $ok, true, true, '', false, null ) );
+	same( null, wallet_apply_broken( $ok, true, true, 'https://f.test', true, 'https://f.test' ) );
+	$exp = array( 'status' => 302, 'url' => 'https://f.test', 'state' => 'expired', 'target' => 'https://f.test' );
+	same( null, wallet_apply_broken( $exp, true, true, 'https://f.test', true, 'https://f.test' ) );
+	same( $exp, wallet_apply_broken( $exp, true, false, 'https://f.test', false, 'https://f.test' ) );
+} );
+
 test( 'wallet addresses on the requested host', function () {
 	same(
 		array(
@@ -797,11 +822,16 @@ test( 'wallet addresses on the requested host', function () {
 } );
 
 test( 'wallet origin only from a plain host', function () {
-	same( 'https://example.com', wallet_origin( 'Example.com', true, 'https://fallback.test' ) );
-	same( 'http://localhost:8888', wallet_origin( 'localhost:8888', false, 'https://fallback.test' ) );
+	$own = array( 'example.com', 'localhost:8888', 'go.example.org' );
+	same( 'https://example.com', wallet_origin( 'Example.com', true, 'https://fallback.test', $own ) );
+	same( 'http://localhost:8888', wallet_origin( 'localhost:8888', false, 'https://fallback.test', $own ) );
+	same( 'https://go.example.org', wallet_origin( 'go.example.org', true, 'https://fallback.test', $own ) );
 	foreach ( array( '', 'evil.com/x', 'a b', 'evil.com:80:1', 'evil.com@x' ) as $bad ) {
-		same( 'https://fallback.test', wallet_origin( $bad, true, 'https://fallback.test' ), $bad );
+		same( 'https://fallback.test', wallet_origin( $bad, true, 'https://fallback.test', $own ), $bad );
 	}
+	// A plain host that is not the site's own is not used.
+	same( 'https://fallback.test', wallet_origin( 'evil.example', true, 'https://fallback.test', $own ) );
+	same( 'https://fallback.test', wallet_origin( 'example.com', true, 'https://fallback.test' ) );
 } );
 
 test( 'live data fills only what the card leaves empty', function () {

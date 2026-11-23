@@ -1592,16 +1592,16 @@ msgstr ""
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
 msgstr ""
 
-#: includes/core.php:567
+#: includes/core.php:578
 msgid "Newsletter"
 msgstr ""
 
 #. translators: E-mail share option
-#: includes/core.php:568 includes/social.php:145
+#: includes/core.php:579 includes/social.php:145
 msgid "E-mail"
 msgstr ""
 
-#: includes/core.php:569
+#: includes/core.php:580
 msgid "Print"
 msgstr ""
 
@@ -1986,7 +1986,7 @@ msgid "A new Wallet card could not be issued: the short link or location does no
 msgstr ""
 
 #. translators: %s: title of the short link
-#: includes/wallet.php:481
+#: includes/wallet.php:539
 #, php-format
 msgid "Short link: %s"
 msgstr ""

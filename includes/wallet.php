@@ -83,10 +83,19 @@ function wallet_target( $found, $slug ) {
 	if ( ! empty( $link['parent_id'] ) ) {
 		return null;
 	}
-	$place  = '';
-	$prefix = (string) ( $link['slug'] ?? '' ) . '-';
-	if ( 'place' === $kind && 0 === strpos( $slug, $prefix ) ) {
-		$place = substr( $slug, strlen( $prefix ) );
+	$place = '';
+	if ( 'place' === $kind ) {
+		// The location whose address this is – also when a long slug was truncated.
+		foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
+			if ( place_slug( (string) ( $link['slug'] ?? '' ), (string) $pl['key'] ) === $slug ) {
+				$place = (string) $pl['key'];
+				break;
+			}
+		}
+		$prefix = (string) ( $link['slug'] ?? '' ) . '-';
+		if ( '' === $place && 0 === strpos( $slug, $prefix ) ) {
+			$place = substr( $slug, strlen( $prefix ) );
+		}
 	}
 	return array(
 		'link'   => $link,
@@ -126,16 +135,54 @@ function wallet_fallback_only( array $result ) {
 }
 
 /**
+ * What /s/ would do with a link that resolves to a target, once the link check is applied:
+ * a broken target goes to the link's own fallback if that works, otherwise nowhere.
+ *
+ * @param array       $result          Result of resolve() with status 302.
+ * @param bool        $skip_broken     Does the site skip broken targets?
+ * @param bool        $target_broken   Is result['target'] broken?
+ * @param string      $fallback        The link's fallback.
+ * @param bool        $fallback_broken Is the fallback broken?
+ * @param string|null $fallback_url    The fallback as an address (null: none).
+ * @return array|null The result to follow (state 'unreachable' when replaced); null: dead end (503/410).
+ */
+function wallet_apply_broken( array $result, $skip_broken, $target_broken, $fallback, $fallback_broken, $fallback_url ) {
+	if ( ! $skip_broken || ! $target_broken ) {
+		return $result;
+	}
+	if ( '' === $fallback || $fallback === ( $result['target'] ?? '' ) || $fallback_broken || ! $fallback_url ) {
+		return null;
+	}
+	return array(
+		'status' => 302,
+		'url'    => $fallback_url,
+		'state'  => 'unreachable',
+		'target' => $fallback,
+	);
+}
+
+/**
  * Scheme and host of the request, for addresses on the host the visitor asked for.
  *
  * @param string $host     The Host header.
  * @param bool   $ssl      Is the request over HTTPS?
- * @param string $fallback Origin used when the header is not a plain host (with optional port).
+ * @param string $fallback Origin used when the header is not a plain host (with optional port) or not an allowed one.
+ * @param string[] $allowed Hosts that are the site's own: home host, alias hosts, hosts of the link.
  * @return string E.g. "https://example.com".
  */
-function wallet_origin( $host, $ssl, $fallback ) {
+function wallet_origin( $host, $ssl, $fallback, array $allowed = array() ) {
 	$host = strtolower( (string) $host );
 	if ( ! preg_match( '/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?\z/', $host ) ) {
+		return $fallback;
+	}
+	$bare = preg_replace( '/:[0-9]{1,5}\z/', '', $host );
+	$ok   = array_map(
+		static function ( $h ) {
+			return preg_replace( '/:[0-9]{1,5}\z/', '', strtolower( (string) $h ) );
+		},
+		$allowed
+	);
+	if ( ! in_array( $bare, $ok, true ) ) {
 		return $fallback;
 	}
 	return ( $ssl ? 'https' : 'http' ) . '://' . $host;
@@ -170,9 +217,10 @@ function wallet_urls( $origin, $path, $slug, $link_prefix ) {
  * @param array  $found Result of find_slug() (or of a route): array( link|null, kind ).
  * @param string $slug  The requested short address.
  * @param bool   $fast  On the fast way: a dead end without a default target is left to the normal way.
+ * @param string|null $request_prefix Link prefix of the site that parsed the request (a route answers on another site's host); null: this site's.
  * @return int 0 when answered (never returns then), otherwise the dead-end status, -1 on the fast way.
  */
-function handle_wallet( array $found, string $slug, bool $fast ): int {
+function handle_wallet( array $found, string $slug, bool $fast, ?string $request_prefix = null ): int {
 	$target = wallet_target( $found, $slug );
 	if ( null === $target || 200 !== $target['status'] ) {
 		// Invitations have no cards; retired addresses are gone.
@@ -193,20 +241,25 @@ function handle_wallet( array $found, string $slug, bool $fast ): int {
 		__NAMESPACE__ . '\\target_url',
 		__NAMESPACE__ . '\\target_published'
 	);
-	if ( wallet_fallback_only( $result ) ) {
-		// The link's own way to its fallback page, as from /s/ (not counted).
-		go_to( final_url( $result['url'], $link, SOURCE_WALLET_ADD ), $link, SOURCE_WALLET_ADD, false, '', 302, true );
-	}
 	$status = (int) $result['status'];
 	$broken = false;
-	if ( 302 === $status && ! empty( site_settings()['skip_broken'] ) && target_broken( $link, $result['target'] ) ) {
-		// As in handle(): the link's own fallback still leads somewhere, otherwise 503 or 410.
-		$fallback = $link['fallback'] ?? '';
-		$url      = '' !== $fallback && $fallback !== $result['target'] && ! target_broken( $link, $fallback ) ? target_url( $fallback ) : null;
-		if ( ! $url ) {
+	if ( 302 === $status ) {
+		// As in handle(): a broken target goes to the link's own fallback, otherwise 503 or 410.
+		$skip     = ! empty( site_settings()['skip_broken'] );
+		$fallback = (string) ( $link['fallback'] ?? '' );
+		$tbroken  = $skip && target_broken( $link, $result['target'] );
+		$fbroken  = $tbroken && '' !== $fallback && $fallback !== $result['target'] && target_broken( $link, $fallback );
+		$applied  = wallet_apply_broken( $result, $skip, $tbroken, $fallback, $fbroken, $tbroken && '' !== $fallback ? target_url( $fallback ) : null );
+		if ( null === $applied ) {
 			$broken = true;
 			$status = 'gone' === unreachable( $link, time(), site_settings()['gone_days'] ) ? 410 : 503;
+		} else {
+			$result = $applied;
 		}
+	}
+	if ( ! $broken && 302 === $status && wallet_fallback_only( $result ) ) {
+		// The link's own way to its fallback page, as from /s/ (not counted, no card).
+		go_to( final_url( $result['url'], $link, SOURCE_WALLET_ADD ), $link, SOURCE_WALLET_ADD, false, '', 302, true );
 	}
 
 	$decision = wallet_decision( true, $status, $broken );
@@ -217,11 +270,15 @@ function handle_wallet( array $found, string $slug, bool $fast ): int {
 	$alias = defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && current_host() === CLEAN_SHORT_LINKS_ALIAS;
 	$home  = wp_parse_url( home_url( '/' ) );
 	$host  = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
-	$urls  = wallet_urls(
-		wallet_origin( $host, is_ssl(), ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? '' ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' ) ),
+	$own   = array_merge( array( (string) ( $home['host'] ?? '' ) ), alias_hosts(), array_keys( short_urls( $link )['hosts'] ) );
+	if ( defined( 'CLEAN_SHORT_LINKS_ALIAS' ) ) {
+		$own[] = CLEAN_SHORT_LINKS_ALIAS;
+	}
+	$urls = wallet_urls(
+		wallet_origin( $host, is_ssl(), ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? '' ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' ), $own ),
 		request_path(),
 		$slug,
-		$alias ? '' : prefixes()[0]
+		$alias ? '' : ( null !== $request_prefix ? $request_prefix : prefixes()[0] )
 	);
 	if ( isset( $_GET['pkpass'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only asks for the card download.
 		\clean_mobile_connect_wallet_send_pass( $card );
@@ -245,11 +302,12 @@ function handle_wallet( array $found, string $slug, bool $fast ): int {
  * @param int    $source Source.
  * @param string $slug   The requested short address.
  * @param bool   $fast   On the fast way.
+ * @param string|null $request_prefix Link prefix of the site that parsed the request (routes), null: this site's.
  * @return int See handle().
  */
-function handle_found( array $found, $source, $slug, $fast = false ) {
+function handle_found( array $found, $source, $slug, $fast = false, ?string $request_prefix = null ) {
 	if ( SOURCE_WALLET_ADD === $source ) {
-		return handle_wallet( $found, $slug, $fast );
+		return handle_wallet( $found, $slug, $fast, $request_prefix );
 	}
 	return handle( $found, $source, $slug, $fast );
 }
@@ -486,10 +544,11 @@ function wallet_label_filter( $label, $card ) {
  *
  * @param mixed $allowed Allowed.
  * @param mixed $card    Card.
+ * @param int   $user_id The user who wants to download.
  * @return mixed
  */
-function wallet_can_download_filter( $allowed, $card ) {
-	return WALLET_OWNER === ( is_array( $card ) ? ( $card['owner'] ?? '' ) : '' ) ? current_user_can( capability() ) : $allowed;
+function wallet_can_download_filter( $allowed, $card, $user_id = 0 ) {
+	return WALLET_OWNER === ( is_array( $card ) ? ( $card['owner'] ?? '' ) : '' ) ? user_can( (int) $user_id, capability() ) : $allowed;
 }
 
 /**
@@ -719,5 +778,5 @@ add_filter( 'clean_mobile_connect_wallet_can_attach', __NAMESPACE__ . '\\wallet_
 add_filter( 'clean_mobile_connect_wallet_owners', __NAMESPACE__ . '\\wallet_owners_filter' );
 add_filter( 'clean_mobile_connect_wallet_owner_edit_url', __NAMESPACE__ . '\\wallet_edit_url_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owner_label', __NAMESPACE__ . '\\wallet_label_filter', 10, 2 );
-add_filter( 'clean_mobile_connect_wallet_owner_can_download', __NAMESPACE__ . '\\wallet_can_download_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_wallet_owner_can_download', __NAMESPACE__ . '\\wallet_can_download_filter', 10, 3 );
 add_action( 'clean_mobile_connect_wallet_registered', __NAMESPACE__ . '\\wallet_registered_action' );
