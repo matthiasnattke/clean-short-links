@@ -825,6 +825,40 @@ test( 'live data fills only what the card leaves empty', function () {
 	same( 'x', $d['title'] );
 } );
 
+test( 'choice rows leave out refs that have a card', function () {
+	$link = array( 'id' => 12, 'title' => 'Fest', 'slug' => 'fest', 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ), array( 'key' => 'shop', 'name' => 'Shop' ) ) ) );
+	$urls = array(
+		'link'   => 'https://example.test/s/fest',
+		'places' => array(
+			'home' => array( 'name' => 'Rathaus', 'link' => 'https://example.test/s/fest-home' ),
+			'shop' => array( 'name' => 'Shop', 'link' => 'https://example.test/s/fest-shop' ),
+		),
+	);
+	$rows = wallet_choice_rows( $link, $urls, function ( $ref ) {
+		return '12:home' === $ref;
+	} );
+	same( 2, count( $rows ) );
+	same( array( 'csl', '12', 12, '', 'Fest', 'https://example.test/s/fest' ), array( $rows[0]['owner'], $rows[0]['ref'], $rows[0]['id'], $rows[0]['place'], $rows[0]['label'], $rows[0]['url'] ) );
+	same( array( '12:shop', 'shop', 'Fest – Shop', 'https://example.test/s/fest-shop' ), array( $rows[1]['ref'], $rows[1]['place'], $rows[1]['label'], $rows[1]['url'] ) );
+	$rows = wallet_choice_rows( array( 'id' => 3, 'title' => '', 'slug' => 'x', 'meta' => array() ), array( 'link' => 'https://e.test/s/x', 'places' => array() ), function () {
+		return true;
+	} );
+	same( array(), $rows );
+} );
+
+test( 'attach check accepts only an existing own place of a normal link', function () {
+	$link = array( 'id' => 12, 'parent_id' => 0, 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ) ) ) );
+	same( true, wallet_attach_allowed( 'csl', '12', $link, true ) );
+	same( true, wallet_attach_allowed( 'csl', '12:home', $link, true ) );
+	same( false, wallet_attach_allowed( 'csl', '12:gone', $link, true ) );
+	same( false, wallet_attach_allowed( 'csl', '12:home', $link, false ) );
+	same( false, wallet_attach_allowed( 'other', '12', $link, true ) );
+	same( false, wallet_attach_allowed( 'csl', 'x', $link, true ) );
+	same( false, wallet_attach_allowed( 'csl', '13', $link, true ) );
+	same( false, wallet_attach_allowed( 'csl', '12', null, true ) );
+	same( false, wallet_attach_allowed( 'csl', '12', array( 'id' => 12, 'parent_id' => 5, 'meta' => array() ), true ) );
+} );
+
 test( 'sync plan', function () {
 	$old = array(
 		'id'    => 12,

@@ -323,6 +323,123 @@ function wallet_owners_filter( $owners ) {
 }
 
 /**
+ * Picker rows for Connect: the link and each of its locations that has no card yet.
+ *
+ * @param array    $link     Link.
+ * @param array    $urls     short_urls() of the link.
+ * @param callable $has_card Receives a reference, returns whether it has a card.
+ * @return array[] Rows owner, ref, id, place, label, url.
+ */
+function wallet_choice_rows( array $link, array $urls, callable $has_card ): array {
+	$id    = (int) ( $link['id'] ?? 0 );
+	$title = '' !== (string) ( $link['title'] ?? '' ) ? (string) $link['title'] : (string) ( $link['slug'] ?? '' );
+	$rows  = array();
+	if ( ! $has_card( wallet_ref( $id ) ) ) {
+		$rows[] = array(
+			'owner' => WALLET_OWNER,
+			'ref'   => wallet_ref( $id ),
+			'id'    => $id,
+			'place' => '',
+			'label' => $title,
+			'url'   => (string) ( $urls['link'] ?? '' ),
+		);
+	}
+	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
+		$key = (string) ( $pl['key'] ?? '' );
+		if ( '' === $key || $has_card( wallet_ref( $id, $key ) ) ) {
+			continue;
+		}
+		$name   = (string) ( $urls['places'][ $key ]['name'] ?? ( $pl['name'] ?? $key ) );
+		$rows[] = array(
+			'owner' => WALLET_OWNER,
+			'ref'   => wallet_ref( $id, $key ),
+			'id'    => $id,
+			'place' => $key,
+			'label' => $title . ' – ' . $name,
+			'url'   => (string) ( $urls['places'][ $key ]['link'] ?? ( $urls['link'] ?? '' ) ),
+		);
+	}
+	return $rows;
+}
+
+/**
+ * Short links offered in Connect's "Attach to a short link" box (filter clean_mobile_connect_link_choices).
+ *
+ * @param mixed $choices Rows so far.
+ * @param mixed $search  Search text.
+ * @return mixed
+ */
+function wallet_link_choices_filter( $choices, $search = '' ) {
+	$choices = is_array( $choices ) ? $choices : array();
+	if ( ! current_user_can( capability() ) || ! function_exists( 'clean_mobile_connect_wallet_card' ) ) {
+		return $choices;
+	}
+	$has_card = static function ( $ref ) {
+		return null !== \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
+	};
+	$list = list_links(
+		array(
+			'search'   => (string) $search,
+			'per_page' => 50,
+		)
+	);
+	foreach ( $list['items'] as $link ) {
+		foreach ( wallet_choice_rows( $link, short_urls( $link ), $has_card ) as $row ) {
+			if ( count( $choices ) >= 100 ) {
+				return $choices;
+			}
+			$choices[] = $row;
+		}
+	}
+	return $choices;
+}
+
+/**
+ * Whether a card may be attached to an owner object of this plugin (pure part).
+ *
+ * @param string     $owner Owner key.
+ * @param string     $ref   Reference.
+ * @param array|null $link  The link behind the reference, null if it does not exist on this site.
+ * @param bool       $can   Whether the user may edit short links.
+ * @return bool
+ */
+function wallet_attach_allowed( string $owner, string $ref, ?array $link, bool $can ): bool {
+	if ( WALLET_OWNER !== $owner || ! $can || ! $link ) {
+		return false;
+	}
+	$p = parse_wallet_ref( $ref );
+	if ( ! $p || (int) $link['id'] !== $p['link_id'] || ! empty( $link['parent_id'] ) ) {
+		return false;
+	}
+	if ( '' === $p['place'] ) {
+		return true;
+	}
+	foreach ( (array) ( $link['meta']['places'] ?? array() ) as $pl ) {
+		if ( ( $pl['key'] ?? '' ) === $p['place'] ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Connect asks whether a stand-alone card may be attached (filter clean_mobile_connect_wallet_can_attach).
+ *
+ * @param mixed $allowed Answer so far.
+ * @param mixed $owner   Owner key.
+ * @param mixed $ref     Reference.
+ * @return mixed
+ */
+function wallet_can_attach_filter( $allowed, $owner = '', $ref = '' ) {
+	if ( WALLET_OWNER !== $owner ) {
+		return $allowed;
+	}
+	$p    = parse_wallet_ref( (string) $ref );
+	$link = $p ? link_by_id( $p['link_id'] ) : null;
+	return wallet_attach_allowed( (string) $owner, (string) $ref, $link, current_user_can( capability() ) ) ? true : $allowed;
+}
+
+/**
  * The link of a card of this plugin, null for other owners.
  *
  * @param mixed $card Card.
@@ -597,6 +714,8 @@ add_action( 'deleted_post_meta', __NAMESPACE__ . '\\wallet_thumbnail_changed', 1
 add_action( 'clean_short_links_wallet_touch_all', __NAMESPACE__ . '\\wallet_touch_all' );
 
 add_filter( 'clean_mobile_connect_wallet_card_data', __NAMESPACE__ . '\\wallet_card_data_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_link_choices', __NAMESPACE__ . '\\wallet_link_choices_filter', 10, 2 );
+add_filter( 'clean_mobile_connect_wallet_can_attach', __NAMESPACE__ . '\\wallet_can_attach_filter', 10, 3 );
 add_filter( 'clean_mobile_connect_wallet_owners', __NAMESPACE__ . '\\wallet_owners_filter' );
 add_filter( 'clean_mobile_connect_wallet_owner_edit_url', __NAMESPACE__ . '\\wallet_edit_url_filter', 10, 2 );
 add_filter( 'clean_mobile_connect_wallet_owner_label', __NAMESPACE__ . '\\wallet_label_filter', 10, 2 );

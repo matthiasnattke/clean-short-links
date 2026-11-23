@@ -661,11 +661,30 @@ function hosts_card( array $link ) {
 /**
  * Choice of the address a code is made for: the short link or one of its locations.
  *
- * @param array  $urls  Short URLs of the link.
- * @param string $for   qr or nfc.
+ * For nfc, the Wallet addresses of the entries whose card is offered are listed too.
+ *
+ * @param array  $urls    Short URLs of the link.
+ * @param string $for     qr or nfc.
+ * @param int    $link_id Link ID (finds the cards for the Wallet entries), 0 for none.
  */
-function code_for_select( array $urls, $for ) {
-	if ( ! $urls['places'] ) {
+function code_for_select( array $urls, $for, $link_id = 0 ) {
+	$wallet = array();
+	if ( 'nfc' === $for && $link_id > 0 && wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_card' ) ) {
+		$offered = static function ( $ref ) {
+			$card = \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
+			return $card && 'active' === ( $card['status'] ?? '' );
+		};
+		if ( '' !== (string) $urls['wallet'] && $offered( wallet_ref( $link_id ) ) ) {
+			$wallet[] = array( __( 'Wallet card: the short link itself', 'clean-short-links' ), (string) $urls['wallet'], $urls );
+		}
+		foreach ( $urls['places'] as $key => $pl ) {
+			if ( '' !== (string) $pl['wallet'] && $offered( wallet_ref( $link_id, (string) $key ) ) ) {
+				/* translators: %s: name of a location */
+				$wallet[] = array( sprintf( __( 'Wallet card: %s', 'clean-short-links' ), $pl['name'] ), (string) $pl['wallet'], $pl );
+			}
+		}
+	}
+	if ( ! $urls['places'] && ! $wallet ) {
 		return;
 	}
 	$opt = function ( $label, array $u, $slug, $selected = false ) use ( $for ) {
@@ -688,6 +707,9 @@ function code_for_select( array $urls, $for ) {
 			foreach ( $urls['places'] as $pl ) {
 				/* translators: %s: name of a location */
 				$opt( sprintf( __( 'Location: %s', 'clean-short-links' ), $pl['name'] ), $pl, $pl['slug'] );
+			}
+			foreach ( $wallet as $w ) {
+				$opt( $w[0], array_merge( $w[2], array( 'nfc' => $w[1] ) ), $w[2]['slug'] ?? '' );
 			}
 			?>
 		</select>
@@ -744,11 +766,12 @@ function places_card( array $link, array $urls ) {
 /**
  * Card: NFC tag – write the short link onto a sticker or card.
  *
- * @param array $urls Short URLs.
+ * @param array $urls    Short URLs.
+ * @param int   $link_id Link ID.
  */
-function nfc_card( array $urls ) {
-	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag.', 'clean-short-links' ) );
-	code_for_select( $urls, 'nfc' );
+function nfc_card( array $urls, $link_id = 0 ) {
+	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag. Tags with a Wallet address open the guest page, where visitors add the card to Apple Wallet.', 'clean-short-links' ) );
+	code_for_select( $urls, 'nfc', (int) $link_id );
 	?>
 	<?php /* translators: %d: number of characters */ ?>
 	<div class="csl-nfc" data-chars="<?php esc_attr_e( '%d characters – fits on every common tag (NTAG213 holds about 130).', 'clean-short-links' ); ?>" data-long="<?php esc_attr_e( '%d characters – please use a tag with more memory (NTAG215 or NTAG216).', 'clean-short-links' ); ?>">
@@ -1407,7 +1430,7 @@ function page_edit() {
 							</div>
 						</div>
 					<?php card_close(); ?>
-					<?php nfc_card( $urls ); ?>
+					<?php nfc_card( $urls, (int) $link['id'] ); ?>
 					<?php wallet_card( $link, $urls ); ?>
 
 					<?php
