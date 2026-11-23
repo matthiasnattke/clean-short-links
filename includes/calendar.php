@@ -360,10 +360,17 @@ function sync_calendar( array $link ) {
 	);
 	$result = is_wp_error( $res ) ? $res : ( 200 === (int) wp_remote_retrieve_response_code( $res ) ? import_calendar( $link, wp_remote_retrieve_body( $res ) ) : new \WP_Error( 'http', 'HTTP ' . wp_remote_retrieve_response_code( $res ) ) );
 	$meta   = $link['meta'];
+	$fresh  = is_wp_error( $result ) ? null : link_by_id( (int) $link['id'] );
+	$hash   = $fresh ? wallet_next_hash( wallet_next_event( (array) $fresh['rules'], new \DateTimeImmutable( 'now', wp_timezone() ) ) ) : (string) ( $meta['wallet_next'] ?? '' );
+	$moved  = $hash !== (string) ( $meta['wallet_next'] ?? '' );
+	$meta['wallet_next'] = $hash;
 	$meta['ical_at']    = time();
 	$meta['ical_error'] = is_wp_error( $result ) ? $result->get_error_message() : '';
 	$meta['ical_count'] = is_wp_error( $result ) ? (int) ( $meta['ical_count'] ?? 0 ) : (int) $result;
 	update_meta( $link['id'], $meta );
+	if ( $moved ) {
+		wallet_touch_refs( wallet_refs_of( $link ) );
+	}
 	return $result;
 }
 

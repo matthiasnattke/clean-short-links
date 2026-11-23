@@ -147,7 +147,7 @@ function wallet_card( array $link, array $urls ) {
 	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) ) {
 		return;
 	}
-	card_open( 'csl-sec-wallet', 'wallet', __( 'Wallet card', 'clean-short-links' ), __( 'Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. Title, image and QR code follow the link on their own.', 'clean-short-links' ) );
+	card_open( 'csl-sec-wallet', 'wallet', __( 'Wallet card', 'clean-short-links' ), __( 'Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own.', 'clean-short-links' ) );
 	$available = function_exists( 'clean_mobile_connect_wallet_available' ) ? clean_mobile_connect_wallet_available() : array( 'ok' => true );
 	$notice    = array( 'type' => '', 'message' => '' );
 	if ( function_exists( 'CleanMobileConnect\\editor_notice' ) ) {
@@ -184,18 +184,13 @@ function wallet_card( array $link, array $urls ) {
 					<span class="csl-help"><?php esc_html_e( 'Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”.', 'clean-short-links' ); ?></span></span>
 			</label>
 			<?php
-			if ( function_exists( 'clean_mobile_connect_wallet_editor_box' ) ) {
-				wallet_editor_box( $e['ref'], $e['defaults'] );
-			}
-			if ( '' !== $e['wallet'] ) {
+			if ( $on && '' !== $e['wallet'] ) {
 				?>
 				<div class="csl-wallet-address">
 					<span class="csl-field-label"><?php esc_html_e( 'Wallet address', 'clean-short-links' ); ?></span>
 					<?php copy_field( $e['wallet'] ); ?>
 					<div class="csl-wallet-qr" data-url="<?php echo esc_attr( $e['wallet'] ); ?>" data-upper="<?php echo esc_attr( qr_uppercase( $e['wallet'] ) ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $e['wallet'] ) ); ?>"></div>
-					<?php if ( $on ) : ?>
-						<button type="button" class="button csl-btn csl-wallet-design" data-entry="<?php echo esc_attr( 'wallet:' . $e['place'] ); ?>"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Design QR code', 'clean-short-links' ); ?></button>
-					<?php endif; ?>
+					<button type="button" class="button csl-btn csl-wallet-design" data-entry="<?php echo esc_attr( 'wallet:' . $e['place'] ); ?>"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Design QR code', 'clean-short-links' ); ?></button>
 				</div>
 				<?php
 			}
@@ -211,6 +206,15 @@ function wallet_card( array $link, array $urls ) {
 						<button type="button" class="button csl-btn csl-wallet-anew-cancel"><?php esc_html_e( 'Cancel', 'clean-short-links' ); ?></button>
 					</span>
 				</div>
+				<?php
+			}
+			if ( function_exists( 'clean_mobile_connect_wallet_editor_box' ) ) {
+				?>
+				<details class="csl-wallet-custom">
+					<summary><?php esc_html_e( 'Customize card', 'clean-short-links' ); ?></summary>
+					<p class="csl-help"><?php esc_html_e( 'Title, image, date, colours and logo come from this link. Anything you enter here replaces them.', 'clean-short-links' ); ?></p>
+					<?php wallet_editor_box( $e['ref'], $e['defaults'] ); ?>
+				</details>
 				<?php
 			}
 			?>
@@ -267,12 +271,16 @@ function wallet_save_posted( int $link_id, array $posted ): void {
 			continue;
 		}
 		$ref    = wallet_ref( $link_id, $place );
-		$status = wallet_save_input( ! empty( $row['offer'] ), null !== \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref ) );
+		$had_card = null !== \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
+		$status   = wallet_save_input( ! empty( $row['offer'] ), $had_card );
 		if ( null === $status ) {
 			continue;
 		}
 		$input           = \clean_mobile_connect_wallet_editor_input( WALLET_OWNER, $ref, is_array( $boxes[ $key ] ?? null ) ? $boxes[ $key ] : array() );
 		$input['status'] = $status;
+		if ( ! $had_card && in_array( $input['style'] ?? 'generic', array( '', 'generic' ), true ) ) {
+			$input['style'] = wallet_auto_style( $link );
+		}
 		\clean_mobile_connect_wallet_save_card( WALLET_OWNER, $ref, $input );
 	}
 }
@@ -339,3 +347,22 @@ add_action(
 		exit;
 	}
 );
+
+/**
+ * Does the link have a card that is offered (the link itself or one of its locations)?
+ *
+ * @param array $link Link.
+ * @return bool
+ */
+function wallet_link_offered( array $link ): bool {
+	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) || ! empty( $link['parent_id'] ) ) {
+		return false;
+	}
+	foreach ( wallet_refs_of( $link ) as $ref ) {
+		$card = \clean_mobile_connect_wallet_card( WALLET_OWNER, $ref );
+		if ( $card && 'active' === ( $card['status'] ?? '' ) ) {
+			return true;
+		}
+	}
+	return false;
+}

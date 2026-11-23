@@ -412,6 +412,9 @@ function page_list() {
 							<span class="csl-badge csl-badge-soft"><?php the_icon( 'split' ); ?><?php /* translators: %d: number of rules */ echo esc_html( sprintf( _n( '%d rule', '%d rules', count( $l['rules'] ), 'clean-short-links' ), count( $l['rules'] ) ) ); ?></span>
 						<?php endif; ?>
 						<a class="csl-icon-link" href="<?php echo esc_url( $edit . '#csl-sec-qr' ); ?>" title="<?php esc_attr_e( 'QR code', 'clean-short-links' ); ?>"><?php the_icon( 'qr' ); ?><span class="screen-reader-text"><?php esc_html_e( 'QR code', 'clean-short-links' ); ?></span></a>
+						<?php if ( wallet_link_offered( $l ) ) : ?>
+							<a class="csl-icon-link" href="<?php echo esc_url( $edit . '#csl-sec-wallet' ); ?>" title="<?php esc_attr_e( 'Wallet card', 'clean-short-links' ); ?>"><?php the_icon( 'wallet' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Wallet card', 'clean-short-links' ); ?></span></a>
+						<?php endif; ?>
 					</div>
 					<h3 class="csl-link-name"><a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $label ); ?></a></h3>
 					<p class="csl-link-target"><?php the_icon( 'target' ); ?><?php target_link( $l['target'] ); ?></p>

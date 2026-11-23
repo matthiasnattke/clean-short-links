@@ -526,3 +526,6 @@ textarea.csl-wide { max-width: none; }
 	.csl-toolbar .csl-segment { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 	.csl-toolbar .csl-segment a { white-space: nowrap; }
 }
+.csl-wallet-custom { margin: 12px 0 0; }
+.csl-wallet-custom > summary { cursor: pointer; font-weight: 600; }
+.csl-wallet-custom[open] > summary { margin-bottom: 8px; }

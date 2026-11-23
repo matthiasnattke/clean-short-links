@@ -482,7 +482,6 @@
 	"A new Wallet card was issued.": "Eine neue Wallet-Karte wurde ausgestellt.",
 	"There was no Wallet card to issue anew.": "Es gab keine Wallet-Karte, die neu ausgestellt werden könnte.",
 	"Wallet card": "Wallet-Karte",
-	"Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. Title, image and QR code follow the link on their own.": "Besucher legen den Kurzlink als Karte in Apple Wallet ab: Sie zeigt Titel, Bild und einen QR-Code, der den Link öffnet. Titel, Bild und QR-Code folgen dem Link von selbst.",
 	"Wallet cards are not available yet. Please check the settings of Clean Mobile Connect.": "Wallet-Karten sind noch nicht verfügbar. Bitte prüfe die Einstellungen von Clean Mobile Connect.",
 	"Offer a Wallet card": "Wallet-Karte anbieten",
 	"Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”.": "Ausgeschaltet bleiben Karten auf iPhones, wie sie sind, und die Wallet-Adresse zeigt „nicht verfügbar“.",
@@ -493,5 +492,9 @@
 	"Yes, issue anew": "Ja, neu ausstellen",
 	"Cancel": "Abbrechen",
 	"A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available.": "Es konnte keine neue Wallet-Karte ausgestellt werden: Der Kurzlink oder Ort existiert nicht oder Wallet-Karten sind nicht verfügbar.",
-	"Design QR code": "QR-Code gestalten"
+	"Design QR code": "QR-Code gestalten",
+	"Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own.": "Besucher legen den Kurzlink als Karte in Apple Wallet ab: Sie zeigt Titel, Bild und einen QR-Code, der den Link öffnet. Die Karte füllt sich aus diesem Link selbst: Titel, Bild, Termine, Farben und Logo folgen ihm von allein.",
+	"Customize card": "Karte anpassen",
+	"Title, image, date, colours and logo come from this link. Anything you enter here replaces them.": "Titel, Bild, Datum, Farben und Logo kommen aus diesem Link. Was du hier einträgst, ersetzt sie.",
+	"Next": "Nächster Termin"
 }

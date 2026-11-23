@@ -856,6 +856,94 @@ test( 'live data fills only what the card leaves empty', function () {
 	same( 'x', $d['title'] );
 } );
 
+test( 'automatic card data comes from the link', function () {
+	$link = array(
+		'title'     => 'Fest', 'slug' => 'fest',
+		'starts_at' => 1790000000, 'ends_at' => 1790090000,
+		'qr'        => array( 'fg' => '#112233', 'bg' => '#ffffff', 'transparent' => 0, 'logo' => 9 ),
+		'meta'      => array( 'social' => array( 'title' => 'T', 'description' => 'Das Fest', 'image' => 5 ) ),
+	);
+	$tz  = new \DateTimeZone( 'Europe/Berlin' );
+	$ctx = array( 'image' => 33, 'tz' => $tz, 'next' => array( 'title' => 'Konzert', 'when' => '24.12.2026 19:00' ) );
+	$d   = wallet_auto_data( $link, '', $ctx );
+	same( 'Fest', $d['title'] );
+	same( 5, $d['image'] );
+	same( 'Das Fest', $d['subtitle'] );
+	same( 'Das Fest', $d['back'] );
+	same( ( new \DateTimeImmutable( '@1790000000' ) )->setTimezone( $tz )->format( \DATE_ATOM ), $d['date'] );
+	same( ( new \DateTimeImmutable( '@1790090000' ) )->setTimezone( $tz )->format( \DATE_ATOM ), $d['expires'] );
+	same( array( array( 'label' => 'Next', 'value' => 'Konzert – 24.12.2026 19:00' ) ), $d['fields'] );
+	same( array( 'bg' => '#ffffff', 'fg' => '#112233', 'label' => '#112233' ), $d['colors'] );
+	same( 9, $d['logo'] );
+	// Without social image the featured image of the target is used; transparent code: white background.
+	$link['meta']['social'] = array( 'title' => '', 'description' => '', 'image' => 0 );
+	$link['qr']['transparent'] = 1;
+	$link['qr']['bg'] = '#ff0000';
+	$link['starts_at'] = 0;
+	$d = wallet_auto_data( $link, 'home', array( 'image' => 33, 'places' => array( 'home' => 'Rathaus' ) ) );
+	same( 33, $d['image'] );
+	same( 'Fest – Rathaus', $d['title'] );
+	same( false, isset( $d['subtitle'] ) || isset( $d['back'] ) || isset( $d['date'] ) || isset( $d['fields'] ) );
+	same( '#ffffff', $d['colors']['bg'] );
+	$d = wallet_auto_data( array( 'title' => '', 'slug' => 'x', 'meta' => array() ), '', array() );
+	same( array( 'title' => 'x' ), $d );
+} );
+
+test( 'automatic card style', function () {
+	same( 'generic', wallet_auto_style( array( 'rules' => array() ) ) );
+	same( 'eventTicket', wallet_auto_style( array( 'starts_at' => 5 ) ) );
+	same( 'eventTicket', wallet_auto_style( array( 'ends_at' => 5 ) ) );
+	same( 'eventTicket', wallet_auto_style( array( 'rules' => array( array( 'source' => 'ical' ) ) ) ) );
+} );
+
+test( 'next calendar event', function () {
+	$tz    = new \DateTimeZone( 'Europe/Berlin' );
+	$now   = new \DateTimeImmutable( '2026-11-23 12:00', $tz );
+	$rules = array(
+		array( 'source' => 'ical', 'label' => 'Past', 'from' => '2026-11-01 10:00', 'to' => '2026-11-01 11:00', 'days' => array(), 'time_from' => '', 'time_to' => '' ),
+		array( 'source' => 'ical', 'label' => 'Later', 'from' => '2026-12-24 19:00', 'to' => '2026-12-24 21:00', 'days' => array(), 'time_from' => '', 'time_to' => '' ),
+		array( 'source' => 'ical', 'label' => 'Weekly', 'from' => '2026-11-01 00:00', 'to' => '', 'days' => array( 3 ), 'time_from' => '18:30', 'time_to' => '20:00' ),
+		array( 'label' => 'By hand', 'from' => '2026-11-23 13:00', 'to' => '', 'days' => array(), 'time_from' => '', 'time_to' => '' ),
+	);
+	$next = wallet_next_event( $rules, $now );
+	same( 'Weekly', $next['title'] );
+	same( '2026-11-25 18:30', ( new \DateTimeImmutable( '@' . $next['ts'] ) )->setTimezone( $tz )->format( 'Y-m-d H:i' ) );
+	same( null, wallet_next_event( array(), $now ) );
+	same( '', wallet_next_hash( null ) );
+	same( false, wallet_next_hash( $next ) === wallet_next_hash( array( 'title' => 'x', 'ts' => 1 ) ) );
+} );
+
+test( 'sync plan touches cards for social, time window and QR design', function () {
+	$old = array( 'id' => 12, 'title' => 'Fest', 'slug' => 'fest', 'target' => 'post:1', 'starts_at' => 0, 'ends_at' => 0, 'qr' => array( 'fg' => '#000000', 'bg' => '#ffffff', 'logo' => 0, 'style' => 'square' ), 'meta' => array( 'social' => array( 'title' => '', 'description' => '', 'image' => 0 ), 'places' => array() ) );
+	$changed = function ( $n ) use ( $old ) {
+		return array( '12' ) === wallet_sync_plan( $old, $n )['touch'];
+	};
+	$n = $old; $n['meta']['social']['description'] = 'Neu';
+	same( true, $changed( $n ) );
+	$n = $old; $n['meta']['social']['image'] = 4;
+	same( true, $changed( $n ) );
+	$n = $old; $n['starts_at'] = 5;
+	same( true, $changed( $n ) );
+	$n = $old; $n['ends_at'] = 5;
+	same( true, $changed( $n ) );
+	$n = $old; $n['qr']['fg'] = '#111111';
+	same( true, $changed( $n ) );
+	$n = $old; $n['qr']['logo'] = 3;
+	same( true, $changed( $n ) );
+	$n = $old; $n['qr']['style'] = 'dots';
+	same( false, $changed( $n ) );
+} );
+
+test( 'card data filter parts: stored values win, colors merge', function () {
+	$link = array( 'title' => 'Fest', 'slug' => 'fest', 'qr' => array( 'fg' => '#112233', 'bg' => '#ffffff' ), 'meta' => array( 'social' => array( 'description' => 'D' ) ) );
+	$urls = array( 'link' => 'https://e.test/s/fest' );
+	$d = wallet_live_data( array( 'subtitle' => 'Mine', 'colors' => array( 'bg' => '#000000', 'fg' => '', 'label' => '' ) ), $link, '', $urls, 0 );
+	same( 'Mine', $d['subtitle'] );
+	same( 'D', $d['back'] );
+	same( '#000000', $d['colors']['bg'] );
+	same( '#112233', $d['colors']['fg'] );
+} );
+
 test( 'choice rows leave out refs that have a card', function () {
 	$link = array( 'id' => 12, 'title' => 'Fest', 'slug' => 'fest', 'meta' => array( 'places' => array( array( 'key' => 'home', 'name' => 'Rathaus' ), array( 'key' => 'shop', 'name' => 'Shop' ) ) ) );
 	$urls = array(

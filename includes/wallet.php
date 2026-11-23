@@ -460,7 +460,176 @@ function handle_found( array $found, $source, $slug, $fast = false, ?string $req
 }
 
 /**
+ * What a link already knows that fits on a card, in the data keys of Clean Mobile Connect.
+ * Pure: what is not in the link (featured image, next event, location names) comes in $ctx.
+ *
+ * @param array  $link  Link.
+ * @param string $place Location key, '' for the link itself.
+ * @param array  $ctx   image (featured image of the target), tz (DateTimeZone), places (key => name),
+ *                      next (title, when: the next calendar event, formatted).
+ * @return array Only keys that have a value.
+ */
+function wallet_auto_data( array $link, string $place, array $ctx ): array {
+	$meta   = (array) ( $link['meta'] ?? array() );
+	$social = (array) ( $meta['social'] ?? array() );
+	$out    = array();
+	$title  = '' !== (string) ( $link['title'] ?? '' ) ? (string) $link['title'] : (string) ( $link['slug'] ?? '' );
+	if ( '' !== $place ) {
+		$title .= ' – ' . (string) ( $ctx['places'][ $place ] ?? $place );
+	}
+	$out['title'] = $title;
+	$image        = (int) ( $social['image'] ?? 0 ) ? (int) $social['image'] : (int) ( $ctx['image'] ?? 0 );
+	if ( $image > 0 ) {
+		$out['image'] = $image;
+	}
+	$desc = trim( (string) ( $social['description'] ?? '' ) );
+	if ( '' !== $desc ) {
+		$out['subtitle'] = $desc;
+		$out['back']     = $desc;
+	}
+	$tz = ( $ctx['tz'] ?? null ) instanceof \DateTimeZone ? $ctx['tz'] : new \DateTimeZone( 'UTC' );
+	foreach ( array(
+		'date'    => 'starts_at',
+		'expires' => 'ends_at',
+	) as $key => $field ) {
+		if ( (int) ( $link[ $field ] ?? 0 ) > 0 ) {
+			$out[ $key ] = ( new \DateTimeImmutable( '@' . (int) $link[ $field ] ) )->setTimezone( $tz )->format( \DATE_ATOM );
+		}
+	}
+	$next = $ctx['next'] ?? null;
+	if ( is_array( $next ) && '' !== (string) ( $next['title'] ?? '' ) ) {
+		$out['fields'] = array(
+			array(
+				'label' => __( 'Next', 'clean-short-links' ),
+				'value' => (string) $next['title'] . ' – ' . (string) ( $next['when'] ?? '' ),
+			),
+		);
+	}
+	$qr = (array) ( $link['qr'] ?? array() );
+	if ( ! empty( $qr['fg'] ) ) {
+		$out['colors'] = array(
+			'bg'    => ! empty( $qr['transparent'] ) || empty( $qr['bg'] ) ? '#ffffff' : (string) $qr['bg'],
+			'fg'    => (string) $qr['fg'],
+			'label' => (string) $qr['fg'],
+		);
+	}
+	if ( (int) ( $qr['logo'] ?? 0 ) > 0 ) {
+		$out['logo'] = (int) $qr['logo'];
+	}
+	return $out;
+}
+
+/**
+ * The card style a new card starts with: a ticket for links with a time window or calendar.
+ *
+ * @param array $link Link.
+ * @return string eventTicket or generic.
+ */
+function wallet_auto_style( array $link ): string {
+	return ! empty( $link['starts_at'] ) || ! empty( $link['ends_at'] ) || ! empty( $link['rules'] ) ? 'eventTicket' : 'generic';
+}
+
+/**
+ * The next upcoming (or running) event among the calendar rules of a link.
+ *
+ * @param array              $rules Rules of the link; only those from the calendar (source "ical") count.
+ * @param \DateTimeImmutable $now   Now, in the site time zone.
+ * @return array{title:string,ts:int}|null
+ */
+function wallet_next_event( array $rules, \DateTimeImmutable $now ): ?array {
+	$tz   = $now->getTimezone();
+	$best = null;
+	$take = static function ( string $title, int $ts ) use ( &$best ) {
+		if ( null === $best || $ts < $best['ts'] ) {
+			$best = array(
+				'title' => $title,
+				'ts'    => $ts,
+			);
+		}
+	};
+	foreach ( $rules as $r ) {
+		if ( 'ical' !== ( $r['source'] ?? '' ) || '' === (string) ( $r['from'] ?? '' ) ) {
+			continue;
+		}
+		$label = (string) ( $r['label'] ?? '' );
+		$days  = array_map( 'intval', (array) ( $r['days'] ?? array() ) );
+		$tf    = (string) ( $r['time_from'] ?? '' );
+		$to    = (string) ( $r['to'] ?? '' );
+		try {
+			$from = new \DateTimeImmutable( (string) $r['from'], $tz );
+			$end  = '' !== $to ? new \DateTimeImmutable( $to, $tz ) : null;
+		} catch ( \Exception $e ) {
+			continue;
+		}
+		if ( array() === $days && '' === $tf && null !== $end ) {
+			if ( $end > $now ) {
+				$take( $label, $from->getTimestamp() );
+			}
+			continue;
+		}
+		$day = $now->setTime( 0, 0 );
+		if ( $from > $day ) {
+			$day = $from->setTime( 0, 0 );
+		}
+		for ( $i = 0; $i < 400; $i++, $day = $day->modify( '+1 day' ) ) {
+			if ( null !== $end && $day >= $end ) {
+				break;
+			}
+			if ( array() !== $days && ! in_array( (int) $day->format( 'N' ), $days, true ) ) {
+				continue;
+			}
+			$start = '' !== $tf ? $day->modify( $tf ) : $day;
+			if ( '' !== $tf && $start <= $now ) {
+				continue;
+			}
+			$take( $label, $start->getTimestamp() );
+			break;
+		}
+	}
+	return $best;
+}
+
+/**
+ * A short fingerprint of the next event, '' for none. Changes when title or time changes.
+ *
+ * @param array|null $next Result of wallet_next_event().
+ * @return string
+ */
+function wallet_next_hash( ?array $next ): string {
+	return null === $next ? '' : md5( $next['ts'] . '|' . $next['title'] );
+}
+
+/**
+ * Context for wallet_auto_data() from the site: featured image, time zone, location names, next event.
+ *
+ * @param array $link     Link.
+ * @param array $urls     short_urls() of the link.
+ * @param int   $image_id Featured image of the target post, 0 if none.
+ * @return array
+ */
+function wallet_auto_context( array $link, array $urls, int $image_id ): array {
+	$tz    = wp_timezone();
+	$ctx   = array(
+		'image'  => $image_id,
+		'tz'     => $tz,
+		'places' => array(),
+	);
+	foreach ( (array) ( $urls['places'] ?? array() ) as $key => $pl ) {
+		$ctx['places'][ $key ] = (string) ( $pl['name'] ?? $key );
+	}
+	$next = wallet_next_event( (array) ( $link['rules'] ?? array() ), new \DateTimeImmutable( 'now', $tz ) );
+	if ( $next ) {
+		$ctx['next'] = array(
+			'title' => $next['title'],
+			'when'  => wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next['ts'], $tz ),
+		);
+	}
+	return $ctx;
+}
+
+/**
  * Fills the values a card leaves empty from the short link. Deterministic: no translation, no user.
+ * Values typed into the card win; empty ones stay automatic.
  *
  * @param array  $data     Stored card data.
  * @param array  $link     Link.
@@ -470,21 +639,21 @@ function handle_found( array $found, $source, $slug, $fast = false, ?string $req
  * @return array
  */
 function wallet_live_data( array $data, array $link, string $place, array $urls, int $image_id ): array {
-	$title = '' !== (string) ( $link['title'] ?? '' ) ? (string) $link['title'] : (string) ( $link['slug'] ?? '' );
 	$link_url = (string) ( $urls['link'] ?? '' );
 	if ( '' !== $place ) {
-		$name     = (string) ( $urls['places'][ $place ]['name'] ?? $place );
-		$title   .= ' – ' . $name;
 		$link_url = (string) ( $urls['places'][ $place ]['link'] ?? $link_url );
 	}
-	$live = array(
-		'title' => $title,
-		'image' => $image_id,
-		'qr'    => $link_url . '?w',
-		'link'  => $link_url,
-	);
+	$live = wallet_auto_data( $link, $place, wallet_auto_context( $link, $urls, $image_id ) );
+	$live['qr']   = $link_url . '?w';
+	$live['link'] = $link_url;
 	foreach ( $live as $key => $value ) {
-		if ( empty( $data[ $key ] ) ) {
+		if ( 'colors' === $key && ! empty( $data['colors'] ) && is_array( $data['colors'] ) ) {
+			foreach ( $value as $sub => $color ) {
+				if ( empty( $data['colors'][ $sub ] ) ) {
+					$data['colors'][ $sub ] = $color;
+				}
+			}
+		} elseif ( empty( $data[ $key ] ) ) {
 			$data[ $key ] = $value;
 		}
 	}
@@ -732,6 +901,22 @@ function wallet_registered_action( $card ) {
 }
 
 /**
+ * The parts of a link that show on its cards besides title, target and addresses.
+ *
+ * @param array $link Link.
+ * @return array
+ */
+function wallet_card_view( array $link ): array {
+	$social = (array) ( $link['meta']['social'] ?? array() );
+	$qr     = (array) ( $link['qr'] ?? array() );
+	return array(
+		'social' => array( (string) ( $social['description'] ?? '' ), (int) ( $social['image'] ?? 0 ) ),
+		'window' => array( (int) ( $link['starts_at'] ?? 0 ), (int) ( $link['ends_at'] ?? 0 ) ),
+		'qr'     => array( (string) ( $qr['fg'] ?? '' ), (string) ( $qr['bg'] ?? '' ), (int) ! empty( $qr['transparent'] ), (int) ( $qr['logo'] ?? 0 ) ),
+	);
+}
+
+/**
  * What a change of a link means for its cards.
  *
  * @param array|null $old Link before the change, null for a new link.
@@ -762,6 +947,7 @@ function wallet_sync_plan( ?array $old, array $new ): array {
 	$wide = ( $old['title'] ?? '' ) !== ( $new['title'] ?? '' )
 		|| ( $old['target'] ?? '' ) !== ( $new['target'] ?? '' )
 		|| ( $old['slug'] ?? '' ) !== ( $new['slug'] ?? '' )
+		|| wallet_card_view( $old ) !== wallet_card_view( $new )
 		|| (array) ( $old['meta']['hosts'] ?? array() ) !== (array) ( $new['meta']['hosts'] ?? array() );
 	if ( $wide ) {
 		$plan['touch'][] = wallet_ref( $id );
