@@ -853,9 +853,11 @@ test( 'sync plan', function () {
 	array_pop( $n['meta']['places'] );
 	same( array( 'touch' => array(), 'end' => array( '12:shop' ) ), wallet_sync_plan( $old, $n ) );
 	$n = $old;
-	$n['target'] = 'post:2';
-	$n['rules']  = array( array( 'x' => 1 ) );
+	$n['rules'] = array( array( 'x' => 1 ) );
 	same( array( 'touch' => array(), 'end' => array() ), wallet_sync_plan( $old, $n ) );
+	$n = $old;
+	$n['target'] = 'post:2';
+	same( array( 'touch' => $all, 'end' => array() ), wallet_sync_plan( $old, $n ) );
 	$n = $old;
 	$n['meta']['hosts'] = array( 'go.example.com' );
 	same( array( 'touch' => $all, 'end' => array() ), wallet_sync_plan( $old, $n ) );

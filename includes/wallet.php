@@ -437,6 +437,7 @@ function wallet_sync_plan( ?array $old, array $new ): array {
 		}
 	}
 	$wide = ( $old['title'] ?? '' ) !== ( $new['title'] ?? '' )
+		|| ( $old['target'] ?? '' ) !== ( $new['target'] ?? '' )
 		|| ( $old['slug'] ?? '' ) !== ( $new['slug'] ?? '' )
 		|| (array) ( $old['meta']['hosts'] ?? array() ) !== (array) ( $new['meta']['hosts'] ?? array() );
 	if ( $wide ) {
@@ -563,11 +564,8 @@ function wallet_touch_all( $page = 1 ) {
  * @param bool $network On every site that serves short links instead of only this one.
  */
 function schedule_wallet_touch( bool $network ): void {
-	if ( ! wallet_enabled() ) {
-		return;
-	}
 	$one = static function () {
-		if ( ! wp_next_scheduled( 'clean_short_links_wallet_touch_all' ) ) {
+		if ( wallet_enabled() && ! wp_next_scheduled( 'clean_short_links_wallet_touch_all' ) ) {
 			wp_schedule_single_event( time() + 5, 'clean_short_links_wallet_touch_all' );
 		}
 	};
