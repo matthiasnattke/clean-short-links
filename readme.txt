@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.5
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,15 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.3.0 =
+* Wallet cards (with the Clean Mobile Connect plugin): a link and each of its locations can offer an Apple Wallet card. The card fills itself from the link – title, image and description from sharing, date and expiry from the time window, colours and logo from the QR design, the next calendar event – and anything entered under "Customize card" takes precedence.
+* Own guest address per card under the wallet prefix (/w/…, set like the QR prefix) that follows all rules of the link: pause, time window, click limit, fallback, alias hosts and further domains.
+* The QR designer and the NFC section offer the Wallet guest addresses; the Wallet section shows the guest code in the link's design.
+* Optional per link: on iPhone, iPad and Mac the QR code first shows the card page with a "Continue" link.
+* Statistics: "Wallet" (scans of the guest code and of the code on the card) and "Wallet: added".
+* Cards stay in sync with their link; removing a location or deleting a link ends its card; "Issue anew" replaces a card.
+* Attach an existing stand-alone card to a short link from Clean Mobile Connect.
 
 = 0.2.5 =
 * Security: further domains can only be chosen by site administrators and only among the hosts the network offers – short domains and subdomains without a site; other sites' domains need a new network switch (off by default).
