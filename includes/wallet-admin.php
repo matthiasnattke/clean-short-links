@@ -117,24 +117,20 @@ function wallet_code_entries( array $urls, int $link_id, string $for, ?callable 
  */
 function wallet_editor_box( string $ref, array $defaults ): void {
 	$args = array( WALLET_OWNER, $ref, $defaults );
-	if ( wallet_editor_takes_options( 'clean_mobile_connect_wallet_editor_box' ) ) {
+	if ( wallet_editor_takes_options( wallet_connect_api() ) ) {
 		$args[] = array( 'fixed' => array( 'qr', 'link' ) );
 	}
 	\clean_mobile_connect_wallet_editor_box( ...$args );
 }
 
 /**
- * Does the function take the options argument (a fourth one)?
+ * Does Connect take the options argument (editor_box and editor_input)? From API 4 on.
  *
- * @param string|callable $fn Function.
+ * @param int|null $api Connect's API level.
  * @return bool
  */
-function wallet_editor_takes_options( $fn ): bool {
-	try {
-		return ( new \ReflectionFunction( $fn ) )->getNumberOfParameters() >= 4;
-	} catch ( \ReflectionException $e ) {
-		return false;
-	}
+function wallet_editor_takes_options( ?int $api ): bool {
+	return wallet_continue_supported( $api );
 }
 
 /**

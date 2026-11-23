@@ -992,10 +992,11 @@ test( 'wallet code entries list offered cards with guest addresses and capitals'
 	same( array(), wallet_code_entries( array_merge( $urls, array( 'wallet' => '', 'places' => array() ) ), 12, 'qr', $offered ) );
 } );
 
-test( 'editor options are only passed to a Connect that takes them', function () {
-	same( false, wallet_editor_takes_options( function ( $owner, $ref, $defaults ) {} ) );
-	same( true, wallet_editor_takes_options( function ( $owner, $ref, $defaults, array $options = array() ) {} ) );
-	same( false, wallet_editor_takes_options( 'no_such_function_here' ) );
+test( 'editor options are only passed to a Connect with API 4', function () {
+	same( false, wallet_editor_takes_options( null ) );
+	same( false, wallet_editor_takes_options( 3 ) );
+	same( true, wallet_editor_takes_options( 4 ) );
+	same( true, wallet_editor_takes_options( 5 ) );
 } );
 
 test( 'attach check accepts only an existing own place of a normal link', function () {
@@ -1126,11 +1127,45 @@ test( 'wallet card first only for Apple QR scans that reach the target', functio
 	same( false, wallet_first_decision( array_merge( $link, array( 'parent_id' => 3 ) ), '', SOURCE_QR, 'apple', $card, $ok ), 'invitation' );
 } );
 
-test( 'wallet card first needs the continue link of Connect 0.2.2', function () {
+test( 'wallet card first needs the continue link (Connect API 4), not a version', function () {
 	same( false, wallet_continue_supported( null ) );
-	same( false, wallet_continue_supported( '0.2.1' ) );
-	same( true, wallet_continue_supported( '0.2.2' ) );
-	same( true, wallet_continue_supported( '0.3.0' ) );
+	same( false, wallet_continue_supported( 3 ) );
+	same( true, wallet_continue_supported( 4 ) );
+	same( true, wallet_continue_supported( 5 ) );
+	same( null, wallet_connect_api(), 'constant not defined in tests' );
+} );
+
+test( 'wallet card first gate: option, QR source, no invitation, Connect ready with API 4', function () {
+	$link = array( 'meta' => array( 'wallet_first' => 1 ) );
+	same( true, wallet_first_possible( $link, SOURCE_QR, 4, true ) );
+	same( false, wallet_first_possible( $link, SOURCE_QR, 3, true ), 'Connect 0.2.4 without continue link' );
+	same( false, wallet_first_possible( $link, SOURCE_QR, null, true ), 'Connect inactive' );
+	same( false, wallet_first_possible( $link, SOURCE_QR, 4, false ), 'wallet not ready' );
+	same( false, wallet_first_possible( $link, SOURCE_NFC, 4, true ), 'not a QR scan' );
+	same( false, wallet_first_possible( array( 'meta' => array() ), SOURCE_QR, 4, true ), 'option off' );
+	same( false, wallet_first_possible( array_merge( $link, array( 'parent_id' => 2 ) ), SOURCE_QR, 4, true ), 'invitation' );
+} );
+
+test( 'empty field slots of Connect count as empty, automatic Next field appears', function () {
+	$link = array( 'title' => 'Fest', 'slug' => 'fest', 'meta' => array(), 'rules' => array( array( 'source' => 'ical', 'label' => 'Konzert', 'from' => '2099-12-24 19:00', 'to' => '2099-12-24 21:00', 'days' => array(), 'time_from' => '', 'time_to' => '' ) ) );
+	$urls = array( 'link' => 'https://e.test/s/fest' );
+	$slots = array( 1 => array( 'label' => '', 'value' => '' ), 2 => array( 'label' => '', 'value' => '' ), 3 => array( 'label' => '', 'value' => '' ) );
+	$auto  = wallet_live_data( array(), $link, '', $urls, 0 );
+	same( 'Next', $auto['fields'][0]['label'] ?? null, 'automatic Next field exists' );
+	$d     = wallet_live_data( array( 'fields' => $slots ), $link, '', $urls, 0 );
+	same( $auto['fields'], $d['fields'], 'empty slots use the automatic fields' );
+	$own = array( 1 => array( 'label' => 'Ort', 'value' => 'Halle' ), 2 => array( 'label' => '', 'value' => '' ) );
+	same( $own, wallet_live_data( array( 'fields' => $own ), $link, '', $urls, 0 )['fields'], 'a filled slot is kept' );
+	same( true, wallet_fields_empty( $slots ) );
+	same( true, wallet_fields_empty( array() ) );
+	same( false, wallet_fields_empty( $own ) );
+} );
+
+test( 'clean_meta keeps the stored next-event hash', function () {
+	$h = str_repeat( 'a1', 16 );
+	same( $h, clean_meta( array( 'wallet_next' => $h ) )['wallet_next'] );
+	same( '', clean_meta( array( 'wallet_next' => 'nonsense' ) )['wallet_next'] );
+	same( '', clean_meta( array() )['wallet_next'] );
 } );
 
 test( 'wallet platform', function () {

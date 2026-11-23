@@ -336,13 +336,57 @@ function handle_wallet( array $found, string $slug, bool $fast, ?string $request
 }
 
 /**
- * Does Clean Mobile Connect offer the continue link on the guest page (0.2.2 and later)?
+ * API level of Clean Mobile Connect, null when it is not active.
  *
- * @param string|null $version Connect's version, null when Connect is not active.
+ * @return int|null
+ */
+function wallet_connect_api(): ?int {
+	return defined( 'CLEAN_MOBILE_CONNECT_API' ) ? (int) CLEAN_MOBILE_CONNECT_API : null;
+}
+
+/**
+ * Does Clean Mobile Connect offer the continue link on the guest page? It does from API 4
+ * on (a feature check: the version number alone cannot tell, 0.2.4 lacks it).
+ *
+ * @param int|null $api Connect's API level, null when Connect is not active.
  * @return bool
  */
-function wallet_continue_supported( ?string $version ): bool {
-	return null !== $version && version_compare( $version, '0.2.2', '>=' );
+function wallet_continue_supported( ?int $api ): bool {
+	return null !== $api && $api >= 4;
+}
+
+/**
+ * May the Apple Wallet-first path run at all? Pure part of maybe_wallet_first().
+ *
+ * @param array    $link   Link.
+ * @param int      $source Source of the visit.
+ * @param int|null $api    Connect's API level.
+ * @param bool     $ready  Wallet enabled and Connect's functions present.
+ * @return bool
+ */
+function wallet_first_possible( array $link, int $source, ?int $api, bool $ready ): bool {
+	if ( empty( $link['meta']['wallet_first'] ) || SOURCE_QR !== $source || ! empty( $link['parent_id'] ) ) {
+		return false;
+	}
+	return $ready && wallet_continue_supported( $api );
+}
+
+/**
+ * Do the stored card fields hold nothing? Connect stores empty slots (label and value empty).
+ *
+ * @param mixed $fields Stored fields.
+ * @return bool
+ */
+function wallet_fields_empty( $fields ): bool {
+	if ( ! is_array( $fields ) ) {
+		return true;
+	}
+	foreach ( $fields as $row ) {
+		if ( is_array( $row ) && ( '' !== trim( (string) ( $row['label'] ?? '' ) ) || '' !== trim( (string) ( $row['value'] ?? '' ) ) ) ) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -401,11 +445,8 @@ function wallet_first_decision( array $link, string $place, int $source, string 
  * @param bool   $count   Count the visit (as go_to() would).
  */
 function maybe_wallet_first( array $link, string $kind, string $slug, int $source, string $channel, array $result, string $url, bool $count ): void {
-	if ( empty( $link['meta']['wallet_first'] ) || SOURCE_QR !== $source || ! empty( $link['parent_id'] ) ) {
-		return;
-	}
-	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) || ! function_exists( 'clean_mobile_connect_wallet_guest_page' )
-		|| ! wallet_continue_supported( defined( 'CLEAN_MOBILE_CONNECT_VERSION' ) ? (string) CLEAN_MOBILE_CONNECT_VERSION : null ) ) {
+	$ready = wallet_enabled() && function_exists( 'clean_mobile_connect_wallet_card' ) && function_exists( 'clean_mobile_connect_wallet_guest_page' );
+	if ( ! wallet_first_possible( $link, $source, wallet_connect_api(), $ready ) ) {
 		return;
 	}
 	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
@@ -653,7 +694,7 @@ function wallet_live_data( array $data, array $link, string $place, array $urls,
 					$data['colors'][ $sub ] = $color;
 				}
 			}
-		} elseif ( empty( $data[ $key ] ) ) {
+		} elseif ( 'fields' === $key ? wallet_fields_empty( $data['fields'] ?? null ) : empty( $data[ $key ] ) ) {
 			$data[ $key ] = $value;
 		}
 	}

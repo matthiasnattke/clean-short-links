@@ -331,7 +331,7 @@ msgid "QR code"
 msgstr ""
 
 #. translators: %d: number of rules
-#: includes/admin.php:416 includes/admin.php:416 includes/admin.php:1148 includes/wallet-admin.php:150
+#: includes/admin.php:416 includes/admin.php:416 includes/admin.php:1148 includes/wallet-admin.php:146
 msgid "Wallet card"
 msgstr ""
 
@@ -502,7 +502,7 @@ msgstr ""
 msgid "A short domain is a site of the network with its own short domain. Mark it in the network settings of the short links."
 msgstr ""
 
-#: includes/admin.php:691 includes/wallet-admin.php:164
+#: includes/admin.php:691 includes/wallet-admin.php:160
 msgid "Code for"
 msgstr ""
 
@@ -1259,7 +1259,7 @@ msgstr ""
 msgid "Delete short link"
 msgstr ""
 
-#: includes/admin.php:1526 includes/admin.php:1633 includes/admin.php:1657 includes/admin.php:1678 includes/admin.php:1697 includes/admin.php:1711 includes/admin.php:1960 includes/admin.php:2028 includes/admin.php:2088 includes/network.php:243 includes/wallet-admin.php:332 includes/wallet-admin.php:336
+#: includes/admin.php:1526 includes/admin.php:1633 includes/admin.php:1657 includes/admin.php:1678 includes/admin.php:1697 includes/admin.php:1711 includes/admin.php:1960 includes/admin.php:2028 includes/admin.php:2088 includes/network.php:243 includes/wallet-admin.php:328 includes/wallet-admin.php:332
 msgid "You are not allowed to do this."
 msgstr ""
 
@@ -1942,76 +1942,76 @@ msgstr ""
 msgid "Wallet card: %s"
 msgstr ""
 
-#: includes/wallet-admin.php:150
+#: includes/wallet-admin.php:146
 msgid "Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own."
 msgstr ""
 
-#: includes/wallet-admin.php:156
+#: includes/wallet-admin.php:152
 msgid "Wallet cards are not available yet. Please check the settings of Clean Mobile Connect."
 msgstr ""
 
-#: includes/wallet-admin.php:183
+#: includes/wallet-admin.php:179
 msgid "Offer a Wallet card"
 msgstr ""
 
-#: includes/wallet-admin.php:184
+#: includes/wallet-admin.php:180
 msgid "Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”."
 msgstr ""
 
-#: includes/wallet-admin.php:190
+#: includes/wallet-admin.php:186
 msgid "Wallet address"
 msgstr ""
 
-#: includes/wallet-admin.php:193
+#: includes/wallet-admin.php:189
 msgid "Design QR code"
 msgstr ""
 
-#: includes/wallet-admin.php:201
+#: includes/wallet-admin.php:197
 msgid "Issue anew"
 msgstr ""
 
-#: includes/wallet-admin.php:203
+#: includes/wallet-admin.php:199
 msgid "Really issue anew?"
 msgstr ""
 
-#: includes/wallet-admin.php:204
+#: includes/wallet-admin.php:200
 msgid "Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card."
 msgstr ""
 
-#: includes/wallet-admin.php:205
+#: includes/wallet-admin.php:201
 msgid "Yes, issue anew"
 msgstr ""
 
-#: includes/wallet-admin.php:206
+#: includes/wallet-admin.php:202
 msgid "Cancel"
 msgstr ""
 
-#: includes/wallet-admin.php:214
+#: includes/wallet-admin.php:210
 msgid "Customize card"
 msgstr ""
 
-#: includes/wallet-admin.php:215
+#: includes/wallet-admin.php:211
 msgid "Title, image, date, colours and logo come from this link. Anything you enter here replaces them."
 msgstr ""
 
-#: includes/wallet-admin.php:243
+#: includes/wallet-admin.php:239
 msgid "On iPhone, iPad and Mac, offer the Wallet card first"
 msgstr ""
 
-#: includes/wallet-admin.php:243
+#: includes/wallet-admin.php:239
 msgid "Every scan on these devices shows the card page with a Continue button; others go straight to the target."
 msgstr ""
 
-#: includes/wallet-admin.php:344
+#: includes/wallet-admin.php:340
 msgid "A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available."
 msgstr ""
 
-#: includes/wallet.php:503
+#: includes/wallet.php:544
 msgid "Next"
 msgstr ""
 
 #. translators: %s: title of the short link
-#: includes/wallet.php:855
+#: includes/wallet.php:896
 #, php-format
 msgid "Short link: %s"
 msgstr ""

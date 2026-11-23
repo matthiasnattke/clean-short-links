@@ -332,7 +332,7 @@ msgid "QR code"
 msgstr "QR-Code"
 
 #. translators: %d: number of rules
-#: includes/admin.php:416 includes/admin.php:416 includes/admin.php:1148 includes/wallet-admin.php:150
+#: includes/admin.php:416 includes/admin.php:416 includes/admin.php:1148 includes/wallet-admin.php:146
 msgid "Wallet card"
 msgstr "Wallet-Karte"
 
@@ -503,7 +503,7 @@ msgstr "Diese Kurzadresse ist dort schon vergeben – bitte eine andere wählen.
 msgid "A short domain is a site of the network with its own short domain. Mark it in the network settings of the short links."
 msgstr "Eine Kurzdomain ist eine Website im Netzwerk mit eigener kurzer Domain. Markiere sie in den Netzwerk-Einstellungen der Kurzlinks."
 
-#: includes/admin.php:691 includes/wallet-admin.php:164
+#: includes/admin.php:691 includes/wallet-admin.php:160
 msgid "Code for"
 msgstr "Code für"
 
@@ -1260,7 +1260,7 @@ msgstr "Kurzlink anlegen"
 msgid "Delete short link"
 msgstr "Kurzlink löschen"
 
-#: includes/admin.php:1526 includes/admin.php:1633 includes/admin.php:1657 includes/admin.php:1678 includes/admin.php:1697 includes/admin.php:1711 includes/admin.php:1960 includes/admin.php:2028 includes/admin.php:2088 includes/network.php:243 includes/wallet-admin.php:332 includes/wallet-admin.php:336
+#: includes/admin.php:1526 includes/admin.php:1633 includes/admin.php:1657 includes/admin.php:1678 includes/admin.php:1697 includes/admin.php:1711 includes/admin.php:1960 includes/admin.php:2028 includes/admin.php:2088 includes/network.php:243 includes/wallet-admin.php:328 includes/wallet-admin.php:332
 msgid "You are not allowed to do this."
 msgstr "Dazu fehlt dir die Berechtigung."
 
@@ -1943,76 +1943,76 @@ msgstr "Wallet-Karte: der Kurzlink selbst"
 msgid "Wallet card: %s"
 msgstr "Wallet-Karte: %s"
 
-#: includes/wallet-admin.php:150
+#: includes/wallet-admin.php:146
 msgid "Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own."
 msgstr "Besucher legen den Kurzlink als Karte in Apple Wallet ab: Sie zeigt Titel, Bild und einen QR-Code, der den Link öffnet. Die Karte füllt sich aus diesem Link selbst: Titel, Bild, Termine, Farben und Logo folgen ihm von allein."
 
-#: includes/wallet-admin.php:156
+#: includes/wallet-admin.php:152
 msgid "Wallet cards are not available yet. Please check the settings of Clean Mobile Connect."
 msgstr "Wallet-Karten sind noch nicht verfügbar. Bitte prüfe die Einstellungen von Clean Mobile Connect."
 
-#: includes/wallet-admin.php:183
+#: includes/wallet-admin.php:179
 msgid "Offer a Wallet card"
 msgstr "Wallet-Karte anbieten"
 
-#: includes/wallet-admin.php:184
+#: includes/wallet-admin.php:180
 msgid "Switched off, cards on iPhones stay as they are and the Wallet address shows “not available”."
 msgstr "Ausgeschaltet bleiben Karten auf iPhones, wie sie sind, und die Wallet-Adresse zeigt „nicht verfügbar“."
 
-#: includes/wallet-admin.php:190
+#: includes/wallet-admin.php:186
 msgid "Wallet address"
 msgstr "Wallet-Adresse"
 
-#: includes/wallet-admin.php:193
+#: includes/wallet-admin.php:189
 msgid "Design QR code"
 msgstr "QR-Code gestalten"
 
-#: includes/wallet-admin.php:201
+#: includes/wallet-admin.php:197
 msgid "Issue anew"
 msgstr "Neu ausstellen"
 
-#: includes/wallet-admin.php:203
+#: includes/wallet-admin.php:199
 msgid "Really issue anew?"
 msgstr "Wirklich neu ausstellen?"
 
-#: includes/wallet-admin.php:204
+#: includes/wallet-admin.php:200
 msgid "Cards already handed out are ended and grey out on every iPhone. The Wallet address keeps working with a new card."
 msgstr "Bereits ausgegebene Karten werden beendet und auf jedem iPhone ausgegraut. Die Wallet-Adresse funktioniert weiter, mit einer neuen Karte."
 
-#: includes/wallet-admin.php:205
+#: includes/wallet-admin.php:201
 msgid "Yes, issue anew"
 msgstr "Ja, neu ausstellen"
 
-#: includes/wallet-admin.php:206
+#: includes/wallet-admin.php:202
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: includes/wallet-admin.php:214
+#: includes/wallet-admin.php:210
 msgid "Customize card"
 msgstr "Karte anpassen"
 
-#: includes/wallet-admin.php:215
+#: includes/wallet-admin.php:211
 msgid "Title, image, date, colours and logo come from this link. Anything you enter here replaces them."
 msgstr "Titel, Bild, Datum, Farben und Logo kommen aus diesem Link. Was du hier einträgst, ersetzt sie."
 
-#: includes/wallet-admin.php:243
+#: includes/wallet-admin.php:239
 msgid "On iPhone, iPad and Mac, offer the Wallet card first"
 msgstr "Auf iPhone, iPad und Mac zuerst die Wallet-Karte anbieten"
 
-#: includes/wallet-admin.php:243
+#: includes/wallet-admin.php:239
 msgid "Every scan on these devices shows the card page with a Continue button; others go straight to the target."
 msgstr "Jeder Scan auf diesen Geräten zeigt die Kartenseite mit einem Weiter-Button; alle anderen kommen direkt zum Ziel."
 
-#: includes/wallet-admin.php:344
+#: includes/wallet-admin.php:340
 msgid "A new Wallet card could not be issued: the short link or location does not exist or Wallet cards are not available."
 msgstr "Es konnte keine neue Wallet-Karte ausgestellt werden: Der Kurzlink oder Ort existiert nicht oder Wallet-Karten sind nicht verfügbar."
 
-#: includes/wallet.php:503
+#: includes/wallet.php:544
 msgid "Next"
 msgstr "Nächster Termin"
 
 #. translators: %s: title of the short link
-#: includes/wallet.php:855
+#: includes/wallet.php:896
 #, php-format
 msgid "Short link: %s"
 msgstr "Kurzlink: %s"

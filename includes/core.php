@@ -616,6 +616,8 @@ function clean_meta( $meta ) {
 		'ical_at'      => (int) ( $meta['ical_at'] ?? 0 ),
 		'ical_error'   => substr( sanitize_text_field( $meta['ical_error'] ?? '' ), 0, 200 ),
 		'ical_count'   => (int) ( $meta['ical_count'] ?? 0 ),
+		// Fingerprint of the next event (calendar sync pushes cards only when it changes).
+		'wallet_next'  => preg_match( '/^[0-9a-f]{32}$/', (string) ( $meta['wallet_next'] ?? '' ) ) ? (string) $meta['wallet_next'] : '',
 		// Other targets by device, operating system or screen width, and further domains.
 		'variants'     => clean_variants( $meta['variants'] ?? array() ),
 		'hosts'        => clean_hosts( $meta['hosts'] ?? array() ),
