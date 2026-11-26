@@ -1254,7 +1254,7 @@ function page_edit() {
 					<div class="csl-sub">
 						<label for="csl-slug" class="csl-field"><span><?php esc_html_e( 'Short address', 'clean-short-links' ); ?></span></label>
 						<div class="csl-slug-row">
-							<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home . $p . '/' ); ?></span><input type="text" id="csl-slug" name="slug" value="<?php echo esc_attr( $link['slug'] ); ?>" data-original="<?php echo esc_attr( $link['slug'] ); ?>" data-id="<?php echo esc_attr( (string) $link['id'] ); ?>" maxlength="64" required autocomplete="off" spellcheck="false"></span>
+							<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home . ( is_short_site() ? '' : $p . '/' ) ); ?></span><input type="text" id="csl-slug" name="slug" value="<?php echo esc_attr( $link['slug'] ); ?>" data-original="<?php echo esc_attr( $link['slug'] ); ?>" data-id="<?php echo esc_attr( (string) $link['id'] ); ?>" maxlength="64" required autocomplete="off" spellcheck="false"></span>
 							<button type="button" class="button csl-btn csl-reroll"><?php the_icon( 'shuffle' ); ?><?php esc_html_e( 'New suggestion', 'clean-short-links' ); ?></button>
 						</div>
 						<p class="csl-slug-msg" aria-live="polite"></p>

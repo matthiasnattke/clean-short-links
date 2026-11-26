@@ -163,6 +163,8 @@ function handle_alias( $host ) {
  * @param int $status 200 for the home page, 404 for an unknown short address.
  */
 function render_short_home( $status ) {
+	// This runs before init, where the translations are loaded otherwise.
+	load_plugin_textdomain( 'clean-short-links', false, dirname( plugin_basename( CLEAN_SHORT_LINKS_FILE ) ) . '/languages' );
 	$host = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
 	$icon = get_site_icon_url( 192 );
 	$main = network_home_url( '/' );

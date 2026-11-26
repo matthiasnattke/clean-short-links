@@ -1815,22 +1815,22 @@ msgstr ""
 msgid "This short link is not available."
 msgstr ""
 
-#: includes/redirect.php:180
+#: includes/redirect.php:182
 msgid "Short links that are easy to type, print and share."
 msgstr ""
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:182
+#: includes/redirect.php:184
 #, php-format
 msgid "%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
 msgstr ""
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:183
+#: includes/redirect.php:185
 msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only."
 msgstr ""
 
-#: includes/redirect.php:224
+#: includes/redirect.php:226
 msgid "This short link does not exist (any more). Please check the address."
 msgstr ""
 
