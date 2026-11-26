@@ -121,6 +121,7 @@ function handle_alias( $host ) {
 		$own = find_slug( $req[1] );
 		if ( $own ) {
 			$status = (int) handle_found( $own, $req[0], $req[1], true ); // Returns only for a dead link.
+			render_short_home( $status > 0 ? $status : 404 );
 			nocache_headers();
 			wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status > 0 ? $status : 404 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
 		}
@@ -140,6 +141,9 @@ function handle_alias( $host ) {
 		}
 		restore_current_blog();
 	}
+	if ( $status && ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && is_short_site() ) {
+		render_short_home( $status );
+	}
 	if ( $status ) {
 		nocache_headers();
 		wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
@@ -158,22 +162,55 @@ function handle_alias( $host ) {
 }
 
 /**
- * The home page of a short domain: what the service is, in a few words. Never returns.
+ * The legal links of a short domain: the addresses from the settings, else a page of this
+ * site named "impressum"/"imprint" and its privacy policy page.
  *
- * @param int $status 200 for the home page, 404 for an unknown short address.
+ * @return array<string,string> Label => URL.
+ */
+function short_legal_links() {
+	$s       = site_settings();
+	$imprint = (string) $s['imprint_url'];
+	if ( '' === $imprint ) {
+		foreach ( array( 'impressum', 'imprint' ) as $slug ) {
+			$page = get_page_by_path( $slug );
+			if ( $page && 'publish' === $page->post_status ) {
+				$imprint = (string) get_permalink( $page );
+				break;
+			}
+		}
+	}
+	$privacy = '' !== (string) $s['privacy_url'] ? (string) $s['privacy_url'] : (string) get_privacy_policy_url();
+	$out     = array();
+	if ( '' !== $imprint ) {
+		$out[ __( 'Imprint', 'clean-short-links' ) ] = $imprint;
+	}
+	if ( '' !== $privacy ) {
+		$out[ __( 'Privacy', 'clean-short-links' ) ] = $privacy;
+	}
+	return $out;
+}
+
+/**
+ * The pages of a short domain: its home page (what the service is, in a few words) and the
+ * error page for short links that do not lead anywhere. Never returns.
+ *
+ * @param int $status 200 for the home page; 404, 410 or 503 for the error page.
  */
 function render_short_home( $status ) {
 	// This runs before init, where the translations are loaded otherwise.
 	load_plugin_textdomain( 'clean-short-links', false, dirname( plugin_basename( CLEAN_SHORT_LINKS_FILE ) ) . '/languages' );
-	$host = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
-	$icon = get_site_icon_url( 192 );
-	$main = network_home_url( '/' );
-	$name = is_multisite() ? get_network()->site_name : get_bloginfo( 'name' );
-	$tag  = trim( (string) get_bloginfo( 'description' ) );
+	$status = (int) $status;
+	$host   = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
+	$icon   = get_site_icon_url( 192 );
+	$main   = network_home_url( '/' );
+	$name   = is_multisite() ? get_network()->site_name : get_bloginfo( 'name' );
+	$tag    = trim( (string) get_bloginfo( 'description' ) );
+	$error  = 200 === $status ? null : short_error_text( $status );
+	$path   = trim( request_path(), '/' );
 	/**
 	 * The texts of the home page of a short domain.
 	 *
-	 * @param array $text lead, about, privacy.
+	 * @param array  $text lead, about, privacy.
 	 * @param string $host The short domain.
 	 */
 	$text = (array) apply_filters(
@@ -186,19 +223,25 @@ function render_short_home( $status ) {
 		),
 		$host
 	);
+	$legal = short_legal_links();
 	status_header( $status );
 	nocache_headers();
+	if ( 503 === $status ) {
+		header( 'Retry-After: 3600' );
+	}
 	header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
+	header( 'X-Robots-Tag: ' . ( $error ? 'noindex' : 'all' ) );
 	?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?php echo esc_html( $host ); ?></title>
-<meta name="description" content="<?php echo esc_attr( $text['lead'] ); ?>">
-	<?php if ( 200 !== $status ) : ?>
+<title><?php echo esc_html( $error ? $error['title'] . ' – ' . $host : $host ); ?></title>
+	<?php if ( $error ) : ?>
 <meta name="robots" content="noindex">
+	<?php else : ?>
+<meta name="description" content="<?php echo esc_attr( $text['lead'] ); ?>">
 	<?php endif; ?>
 	<?php if ( $icon ) : ?>
 <link rel="icon" href="<?php echo esc_url( $icon ); ?>">
@@ -209,26 +252,49 @@ function render_short_home( $status ) {
 main{width:100%;max-width:520px}
 .icon{width:72px;height:72px;border-radius:18px;box-shadow:0 10px 26px rgba(24,41,73,.18)}
 h1{font-size:44px;line-height:1.05;margin:22px 0 10px;letter-spacing:-.02em}h1 span{color:#ef7d1b}
-.lead{font-size:20px;margin:0 0 22px}
-p{margin:0 0 14px}.note{padding:12px 16px;border-radius:12px;background:#fff3e6;border:1px solid #f6cfa3;margin-bottom:22px}
-.muted{color:#55617a;font-size:15px}
-footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:15px}footer a{color:#182949;font-weight:600}
-@media (prefers-color-scheme:dark){body{background:#101c33;color:#eef2f8}.muted{color:#a9b5ca}.note{background:#3a2a17;border-color:#7a5326}footer{border-color:#2a3a59}footer a{color:#fff}}
+.lead{font-size:20px;margin:0 0 22px}p{margin:0 0 14px}.muted{color:#55617a;font-size:15px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px;letter-spacing:-.01em;color:inherit;text-decoration:none}.brand span{color:#ef7d1b}.brand .icon{width:40px;height:40px;border-radius:10px;box-shadow:none}
+.err h1{font-size:34px;margin-top:34px}
+.addr{display:flex;align-items:center;gap:10px;margin:22px 0;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid #dbe1ec;font:15px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.addr s{text-decoration-color:#ef7d1b;text-decoration-thickness:2px}
+.dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#ef7d1b}.later .dot{background:#e0a100}.gone .dot{background:#8a94a8}
+.btn{display:inline-block;margin-top:8px;padding:12px 18px;border-radius:12px;background:#182949;color:#fff;text-decoration:none;font-weight:600}.btn:hover,.btn:focus-visible{background:#24406f}
+footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:15px;display:flex;flex-wrap:wrap;gap:6px 18px}footer a{color:#182949;font-weight:600}footer a.legal{font-weight:400}
+@media (prefers-color-scheme:dark){body{background:#101c33;color:#eef2f8}.muted{color:#a9b5ca}.addr{background:#182949;border-color:#2a3a59}.btn{background:#ef7d1b;color:#101c33}.btn:hover,.btn:focus-visible{background:#ff9a3d}footer{border-color:#2a3a59}footer a{color:#fff}}
 </style>
 </head>
 <body>
+	<?php $dotted = wp_kses( preg_replace( '/\./', '<span>.</span>', esc_html( $host ), 1 ), array( 'span' => array() ) ); ?>
+	<?php if ( $error ) : ?>
+<main class="err <?php echo esc_attr( $error['kind'] ); ?>">
+	<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+		<?php if ( $icon ) : ?>
+		<img class="icon" src="<?php echo esc_url( $icon ); ?>" width="40" height="40" alt="">
+		<?php endif; ?>
+		<b><?php echo $dotted; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?></b>
+	</a>
+	<h1><?php echo esc_html( $error['title'] ); ?></h1>
+	<p><?php echo esc_html( $error['text'] ); ?></p>
+		<?php if ( '' !== $path ) : ?>
+	<p class="addr"><i class="dot" aria-hidden="true"></i><?php echo esc_html( $host . '/' ); ?><?php echo 'later' === $error['kind'] ? esc_html( $path ) : '<s>' . esc_html( $path ) . '</s>'; ?></p>
+		<?php endif; ?>
+	<p class="muted"><?php echo esc_html( $text['about'] ); ?></p>
+	<?php else : ?>
 <main>
-	<?php if ( $icon ) : ?>
+		<?php if ( $icon ) : ?>
 	<img class="icon" src="<?php echo esc_url( $icon ); ?>" width="72" height="72" alt="">
-	<?php endif; ?>
-	<h1><?php echo wp_kses( preg_replace( '/\./', '<span>.</span>', esc_html( $host ), 1 ), array( 'span' => array() ) ); ?></h1>
-	<?php if ( 200 !== $status ) : ?>
-	<p class="note"><?php esc_html_e( 'This short link does not exist (any more). Please check the address.', 'clean-short-links' ); ?></p>
-	<?php endif; ?>
+		<?php endif; ?>
+	<h1><?php echo $dotted; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?></h1>
 	<p class="lead"><?php echo esc_html( $text['lead'] ); ?></p>
 	<p><?php echo esc_html( $text['about'] ); ?></p>
 	<p class="muted"><?php echo esc_html( $text['privacy'] ); ?></p>
-	<footer><a href="<?php echo esc_url( $main ); ?>"><?php echo esc_html( preg_replace( '#^https?://|/$#', '', $main ) ); ?></a></footer>
+	<?php endif; ?>
+	<footer>
+		<a href="<?php echo esc_url( $main ); ?>"><?php echo esc_html( preg_replace( '#^https?://|/$#', '', $main ) ); ?></a>
+		<?php foreach ( $legal as $label => $url ) : ?>
+		<a class="legal" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+		<?php endforeach; ?>
+	</footer>
 </main>
 </body>
 </html>

@@ -1781,6 +1781,9 @@ function page_settings() {
 		'csl-sec-bulk'   => __( 'Existing content', 'clean-short-links' ),
 		'csl-sec-import' => __( 'Import', 'clean-short-links' ),
 	);
+	if ( is_short_site() ) {
+		$sections['csl-sec-home'] = __( 'Home page', 'clean-short-links' );
+	}
 	if ( ! maintenance_available() ) {
 		unset( $sections['csl-sec-maintenance'] );
 	}
@@ -1896,6 +1899,17 @@ function page_settings() {
 						</div>
 						<div class="csl-sub"><?php toggle( 'utm_default', ! empty( $s['utm_default'] ), __( 'New short links add UTM parameters', 'clean-short-links' ), __( 'Can be changed per short link.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
+
+					<?php if ( is_short_site() ) : ?>
+						<?php card_open( 'csl-sec-home', 'page', __( 'Home page and error page', 'clean-short-links' ), __( 'The short domain says in a few words what it is, and catches short links that have ended or do not exist. The lead comes from the site’s tagline.', 'clean-short-links' ), '', fold( '' === $s['imprint_url'], $s['imprint_url'] ? preg_replace( '#^https?://#', '', $s['imprint_url'] ) : '' ) ); ?>
+							<div class="csl-row">
+								<label class="csl-field csl-grow"><span><?php esc_html_e( 'Imprint', 'clean-short-links' ); ?></span><input type="url" name="imprint_url" class="csl-wide" value="<?php echo esc_attr( $s['imprint_url'] ); ?>" placeholder="https://…"></label>
+								<label class="csl-field csl-grow"><span><?php esc_html_e( 'Privacy', 'clean-short-links' ); ?></span><input type="url" name="privacy_url" class="csl-wide" value="<?php echo esc_attr( $s['privacy_url'] ); ?>" placeholder="https://…"></label>
+							</div>
+							<span class="csl-help"><?php esc_html_e( 'Shown at the foot of both pages. Empty = a page of this site named “impressum” or “imprint”, and its privacy policy page.', 'clean-short-links' ); ?></span>
+							<p><a class="csl-link-ext" href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank" rel="noopener"><?php the_icon( 'external' ); ?><?php esc_html_e( 'Open the home page', 'clean-short-links' ); ?></a></p>
+						<?php card_close(); ?>
+					<?php endif; ?>
 
 					<?php if ( maintenance_available() ) : ?>
 						<?php $mr = maintenance_rules(); ?>
@@ -2013,6 +2027,8 @@ add_action(
 			'utm_default'   => empty( $p['utm_default'] ) ? 0 : 1,
 			'bio_enabled'   => empty( $p['bio_enabled'] ) ? 0 : 1,
 			'bio_slug'      => is_valid_slug( normalize_slug( $p['bio_slug'] ?? '' ) ) ? normalize_slug( $p['bio_slug'] ) : 'links',
+			'imprint_url'   => isset( $p['imprint_url'] ) ? esc_url_raw( trim( (string) $p['imprint_url'] ), array( 'http', 'https' ) ) : $s['imprint_url'],
+			'privacy_url'   => isset( $p['privacy_url'] ) ? esc_url_raw( trim( (string) $p['privacy_url'] ), array( 'http', 'https' ) ) : $s['privacy_url'],
 		);
 		if ( 'custom' === $new['default_mode'] && '' === $new['default_url'] ) {
 			$new['default_mode'] = '';

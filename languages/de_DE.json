@@ -519,5 +519,17 @@
 	"%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.": "%1$s ist der Kurzlink-Dienst von %2$s. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten.",
 	"Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only.": "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Kurzlinks legen ausschließlich die Betreiber an.",
 	"This short link does not exist (any more). Please check the address.": "Diesen Kurzlink gibt es nicht (mehr). Bitte prüfe die Adresse.",
-	"Not offered": "Nicht angeboten"
+	"Not offered": "Nicht angeboten",
+	"This short link has ended.": "Dieser Kurzlink ist abgelaufen.",
+	"It has reached its end date or its limit, or it was retired. The address is not handed out again.": "Er hat sein Enddatum oder sein Limit erreicht oder wurde stillgelegt. Die Adresse wird nicht neu vergeben.",
+	"This short link cannot be reached right now.": "Dieser Kurzlink ist gerade nicht erreichbar.",
+	"Its target does not answer at the moment, or the link is paused. Please try again later.": "Sein Ziel antwortet im Moment nicht oder der Link ist pausiert. Bitte versuche es später noch einmal.",
+	"This short link does not exist.": "Diesen Kurzlink gibt es nicht.",
+	"Perhaps a typing mistake, or the link has not started yet. Please check the address – every character counts.": "Vielleicht ein Tippfehler, oder der Link ist noch nicht gestartet. Bitte prüfe die Adresse – jedes Zeichen zählt.",
+	"Imprint": "Impressum",
+	"Privacy": "Datenschutz",
+	"Home page and error page": "Startseite und Fehlerseite",
+	"The short domain says in a few words what it is, and catches short links that have ended or do not exist. The lead comes from the site’s tagline.": "Die Kurzdomain sagt in wenigen Worten, wofür sie da ist, und fängt Kurzlinks ab, die abgelaufen sind oder nicht existieren. Der Leitsatz kommt aus dem Untertitel der Website.",
+	"Shown at the foot of both pages. Empty = a page of this site named “impressum” or “imprint”, and its privacy policy page.": "Stehen am Fuß beider Seiten. Leer = eine Seite dieser Website namens „impressum“ oder „imprint“ und ihre Datenschutzseite.",
+	"Open the home page": "Startseite öffnen"
 }

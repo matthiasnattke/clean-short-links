@@ -1152,6 +1152,13 @@ test( 'The shortest address of a link: short domain, else short form, else with 
 	same( 'https://a.de/s/x', shortest_url( 'https://a.de/s/x', '', array(), $short ) );
 } );
 
+test( 'Error page of a short domain: a text per status', function () {
+	same( 'gone', short_error_text( 410 )['kind'] );
+	same( 'later', short_error_text( 503 )['kind'] );
+	same( 'unknown', short_error_text( 404 )['kind'] );
+	same( 'unknown', short_error_text( 0 )['kind'] );
+} );
+
 test( 'Version numbers agree', function () {
 	$main   = file_get_contents( dirname( __DIR__ ) . '/clean-short-links.php' );
 	$readme = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );

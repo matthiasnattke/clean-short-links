@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.5.1
+Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,10 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.5.2 =
+* A short domain has an error page of its own: short links that have ended, cannot be reached right now or do not exist are caught with a clear sentence each.
+* Imprint and privacy links at the foot of the home page and the error page of a short domain (settings of the short domain).
 
 = 0.5.1 =
 * The home page of a short domain speaks the site's language; the editor on a short domain shows the address without prefix.

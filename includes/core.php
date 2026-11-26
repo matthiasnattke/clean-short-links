@@ -123,6 +123,35 @@ function shortest_url( $link, $root, array $hosts, array $short ) {
 }
 
 /**
+ * What a short domain says about a short link that does not lead anywhere: headline and a
+ * sentence of explanation, by HTTP status.
+ *
+ * @param int $status HTTP status.
+ * @return array{kind:string,title:string,text:string}
+ */
+function short_error_text( $status ) {
+	if ( 410 === (int) $status ) {
+		return array(
+			'kind'  => 'gone',
+			'title' => __( 'This short link has ended.', 'clean-short-links' ),
+			'text'  => __( 'It has reached its end date or its limit, or it was retired. The address is not handed out again.', 'clean-short-links' ),
+		);
+	}
+	if ( 503 === (int) $status ) {
+		return array(
+			'kind'  => 'later',
+			'title' => __( 'This short link cannot be reached right now.', 'clean-short-links' ),
+			'text'  => __( 'Its target does not answer at the moment, or the link is paused. Please try again later.', 'clean-short-links' ),
+		);
+	}
+	return array(
+		'kind'  => 'unknown',
+		'title' => __( 'This short link does not exist.', 'clean-short-links' ),
+		'text'  => __( 'Perhaps a typing mistake, or the link has not started yet. Please check the address – every character counts.', 'clean-short-links' ),
+	);
+}
+
+/**
  * Paths a short domain or a subdomain without a site leaves to WordPress: sign-in, admin,
  * REST, files – so the site stays manageable.
  *
@@ -268,6 +297,9 @@ function site_defaults() {
 		'utm_default'   => 0,
 		'bio_enabled'   => 0,
 		'bio_slug'      => 'links',
+		// Legal links on the pages of a short domain (home page, error pages).
+		'imprint_url'   => '',
+		'privacy_url'   => '',
 	);
 }
 
