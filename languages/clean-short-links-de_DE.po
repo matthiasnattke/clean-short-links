@@ -1865,19 +1865,42 @@ msgid "This short link is not available."
 msgstr "Dieser Kurzlink ist nicht verfügbar."
 
 #: includes/redirect.php:219
-msgid "Short links that are easy to type, print and share."
-msgstr "Kurze Links, die sich leicht tippen, drucken und teilen lassen."
+msgid "Short links to type, scan and share."
+msgstr "Kurze Links zum Tippen, Scannen und Teilen."
 
 #. translators: %s: short domain
 #: includes/redirect.php:221
 #, php-format
-msgid "%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
-msgstr "%1$s ist ein privater Kurzlink-Dienst. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten."
+msgid "%s is a private link shortener."
+msgstr "%s ist ein privater Kurzlink-Dienst."
 
 #. translators: %s: short domain
 #: includes/redirect.php:222
-msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors."
-msgstr "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Besucher können keine Kurzlinks anlegen."
+msgid "Page"
+msgstr "Seite"
+
+#. translators: %s: short domain
+#: includes/redirect.php:222
+msgid "File"
+msgstr "Datei"
+
+#. translators: %s: short domain
+#: includes/redirect.php:222
+msgid "Card"
+msgstr "Karte"
+
+#. translators: %s: short domain
+#: includes/redirect.php:224
+msgid "For posters, QR codes and messages"
+msgstr "Für Plakate, QR-Codes und Nachrichten"
+
+#: includes/redirect.php:225
+msgid "No cookies, no profiles"
+msgstr "Ohne Cookies, ohne Profile"
+
+#: includes/redirect.php:226
+msgid "Private – visitors cannot create links"
+msgstr "Privat – Besucher legen keine Links an"
 
 #: includes/rest.php:23
 msgid "This content does not exist."

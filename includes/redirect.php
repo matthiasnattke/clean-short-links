@@ -210,20 +210,39 @@ function render_short_home( $status, $known = false ) {
 	/**
 	 * The texts of the home page of a short domain.
 	 *
-	 * @param array  $text lead, about, privacy.
+	 * @param array  $text lead, about (line on the error page), targets (three labels), facts (three short lines).
 	 * @param string $host The short domain.
 	 */
 	$text = (array) apply_filters(
 		'clean_short_links_short_home',
 		array(
-			'lead'    => '' !== $tag ? $tag : __( 'Short links that are easy to type, print and share.', 'clean-short-links' ),
+			'lead'    => '' !== $tag ? $tag : __( 'Short links to type, scan and share.', 'clean-short-links' ),
 			/* translators: %s: short domain */
-			'about'   => sprintf( __( '%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.', 'clean-short-links' ), $host ),
-			'privacy' => __( 'Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors.', 'clean-short-links' ),
+			'about'   => sprintf( __( '%s is a private link shortener.', 'clean-short-links' ), $host ),
+			'targets' => array( __( 'Page', 'clean-short-links' ), __( 'File', 'clean-short-links' ), __( 'Card', 'clean-short-links' ) ),
+			'facts'   => array(
+				__( 'For posters, QR codes and messages', 'clean-short-links' ),
+				__( 'No cookies, no profiles', 'clean-short-links' ),
+				__( 'Private – visitors cannot create links', 'clean-short-links' ),
+			),
 		),
 		$host
 	);
 	$legal = short_legal_links();
+	// Small line drawings: page, file, card – poster with a code, shield, lock.
+	$svg   = function ( $d ) {
+		return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $d . '</svg>';
+	};
+	$pics  = array(
+		'page'   => '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M7 13h7M7 16h4"/>',
+		'file'   => '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 13h5M10 17h5"/>',
+		'card'   => '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M15.5 15h2"/>',
+		'qr'     => '<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"/><path d="M14 14h2.5v2.5H14zM18.5 18.5h2v2M14 20h2M20 14v2"/>',
+		'shield' => '<path d="M12 3 4.5 6v6c0 4.4 3.2 7.9 7.5 9 4.3-1.1 7.5-4.6 7.5-9V6z"/><path d="m9 12 2 2 4-4"/>',
+		'lock'   => '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+	);
+	$targets = array_slice( array_values( (array) ( $text['targets'] ?? array() ) ), 0, 3 );
+	$facts   = array_slice( array_values( (array) ( $text['facts'] ?? array() ) ), 0, 3 );
 	status_header( $status );
 	nocache_headers();
 	if ( 503 === $status ) {
@@ -253,6 +272,11 @@ main{width:100%;max-width:520px}
 .icon{width:72px;height:72px;border-radius:18px;box-shadow:0 10px 26px rgba(24,41,73,.18)}
 h1{font-size:44px;line-height:1.05;margin:22px 0 10px;letter-spacing:-.02em}h1 span{color:#ef7d1b}
 .lead{font-size:20px;margin:0 0 22px}p{margin:0 0 14px}.muted{color:#55617a;font-size:15px}
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 26px;padding:16px;border-radius:18px;background:#fff;border:1px solid #dbe1ec}
+.pill{padding:9px 14px;border-radius:999px;background:#182949;color:#fff;font:600 15px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}.pill b{color:#ef7d1b}
+.arrow{flex:0 0 auto;color:#ef7d1b;display:flex}
+.to{display:flex;gap:8px;flex-wrap:wrap}.to span{display:flex;align-items:center;gap:6px;padding:7px 11px 7px 9px;border-radius:12px;background:#f5f7fb;font-size:14px;font-weight:600}.to svg{color:#ef7d1b}
+.facts{list-style:none;margin:0;padding:0;display:grid;gap:10px}.facts li{display:flex;align-items:center;gap:12px;font-size:15px}.facts svg{flex:0 0 auto;color:#55617a}
 .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px;letter-spacing:-.01em;color:inherit;text-decoration:none}.brand span{color:#ef7d1b}.brand .icon{width:40px;height:40px;border-radius:10px;box-shadow:none}
 .err h1{font-size:34px;margin-top:34px}
 .addr{display:flex;align-items:center;gap:10px;margin:22px 0;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid #dbe1ec;font:15px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
@@ -260,6 +284,7 @@ h1{font-size:44px;line-height:1.05;margin:22px 0 10px;letter-spacing:-.02em}h1 s
 .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#ef7d1b}.later .dot{background:#e0a100}.gone .dot{background:#8a94a8}
 .btn{display:inline-block;margin-top:8px;padding:12px 18px;border-radius:12px;background:#182949;color:#fff;text-decoration:none;font-weight:600}.btn:hover,.btn:focus-visible{background:#24406f}
 footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:15px;display:flex;flex-wrap:wrap;gap:6px 18px}footer a{color:#182949;font-weight:600}footer a.legal{font-weight:400}
+@media (prefers-color-scheme:dark){.flow{background:#182949;border-color:#2a3a59}.pill{background:#101c33}.to span{background:#101c33}.facts svg{color:#a9b5ca}}
 @media (prefers-color-scheme:dark){body{background:#101c33;color:#eef2f8}.muted{color:#a9b5ca}.addr{background:#182949;border-color:#2a3a59}.btn{background:#ef7d1b;color:#101c33}.btn:hover,.btn:focus-visible{background:#ff9a3d}footer{border-color:#2a3a59}footer a{color:#fff}}
 </style>
 </head>
@@ -286,8 +311,24 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:1
 		<?php endif; ?>
 	<h1><?php echo $dotted; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?></h1>
 	<p class="lead"><?php echo esc_html( $text['lead'] ); ?></p>
-	<p><?php echo esc_html( $text['about'] ); ?></p>
-	<p class="muted"><?php echo esc_html( $text['privacy'] ); ?></p>
+	<div class="flow">
+		<span class="pill"><?php echo esc_html( $host ); ?><b>/</b>name</span>
+		<span class="arrow"><?php echo $svg( '<path d="M4 12h15M13 6l6 6-6 6"/>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
+		<span class="to">
+		<?php foreach ( array( 'page', 'file', 'card' ) as $i => $pic ) : ?>
+			<?php if ( isset( $targets[ $i ] ) ) : ?>
+			<span><?php echo $svg( $pics[ $pic ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $targets[ $i ] ); ?></span>
+			<?php endif; ?>
+		<?php endforeach; ?>
+		</span>
+	</div>
+	<ul class="facts">
+		<?php foreach ( array( 'qr', 'shield', 'lock' ) as $i => $pic ) : ?>
+			<?php if ( isset( $facts[ $i ] ) ) : ?>
+		<li><?php echo $svg( $pics[ $pic ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $facts[ $i ] ); ?></li>
+			<?php endif; ?>
+		<?php endforeach; ?>
+	</ul>
 	<?php endif; ?>
 	<?php if ( $legal ) : ?>
 	<footer>
