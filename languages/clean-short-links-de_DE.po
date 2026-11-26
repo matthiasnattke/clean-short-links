@@ -61,8 +61,8 @@ msgstr "Mit Präfix frei – als reserviertes Wort aber nicht als Kurzform nutzb
 msgid "The short form is taken by %s – only the link with prefix works."
 msgstr "Die Kurzform ist durch %s belegt – nur der Link mit Präfix funktioniert."
 
-#. translators: %s: domains, e.g. "cou.li"
-#: includes/admin.php:80 includes/admin.php:647
+#. translators: %s: title of the content at that address
+#: includes/admin.php:79 includes/admin.php:647
 msgid "Only this site"
 msgstr "Nur diese Website"
 
@@ -82,6 +82,7 @@ msgstr "Suche …"
 msgid "Nothing found. You can also paste a URL."
 msgstr "Nichts gefunden. Du kannst auch eine URL einfügen."
 
+#. translators: %s: domains, e.g. "cou.li"
 #: includes/admin.php:84 includes/admin.php:485
 msgid "URL"
 msgstr "URL"

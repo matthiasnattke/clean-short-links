@@ -60,8 +60,8 @@ msgstr ""
 msgid "The short form is taken by %s – only the link with prefix works."
 msgstr ""
 
-#. translators: %s: domains, e.g. "cou.li"
-#: includes/admin.php:80 includes/admin.php:647
+#. translators: %s: title of the content at that address
+#: includes/admin.php:79 includes/admin.php:647
 msgid "Only this site"
 msgstr ""
 
@@ -81,6 +81,7 @@ msgstr ""
 msgid "Nothing found. You can also paste a URL."
 msgstr ""
 
+#. translators: %s: domains, e.g. "cou.li"
 #: includes/admin.php:84 includes/admin.php:485
 msgid "URL"
 msgstr ""

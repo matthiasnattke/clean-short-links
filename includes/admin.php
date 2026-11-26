@@ -76,8 +76,8 @@ function admin_js_data() {
 			'reserved'    => __( 'Available with prefix – as a reserved word it cannot be used as a short form.', 'clean-short-links' ),
 			/* translators: %s: title of the content at that address */
 			'collision'   => __( 'The short form is taken by %s – only the link with prefix works.', 'clean-short-links' ),
+			'onlyHere'    => __( 'Only this site', 'clean-short-links' ),
 			/* translators: %s: domains, e.g. "cou.li" */
-			'onlyHere'  => __( 'Only this site', 'clean-short-links' ),
 			'hostTaken'   => __( 'This short address is already taken on %s.', 'clean-short-links' ),
 			'searching'   => __( 'Searching …', 'clean-short-links' ),
 			'noResults'   => __( 'Nothing found. You can also paste a URL.', 'clean-short-links' ),
