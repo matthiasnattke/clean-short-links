@@ -1864,20 +1864,20 @@ msgstr "Nextcloud hat die Anmeldung abgelehnt (App-Passwort?)."
 msgid "This short link is not available."
 msgstr "Dieser Kurzlink ist nicht verfügbar."
 
-#: includes/redirect.php:221
+#: includes/redirect.php:219
 msgid "Short links that are easy to type, print and share."
 msgstr "Kurze Links, die sich leicht tippen, drucken und teilen lassen."
 
-#. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:223
+#. translators: %s: short domain
+#: includes/redirect.php:221
 #, php-format
-msgid "%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
-msgstr "%1$s ist der Kurzlink-Dienst von %2$s. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten."
+msgid "%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
+msgstr "%1$s ist ein privater Kurzlink-Dienst. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten."
 
-#. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:224
-msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only."
-msgstr "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Kurzlinks legen ausschließlich die Betreiber an."
+#. translators: %s: short domain
+#: includes/redirect.php:222
+msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors."
+msgstr "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Besucher können keine Kurzlinks anlegen."
 
 #: includes/rest.php:23
 msgid "This content does not exist."

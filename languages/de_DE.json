@@ -533,5 +533,7 @@
 	"Shown at the foot of both pages. Empty = a page of this site named “impressum” or “imprint”, and its privacy policy page.": "Stehen am Fuß beider Seiten. Leer = eine Seite dieser Website namens „impressum“ oder „imprint“ und ihre Datenschutzseite.",
 	"Open the home page": "Startseite öffnen",
 	"It has not started yet, is paused, or its target does not answer at the moment. Please try again later.": "Er ist noch nicht gestartet, pausiert, oder sein Ziel antwortet im Moment nicht. Bitte versuche es später noch einmal.",
-	"Perhaps a typing mistake. Please check the address – every character counts.": "Vielleicht ein Tippfehler. Bitte prüfe die Adresse – jedes Zeichen zählt."
+	"Perhaps a typing mistake. Please check the address – every character counts.": "Vielleicht ein Tippfehler. Bitte prüfe die Adresse – jedes Zeichen zählt.",
+	"%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.": "%1$s ist ein privater Kurzlink-Dienst. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten.",
+	"Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors.": "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Besucher können keine Kurzlinks anlegen."
 }

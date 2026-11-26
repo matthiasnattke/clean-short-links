@@ -203,8 +203,6 @@ function render_short_home( $status, $known = false ) {
 	$status = (int) $status;
 	$host   = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
 	$icon   = get_site_icon_url( 192 );
-	$main   = network_home_url( '/' );
-	$name   = is_multisite() ? get_network()->site_name : get_bloginfo( 'name' );
 	$tag    = trim( (string) get_bloginfo( 'description' ) );
 	// A link that exists but answers "not found" (not started, target unreachable) is not a typing mistake.
 	$error  = 200 === $status ? null : short_error_text( $known && 404 === $status ? 503 : $status );
@@ -219,9 +217,9 @@ function render_short_home( $status, $known = false ) {
 		'clean_short_links_short_home',
 		array(
 			'lead'    => '' !== $tag ? $tag : __( 'Short links that are easy to type, print and share.', 'clean-short-links' ),
-			/* translators: 1: short domain, 2: name of the network or site */
-			'about'   => sprintf( __( '%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.', 'clean-short-links' ), $host, $name ),
-			'privacy' => __( 'Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only.', 'clean-short-links' ),
+			/* translators: %s: short domain */
+			'about'   => sprintf( __( '%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.', 'clean-short-links' ), $host ),
+			'privacy' => __( 'Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors.', 'clean-short-links' ),
 		),
 		$host
 	);
@@ -291,12 +289,13 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:1
 	<p><?php echo esc_html( $text['about'] ); ?></p>
 	<p class="muted"><?php echo esc_html( $text['privacy'] ); ?></p>
 	<?php endif; ?>
+	<?php if ( $legal ) : ?>
 	<footer>
-		<a href="<?php echo esc_url( $main ); ?>"><?php echo esc_html( preg_replace( '#^https?://|/$#', '', $main ) ); ?></a>
 		<?php foreach ( $legal as $label => $url ) : ?>
 		<a class="legal" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
 	</footer>
+	<?php endif; ?>
 </main>
 </body>
 </html>

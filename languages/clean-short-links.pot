@@ -1863,19 +1863,19 @@ msgstr ""
 msgid "This short link is not available."
 msgstr ""
 
-#: includes/redirect.php:221
+#: includes/redirect.php:219
 msgid "Short links that are easy to type, print and share."
 msgstr ""
 
-#. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:223
+#. translators: %s: short domain
+#: includes/redirect.php:221
 #, php-format
-msgid "%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
+msgid "%1$s is a private link shortener. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
 msgstr ""
 
-#. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:224
-msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only."
+#. translators: %s: short domain
+#: includes/redirect.php:222
+msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links cannot be created by visitors."
 msgstr ""
 
 #: includes/rest.php:23
