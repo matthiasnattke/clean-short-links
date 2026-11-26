@@ -288,7 +288,9 @@ h1{font-size:44px;line-height:1.05;margin:22px 0 10px;letter-spacing:-.02em}h1 s
 .addr s{text-decoration-color:#ef7d1b;text-decoration-thickness:2px}
 .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#ef7d1b}.later .dot{background:#e0a100}.gone .dot{background:#8a94a8}
 .btn{display:inline-block;margin-top:8px;padding:12px 18px;border-radius:12px;background:#182949;color:#fff;text-decoration:none;font-weight:600}.btn:hover,.btn:focus-visible{background:#24406f}
+.review{margin:26px 0 -12px;font-size:13px;color:#55617a}.review a{color:inherit}
 footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:15px;display:flex;flex-wrap:wrap;gap:6px 18px}footer a{color:#182949;font-weight:600}footer a.legal{font-weight:400}
+@media (prefers-color-scheme:dark){.review{color:#a9b5ca}}
 @media (prefers-color-scheme:dark){.flow{background:#182949;border-color:#2a3a59}.pill{background:#101c33}.to span{background:#101c33}.facts svg{color:#a9b5ca}}
 @media (prefers-color-scheme:dark){body{background:#101c33;color:#eef2f8}.muted{color:#a9b5ca}.addr{background:#182949;border-color:#2a3a59}.btn{background:#ef7d1b;color:#101c33}.btn:hover,.btn:focus-visible{background:#ff9a3d}footer{border-color:#2a3a59}footer a{color:#fff}}
 </style>
@@ -334,6 +336,16 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:1
 			<?php endif; ?>
 		<?php endforeach; ?>
 	</ul>
+	<?php endif; ?>
+	<?php if ( '' !== (string) ( $all[ $lang ]['review'] ?? '' ) ) : ?>
+		<?php $contact = (string) reset( $legal ); ?>
+	<p class="review">
+		<?php if ( '' !== $contact ) : ?>
+		<a href="<?php echo esc_url( $contact ); ?>"><?php echo esc_html( $all[ $lang ]['review'] ); ?></a>
+		<?php else : ?>
+			<?php echo esc_html( $all[ $lang ]['review'] ); ?>
+		<?php endif; ?>
+	</p>
 	<?php endif; ?>
 	<?php if ( $legal ) : ?>
 	<footer>

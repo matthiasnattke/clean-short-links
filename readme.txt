@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.5.6
+Stable tag: 0.5.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.5.7 =
+* Pages of a short domain: languages translated by machine that nobody could check (Irish, Maltese, Estonian, Latvian, Lithuanian) say so and ask for corrections.
 
 = 0.5.6 =
 * Home page and error page of a short domain speak the visitor's language: the 24 official languages of the European Union, chosen by the browser's language, else the site's language.

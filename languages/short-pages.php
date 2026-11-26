@@ -4,6 +4,9 @@
  * languages of the European Union. English and German are written by hand; the others were translated
  * from German with DeepL and then read through. The page picks the language the browser asks for.
  *
+ * 'review' is optional: a line that says the text was translated by machine and asks for corrections.
+ * It is set for the languages nobody here can judge, and shown with a link to the imprint.
+ *
  * @package CleanShortLinks
  */
 
@@ -153,6 +156,7 @@ return array(
 		'unknown_text' => 'Võib-olla on tegemist trükiveaga. Palun kontrolli aadressi – iga märk loeb.',
 		'imprint' => 'Õiguslik teave',
 		'privacy' => 'Andmekaitse',
+		'review' => 'Automaatselt tõlgitud – parandused on teretulnud.',
 	),
 	'fi' => array(
 		'lead' => 'Lyhyet linkit kirjoittamiseen, skannaamiseen ja jakamiseen.',
@@ -207,6 +211,7 @@ return array(
 		'unknown_text' => 'B\'fhéidir gur botún clóscríofa é. Seiceáil an seoladh, le do thoil – tá tábhacht le gach carachtar.',
 		'imprint' => 'Fógra dlíthiúil',
 		'privacy' => 'Cosaint sonraí',
+		'review' => 'Aistrithe go huathoibríoch – fáiltítear roimh cheartúcháin.',
 	),
 	'hr' => array(
 		'lead' => 'Kratke poveznice za tipkanje, skeniranje i dijeljenje.',
@@ -279,6 +284,7 @@ return array(
 		'unknown_text' => 'Galbūt tai rašybos klaida. Patikrinkite adresą – svarbus kiekvienas simbolis.',
 		'imprint' => 'Teisinė informacija',
 		'privacy' => 'Duomenų apsauga',
+		'review' => 'Automatinis vertimas – laukiame pataisymų.',
 	),
 	'lv' => array(
 		'lead' => 'Īsas saites, ko ievadīt, skenēt un kopīgot.',
@@ -297,6 +303,7 @@ return array(
 		'unknown_text' => 'Varbūt tā ir drukas kļūda. Lūdzu, pārbaudi adresi – katrs simbols ir svarīgs.',
 		'imprint' => 'Juridiskā informācija',
 		'privacy' => 'Datu aizsardzība',
+		'review' => 'Automātiski tulkots – labojumi ir gaidīti.',
 	),
 	'mt' => array(
 		'lead' => 'Links qosra biex tittajpja, tiskennja u taqsam.',
@@ -315,6 +322,7 @@ return array(
 		'unknown_text' => 'Jista\' jkun żball fit-tajpjar. Jekk jogħġbok iċċekkja l-indirizz – kull karattru jgħodd.',
 		'imprint' => 'Avviż legali',
 		'privacy' => 'Protezzjoni tad-data',
+		'review' => 'Tradott awtomatikament – il-korrezzjonijiet huma milqugħa.',
 	),
 	'nl' => array(
 		'lead' => 'Korte links om te typen, te scannen en te delen.',

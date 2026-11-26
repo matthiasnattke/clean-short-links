@@ -1176,7 +1176,7 @@ test( 'Pages of a short domain: every language has every text', function () {
 	$keys = array_keys( $all['en'] );
 	same( 24, count( $all ) );
 	foreach ( $all as $lang => $t ) {
-		same( $keys, array_keys( $t ), $lang );
+		same( $keys, array_values( array_diff( array_keys( $t ), array( 'review' ) ) ), $lang ); // 'review' is optional.
 		same( 1, substr_count( $t['about'], '%s' ), $lang );
 		same( array(), array_keys( array_filter( $t, fn( $v ) => '' === trim( $v ) ) ), $lang );
 	}
