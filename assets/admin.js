@@ -352,7 +352,11 @@
 
 	/* ---- Start with publication only for content ---- */
 	function publishOption() {
-		var v = $( 'input[name="target"]' ).value, p = $( '.csl-publish-start' );
+		var t = $( 'input[name="target"]' ), p = $( '.csl-publish-start' );
+		if ( ! t || ! p ) {
+			return; // Nextcloud links have neither a target field nor a time window.
+		}
+		var v = t.value;
 		p.hidden = 0 !== v.indexOf( 'post:' );
 		if ( p.hidden && $( 'input', p ).checked ) {
 			$( 'input[name="start_mode"][value=""]' ).checked = true;
@@ -386,9 +390,11 @@
 	}
 	publishOption();
 	var startAt = $( 'input[name="starts_at"]' );
-	startAt.addEventListener( 'input', function () {
-		$( 'input[name="start_mode"][value="date"]' ).checked = !! startAt.value;
-	} );
+	if ( startAt ) {
+		startAt.addEventListener( 'input', function () {
+			$( 'input[name="start_mode"][value="date"]' ).checked = !! startAt.value;
+		} );
+	}
 
 	/* ---- Rules ---- */
 	var rules = $( '.csl-rules' ), tpl = $( '#csl-rule-template' ), next = $$( '.csl-rule', rules ).length + 100;
@@ -397,31 +403,33 @@
 			$( '.csl-rule-no', r ).textContent = String( i + 1 );
 		} );
 	}
-	$( '.csl-rule-add' ).addEventListener( 'click', function () {
-		var html = tpl.innerHTML.replace( /__i__/g, String( next++ ) );
-		var wrap = document.createElement( 'div' );
-		wrap.innerHTML = html;
-		var row = wrap.firstElementChild;
-		rules.appendChild( row );
-		$$( '.csl-picker', row ).forEach( initPicker );
+	if ( rules && tpl ) {
+		$( '.csl-rule-add' ).addEventListener( 'click', function () {
+			var html = tpl.innerHTML.replace( /__i__/g, String( next++ ) );
+			var wrap = document.createElement( 'div' );
+			wrap.innerHTML = html;
+			var row = wrap.firstElementChild;
+			rules.appendChild( row );
+			$$( '.csl-picker', row ).forEach( initPicker );
+			number();
+			$( '.csl-rule-label', row ).focus();
+		} );
+		rules.addEventListener( 'click', function ( e ) {
+			var row = e.target.closest( '.csl-rule' );
+			if ( ! row ) {
+				return;
+			}
+			if ( e.target.closest( '.csl-rule-remove' ) && window.confirm( T.removeRule ) ) {
+				row.remove();
+				number();
+			}
+			if ( e.target.closest( '.csl-rule-up' ) && row.previousElementSibling ) {
+				rules.insertBefore( row, row.previousElementSibling );
+				number();
+			}
+		} );
 		number();
-		$( '.csl-rule-label', row ).focus();
-	} );
-	rules.addEventListener( 'click', function ( e ) {
-		var row = e.target.closest( '.csl-rule' );
-		if ( ! row ) {
-			return;
-		}
-		if ( e.target.closest( '.csl-rule-remove' ) && window.confirm( T.removeRule ) ) {
-			row.remove();
-			number();
-		}
-		if ( e.target.closest( '.csl-rule-up' ) && row.previousElementSibling ) {
-			rules.insertBefore( row, row.previousElementSibling );
-			number();
-		}
-	} );
-	number();
+	}
 
 	/* ---- Variants by device and screen ---- */
 	var variants = $( '.csl-variants' ), vtpl = $( '#csl-variant-template' ), vnext = $$( '.csl-variant', variants ).length + 100;
