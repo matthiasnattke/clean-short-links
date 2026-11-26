@@ -1667,16 +1667,16 @@ msgid "This short link cannot be reached right now."
 msgstr "Dieser Kurzlink ist gerade nicht erreichbar."
 
 #: includes/core.php:144
-msgid "Its target does not answer at the moment, or the link is paused. Please try again later."
-msgstr "Sein Ziel antwortet im Moment nicht oder der Link ist pausiert. Bitte versuche es später noch einmal."
+msgid "It has not started yet, is paused, or its target does not answer at the moment. Please try again later."
+msgstr "Er ist noch nicht gestartet, pausiert, oder sein Ziel antwortet im Moment nicht. Bitte versuche es später noch einmal."
 
 #: includes/core.php:149
 msgid "This short link does not exist."
 msgstr "Diesen Kurzlink gibt es nicht."
 
 #: includes/core.php:150
-msgid "Perhaps a typing mistake, or the link has not started yet. Please check the address – every character counts."
-msgstr "Vielleicht ein Tippfehler, oder der Link ist noch nicht gestartet. Bitte prüfe die Adresse – jedes Zeichen zählt."
+msgid "Perhaps a typing mistake. Please check the address – every character counts."
+msgstr "Vielleicht ein Tippfehler. Bitte prüfe die Adresse – jedes Zeichen zählt."
 
 #: includes/core.php:698
 msgid "Newsletter"
@@ -1864,18 +1864,18 @@ msgstr "Nextcloud hat die Anmeldung abgelehnt (App-Passwort?)."
 msgid "This short link is not available."
 msgstr "Dieser Kurzlink ist nicht verfügbar."
 
-#: includes/redirect.php:219
+#: includes/redirect.php:221
 msgid "Short links that are easy to type, print and share."
 msgstr "Kurze Links, die sich leicht tippen, drucken und teilen lassen."
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:221
+#: includes/redirect.php:223
 #, php-format
 msgid "%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
 msgstr "%1$s ist der Kurzlink-Dienst von %2$s. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten."
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:222
+#: includes/redirect.php:224
 msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only."
 msgstr "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Kurzlinks legen ausschließlich die Betreiber an."
 

@@ -1666,7 +1666,7 @@ msgid "This short link cannot be reached right now."
 msgstr ""
 
 #: includes/core.php:144
-msgid "Its target does not answer at the moment, or the link is paused. Please try again later."
+msgid "It has not started yet, is paused, or its target does not answer at the moment. Please try again later."
 msgstr ""
 
 #: includes/core.php:149
@@ -1674,7 +1674,7 @@ msgid "This short link does not exist."
 msgstr ""
 
 #: includes/core.php:150
-msgid "Perhaps a typing mistake, or the link has not started yet. Please check the address – every character counts."
+msgid "Perhaps a typing mistake. Please check the address – every character counts."
 msgstr ""
 
 #: includes/core.php:698
@@ -1863,18 +1863,18 @@ msgstr ""
 msgid "This short link is not available."
 msgstr ""
 
-#: includes/redirect.php:219
+#: includes/redirect.php:221
 msgid "Short links that are easy to type, print and share."
 msgstr ""
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:221
+#: includes/redirect.php:223
 #, php-format
 msgid "%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages."
 msgstr ""
 
 #. translators: 1: short domain, 2: name of the network or site
-#: includes/redirect.php:222
+#: includes/redirect.php:224
 msgid "Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only."
 msgstr ""
 

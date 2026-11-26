@@ -531,5 +531,7 @@
 	"Home page and error page": "Startseite und Fehlerseite",
 	"The short domain says in a few words what it is, and catches short links that have ended or do not exist. The lead comes from the site’s tagline.": "Die Kurzdomain sagt in wenigen Worten, wofür sie da ist, und fängt Kurzlinks ab, die abgelaufen sind oder nicht existieren. Der Leitsatz kommt aus dem Untertitel der Website.",
 	"Shown at the foot of both pages. Empty = a page of this site named “impressum” or “imprint”, and its privacy policy page.": "Stehen am Fuß beider Seiten. Leer = eine Seite dieser Website namens „impressum“ oder „imprint“ und ihre Datenschutzseite.",
-	"Open the home page": "Startseite öffnen"
+	"Open the home page": "Startseite öffnen",
+	"It has not started yet, is paused, or its target does not answer at the moment. Please try again later.": "Er ist noch nicht gestartet, pausiert, oder sein Ziel antwortet im Moment nicht. Bitte versuche es später noch einmal.",
+	"Perhaps a typing mistake. Please check the address – every character counts.": "Vielleicht ein Tippfehler. Bitte prüfe die Adresse – jedes Zeichen zählt."
 }

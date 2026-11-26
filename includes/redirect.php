@@ -121,7 +121,7 @@ function handle_alias( $host ) {
 		$own = find_slug( $req[1] );
 		if ( $own ) {
 			$status = (int) handle_found( $own, $req[0], $req[1], true ); // Returns only for a dead link.
-			render_short_home( $status > 0 ? $status : 404 );
+			render_short_home( $status > 0 ? $status : 404, true );
 			nocache_headers();
 			wp_die( esc_html__( 'This short link is not available.', 'clean-short-links' ), '', array( 'response' => $status > 0 ? $status : 404 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- An HTTP status code, not output.
 		}
@@ -142,7 +142,7 @@ function handle_alias( $host ) {
 		restore_current_blog();
 	}
 	if ( $status && ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && is_short_site() ) {
-		render_short_home( $status );
+		render_short_home( $status, true );
 	}
 	if ( $status ) {
 		nocache_headers();
@@ -194,9 +194,10 @@ function short_legal_links() {
  * The pages of a short domain: its home page (what the service is, in a few words) and the
  * error page for short links that do not lead anywhere. Never returns.
  *
- * @param int $status 200 for the home page; 404, 410 or 503 for the error page.
+ * @param int  $status 200 for the home page; 404, 410 or 503 for the error page.
+ * @param bool $known  The short link exists but does not lead anywhere right now.
  */
-function render_short_home( $status ) {
+function render_short_home( $status, $known = false ) {
 	// This runs before init, where the translations are loaded otherwise.
 	load_plugin_textdomain( 'clean-short-links', false, dirname( plugin_basename( CLEAN_SHORT_LINKS_FILE ) ) . '/languages' );
 	$status = (int) $status;
@@ -205,7 +206,8 @@ function render_short_home( $status ) {
 	$main   = network_home_url( '/' );
 	$name   = is_multisite() ? get_network()->site_name : get_bloginfo( 'name' );
 	$tag    = trim( (string) get_bloginfo( 'description' ) );
-	$error  = 200 === $status ? null : short_error_text( $status );
+	// A link that exists but answers "not found" (not started, target unreachable) is not a typing mistake.
+	$error  = 200 === $status ? null : short_error_text( $known && 404 === $status ? 503 : $status );
 	$path   = trim( request_path(), '/' );
 	/**
 	 * The texts of the home page of a short domain.

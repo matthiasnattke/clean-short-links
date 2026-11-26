@@ -141,13 +141,13 @@ function short_error_text( $status ) {
 		return array(
 			'kind'  => 'later',
 			'title' => __( 'This short link cannot be reached right now.', 'clean-short-links' ),
-			'text'  => __( 'Its target does not answer at the moment, or the link is paused. Please try again later.', 'clean-short-links' ),
+			'text'  => __( 'It has not started yet, is paused, or its target does not answer at the moment. Please try again later.', 'clean-short-links' ),
 		);
 	}
 	return array(
 		'kind'  => 'unknown',
 		'title' => __( 'This short link does not exist.', 'clean-short-links' ),
-		'text'  => __( 'Perhaps a typing mistake, or the link has not started yet. Please check the address – every character counts.', 'clean-short-links' ),
+		'text'  => __( 'Perhaps a typing mistake. Please check the address – every character counts.', 'clean-short-links' ),
 	);
 }
 
