@@ -24,14 +24,16 @@ function create_for_post( $post_id, $kind = '' ) {
 	}
 	$kind  = in_array( $kind, array( 'random', 'memorable', 'title' ), true ) ? $kind : default_kind( 'post:' . $post->ID, site_settings() );
 	$title = plain_post_title( $post->ID );
+	$hosts = default_hosts();
 	return save_link(
 		array(
 			'title'      => $title,
 			'target'     => 'post:' . $post->ID,
-			'slug'       => suggest_slug( $kind, $title ),
+			'slug'       => slug_for_hosts( suggest_slug( $kind, $title ), $hosts ),
 			'kind'       => $kind,
 			'root'       => 'random' !== $kind && ! empty( site_settings()['root_default'] ),
 			'start_mode' => 'publish',
+			'meta'       => array( 'hosts' => $hosts ),
 		)
 	);
 }
@@ -65,7 +67,7 @@ add_filter(
 			$id = get_queried_object_id();
 		}
 		$link = $id ? get_link_for_post( (int) $id ) : null;
-		return $link ? short_urls( $link )['link'] : $shortlink;
+		return $link ? short_urls( $link )['short'] : $shortlink;
 	},
 	10,
 	3
@@ -420,8 +422,8 @@ function link_suggestions( $search, $limit = 6 ) {
 		$out[] = array(
 			'id'    => $l['id'],
 			/* translators: 1: title of the short link, 2: its address without https:// */
-			'title' => sprintf( __( '%1$s – %2$s', 'clean-short-links' ), $name, preg_replace( '#^https?://#', '', short_urls( $l )['link'] ) ),
-			'url'   => short_urls( $l )['link'],
+			'title' => sprintf( __( '%1$s – %2$s', 'clean-short-links' ), $name, preg_replace( '#^https?://#', '', short_urls( $l )['short'] ) ),
+			'url'   => short_urls( $l )['short'],
 		);
 	}
 	return $out;

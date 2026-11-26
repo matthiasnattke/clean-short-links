@@ -119,16 +119,38 @@ function side_nav( array $sections ) {
 /**
  * The opening of a card.
  *
- * @param string $id    HTML ID.
- * @param string $icon  Icon name.
- * @param string $title Title.
- * @param string $lead  Lead text.
- * @param string $class Extra class.
+ * A card can fold: closed it is a single line with its title and a few words on what is set,
+ * and opens on a click. Cards fold when nothing in them needs attention – so a screen shows
+ * what is in use and keeps the rest one click away.
+ *
+ * @param string     $id    HTML ID.
+ * @param string     $icon  Icon name.
+ * @param string     $title Title.
+ * @param string     $lead  Lead text.
+ * @param string     $class Extra class.
+ * @param array|null $fold  Null: always open. Else open (bool) and summary (text shown while closed).
  */
-function card_open( $id, $icon, $title, $lead = '', $class = '' ) {
+function card_open( $id, $icon, $title, $lead = '', $class = '', $fold = null ) {
+	$GLOBALS['clean_short_links_fold'][] = null !== $fold;
+	if ( null === $fold ) {
+		?>
+		<section class="csl-card <?php echo esc_attr( $class ); ?>" id="<?php echo esc_attr( $id ); ?>">
+			<h2><?php the_icon( $icon ); ?><?php echo esc_html( $title ); ?></h2>
+			<?php if ( '' !== $lead ) : ?>
+				<p class="csl-lead"><?php echo esc_html( $lead ); ?></p>
+			<?php endif; ?>
+		<?php
+		return;
+	}
+	$open = ! empty( $fold['open'] );
 	?>
-	<section class="csl-card <?php echo esc_attr( $class ); ?>" id="<?php echo esc_attr( $id ); ?>">
-		<h2><?php the_icon( $icon ); ?><?php echo esc_html( $title ); ?></h2>
+	<section class="csl-card csl-fold <?php echo $open ? 'is-open ' : ''; ?><?php echo esc_attr( $class ); ?>" id="<?php echo esc_attr( $id ); ?>">
+		<h2><button type="button" class="csl-fold-btn" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>" aria-controls="<?php echo esc_attr( $id ); ?>-body">
+			<?php the_icon( $icon ); ?><span class="csl-fold-title"><?php echo esc_html( $title ); ?></span>
+			<span class="csl-fold-sum"><?php echo esc_html( (string) ( $fold['summary'] ?? '' ) ); ?></span>
+			<span class="csl-fold-chev" aria-hidden="true"></span>
+		</button></h2>
+		<div class="csl-fold-body" id="<?php echo esc_attr( $id ); ?>-body" <?php echo $open ? '' : 'hidden'; ?>>
 		<?php if ( '' !== $lead ) : ?>
 			<p class="csl-lead"><?php echo esc_html( $lead ); ?></p>
 		<?php endif; ?>
@@ -139,7 +161,21 @@ function card_open( $id, $icon, $title, $lead = '', $class = '' ) {
  * The end of a card.
  */
 function card_close() {
-	echo '</section>';
+	echo ! empty( $GLOBALS['clean_short_links_fold'] ) && array_pop( $GLOBALS['clean_short_links_fold'] ) ? '</div></section>' : '</section>';
+}
+
+/**
+ * Fold state of a card: closed with a summary while nothing in it is set, open otherwise.
+ *
+ * @param bool   $used    Something in the card is set.
+ * @param string $summary What to say while it is closed.
+ * @return array
+ */
+function fold( $used, $summary = '' ) {
+	return array(
+		'open'    => (bool) $used,
+		'summary' => (string) $summary,
+	);
 }
 
 /**

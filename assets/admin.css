@@ -533,3 +533,19 @@ textarea.csl-wide { max-width: none; }
 .csl-hosts-msg .csl-host-warn { margin: 0 0 6px; }
 .csl-hosts-alts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
 .csl-hosts-alts > span { color: var(--csl-muted, #646970); font-size: 13px; margin-right: 4px; }
+
+/* Folding cards: closed they are one line with a summary. */
+.csl-fold:not(.is-open) { padding-top: 14px; padding-bottom: 14px; }
+.csl-fold h2 { margin: 0; }
+.csl-fold.is-open h2 { margin-bottom: 4px; }
+.csl-fold-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.csl-fold-btn:focus-visible { outline: 2px solid var(--csl-accent); outline-offset: 4px; border-radius: 6px; }
+.csl-fold-title { flex: 0 0 auto; }
+.csl-fold-sum { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 400; color: var(--csl-muted); text-align: right; }
+.csl-fold.is-open .csl-fold-sum { visibility: hidden; }
+.csl-fold-chev { flex: 0 0 auto; width: 9px; height: 9px; margin: 0 4px 3px 6px; border-right: 2px solid var(--csl-muted); border-bottom: 2px solid var(--csl-muted); transform: rotate(45deg); transition: transform .15s; }
+.csl-fold.is-open .csl-fold-chev { transform: rotate(-135deg); margin-bottom: -3px; }
+.csl-more { margin-top: 16px; }
+.csl-more > summary { cursor: pointer; color: var(--csl-muted); font-size: 13px; }
+.csl-more[open] > summary { margin-bottom: 4px; }
+@media (prefers-reduced-motion: reduce) { .csl-fold-chev { transition: none; } }

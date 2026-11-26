@@ -104,6 +104,25 @@ function short_hosts() {
 }
 
 /**
+ * The shortest address of a link among its own: on a short domain, else the short form without
+ * prefix, else the link with prefix.
+ *
+ * @param string   $link  Address with prefix.
+ * @param string   $root  Short form without prefix ('' for none).
+ * @param array    $hosts Host => address on further domains.
+ * @param string[] $short Short domains.
+ * @return string
+ */
+function shortest_url( $link, $root, array $hosts, array $short ) {
+	foreach ( $hosts as $host => $url ) {
+		if ( in_array( $host, $short, true ) ) {
+			return $url;
+		}
+	}
+	return '' !== (string) $root ? $root : $link;
+}
+
+/**
  * Paths a short domain or a subdomain without a site leaves to WordPress: sign-in, admin,
  * REST, files – so the site stays manageable.
  *

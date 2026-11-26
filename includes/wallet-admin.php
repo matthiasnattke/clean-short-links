@@ -143,7 +143,7 @@ function wallet_card( array $link, array $urls ) {
 	if ( ! wallet_enabled() || ! function_exists( 'clean_mobile_connect_wallet_card' ) ) {
 		return;
 	}
-	card_open( 'csl-sec-wallet', 'wallet', __( 'Wallet card', 'clean-short-links' ), __( 'Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own.', 'clean-short-links' ) );
+	card_open( 'csl-sec-wallet', 'wallet', __( 'Wallet card', 'clean-short-links' ), __( 'Visitors add the short link to Apple Wallet as a card: it shows the title, an image and a QR code that opens the link. The card fills itself from this link: title, image, dates, colours and logo follow it on their own.', 'clean-short-links' ), '', fold( wallet_link_offered( $link ), __( 'Not offered', 'clean-short-links' ) ) );
 	$available = function_exists( 'clean_mobile_connect_wallet_available' ) ? clean_mobile_connect_wallet_available() : array( 'ok' => true );
 	$notice    = array( 'type' => '', 'message' => '' );
 	if ( function_exists( 'CleanMobileConnect\\editor_notice' ) ) {

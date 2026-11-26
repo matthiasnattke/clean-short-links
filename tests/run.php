@@ -1145,6 +1145,13 @@ test( 'Nextcloud: a label that is our own short address is not a name', function
 	same( 'Bericht', nextcloud_title( '', 'Bericht.pdf', $hosts ) );
 } );
 
+test( 'The shortest address of a link: short domain, else short form, else with prefix', function () {
+	$short = array( 'cou.li' );
+	same( 'https://cou.li/x', shortest_url( 'https://a.de/s/x', 'https://a.de/x', array( 'b.de' => 'https://b.de/s/x', 'cou.li' => 'https://cou.li/x' ), $short ) );
+	same( 'https://a.de/x', shortest_url( 'https://a.de/s/x', 'https://a.de/x', array( 'b.de' => 'https://b.de/s/x' ), $short ) );
+	same( 'https://a.de/s/x', shortest_url( 'https://a.de/s/x', '', array(), $short ) );
+} );
+
 test( 'Version numbers agree', function () {
 	$main   = file_get_contents( dirname( __DIR__ ) . '/clean-short-links.php' );
 	$readme = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );

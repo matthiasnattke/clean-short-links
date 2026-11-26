@@ -507,5 +507,17 @@
 	"No short domain is marked: the links are created on the main site with prefix.": "Keine Kurzdomain markiert: Die Links entstehen auf der Hauptseite mit Präfix.",
 	"Sync now": "Jetzt abgleichen",
 	"Nextcloud is not set up in wp-config.php.": "Nextcloud ist in der wp-config.php nicht eingerichtet.",
-	"Nextcloud refused the sign-in (app password?).": "Nextcloud hat die Anmeldung abgelehnt (App-Passwort?)."
+	"Nextcloud refused the sign-in (app password?).": "Nextcloud hat die Anmeldung abgelehnt (App-Passwort?).",
+	"Only this site": "Nur diese Website",
+	"As the target shows itself": "So wie das Ziel sich selbst zeigt",
+	"More options": "Weitere Optionen",
+	"Right away, without an end": "Sofort, ohne Ende",
+	"Designed": "Gestaltet",
+	"Off": "Aus",
+	"Daily": "Täglich",
+	"Short links that are easy to type, print and share.": "Kurze Links, die sich leicht tippen, drucken und teilen lassen.",
+	"%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.": "%1$s ist der Kurzlink-Dienst von %2$s. Eine Adresse wie %1$s/name führt direkt zu einer Seite, einer Datei oder einer Karte – auf Plakaten, in QR-Codes und in Nachrichten.",
+	"Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only.": "Aufrufe werden nur gezählt – ohne IP-Adressen, Cookies oder Profile. Kurzlinks legen ausschließlich die Betreiber an.",
+	"This short link does not exist (any more). Please check the address.": "Diesen Kurzlink gibt es nicht (mehr). Bitte prüfe die Adresse.",
+	"Not offered": "Nicht angeboten"
 }

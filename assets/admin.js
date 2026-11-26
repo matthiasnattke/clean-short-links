@@ -22,6 +22,54 @@
 		};
 	}
 
+	/* ---- Folding cards: open on a click, through a link to them, and when a field in them needs attention ---- */
+	function setFold( card, open ) {
+		var btn = $( '.csl-fold-btn', card ), body = $( '.csl-fold-body', card );
+		if ( ! btn || ! body ) {
+			return;
+		}
+		card.classList.toggle( 'is-open', open );
+		btn.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		body.hidden = ! open;
+	}
+	function openFoldAt( hash ) {
+		var id = ( hash || '' ).replace( /^#/, '' );
+		var el = id && document.getElementById( id );
+		var card = el && el.closest( '.csl-fold' );
+		if ( card ) {
+			setFold( card, true );
+		}
+	}
+	document.addEventListener( 'click', function ( e ) {
+		var b = e.target.closest( '.csl-fold-btn' );
+		if ( b ) {
+			var card = b.closest( '.csl-fold' );
+			setFold( card, ! card.classList.contains( 'is-open' ) );
+			return;
+		}
+		var a = e.target.closest( 'a[href*="#csl-"]' );
+		if ( a ) {
+			openFoldAt( a.hash );
+		}
+	} );
+	window.addEventListener( 'hashchange', function () {
+		openFoldAt( location.hash );
+	} );
+	if ( location.hash ) {
+		openFoldAt( location.hash );
+		var at = document.getElementById( location.hash.slice( 1 ) );
+		if ( at && at.closest( '.csl-fold' ) ) {
+			at.scrollIntoView();
+		}
+	}
+	// A field the browser rejects must be visible, or the form silently does not save.
+	document.addEventListener( 'invalid', function ( e ) {
+		var card = e.target.closest && e.target.closest( '.csl-fold' );
+		if ( card ) {
+			setFold( card, true );
+		}
+	}, true );
+
 	/* ---- Copy buttons ---- */
 	document.addEventListener( 'click', function ( e ) {
 		var b = e.target.closest( '.csl-copy-btn' );
@@ -207,6 +255,16 @@
 			return;
 		}
 		var taken = r.taken_hosts || [];
+		var hostsCard = hostsMsg.closest( '.csl-fold' );
+		if ( hostsCard ) {
+			var on = $$( 'input[name="meta[hosts][]"]:checked' ).map( function ( c ) {
+				return c.value;
+			} );
+			$( '.csl-fold-sum', hostsCard ).textContent = on.length ? on.join( ', ' ) : ( T.onlyHere || '' );
+			if ( taken.length ) {
+				setFold( hostsCard, true );
+			}
+		}
 		hostsMsg.hidden = ! taken.length;
 		if ( ! taken.length ) {
 			return;

@@ -146,9 +146,91 @@ function handle_alias( $host ) {
 	}
 	// Everything else: the page set for this subdomain, otherwise the main site.
 	$home = (string) ( network_settings()['alias_homes'][ $host ] ?? '' );
+	// A short domain says in a few words what it is – on its home page, and instead of an
+	// unknown short address.
+	if ( '' === $home && ! defined( 'CLEAN_SHORT_LINKS_ALIAS' ) && is_short_site() ) {
+		render_short_home( '' === trim( request_path(), '/' ) ? 200 : 404 );
+	}
 	$home = '' === $home ? network_home_url( '/' ) : ( '/' === $home[0] ? network_home_url( $home ) : $home );
 	nocache_headers();
 	wp_redirect( $home, 302, 'Clean Short Links' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Set by a network administrator.
+	exit;
+}
+
+/**
+ * The home page of a short domain: what the service is, in a few words. Never returns.
+ *
+ * @param int $status 200 for the home page, 404 for an unknown short address.
+ */
+function render_short_home( $status ) {
+	$host = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
+	$icon = get_site_icon_url( 192 );
+	$main = network_home_url( '/' );
+	$name = is_multisite() ? get_network()->site_name : get_bloginfo( 'name' );
+	$tag  = trim( (string) get_bloginfo( 'description' ) );
+	/**
+	 * The texts of the home page of a short domain.
+	 *
+	 * @param array $text lead, about, privacy.
+	 * @param string $host The short domain.
+	 */
+	$text = (array) apply_filters(
+		'clean_short_links_short_home',
+		array(
+			'lead'    => '' !== $tag ? $tag : __( 'Short links that are easy to type, print and share.', 'clean-short-links' ),
+			/* translators: 1: short domain, 2: name of the network or site */
+			'about'   => sprintf( __( '%1$s is the link shortener of %2$s. An address like %1$s/name leads straight to a page, a file or a card – on posters, in QR codes and in messages.', 'clean-short-links' ), $host, $name ),
+			'privacy' => __( 'Visits are only counted – without IP addresses, cookies or profiles. Short links are made by the operators only.', 'clean-short-links' ),
+		),
+		$host
+	);
+	status_header( $status );
+	nocache_headers();
+	header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
+	?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+<meta charset="<?php bloginfo( 'charset' ); ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?php echo esc_html( $host ); ?></title>
+<meta name="description" content="<?php echo esc_attr( $text['lead'] ); ?>">
+	<?php if ( 200 !== $status ) : ?>
+<meta name="robots" content="noindex">
+	<?php endif; ?>
+	<?php if ( $icon ) : ?>
+<link rel="icon" href="<?php echo esc_url( $icon ); ?>">
+<link rel="apple-touch-icon" href="<?php echo esc_url( $icon ); ?>">
+	<?php endif; ?>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#182949;background:#f5f7fb;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+main{width:100%;max-width:520px}
+.icon{width:72px;height:72px;border-radius:18px;box-shadow:0 10px 26px rgba(24,41,73,.18)}
+h1{font-size:44px;line-height:1.05;margin:22px 0 10px;letter-spacing:-.02em}h1 span{color:#ef7d1b}
+.lead{font-size:20px;margin:0 0 22px}
+p{margin:0 0 14px}.note{padding:12px 16px;border-radius:12px;background:#fff3e6;border:1px solid #f6cfa3;margin-bottom:22px}
+.muted{color:#55617a;font-size:15px}
+footer{margin-top:30px;padding-top:18px;border-top:1px solid #dbe1ec;font-size:15px}footer a{color:#182949;font-weight:600}
+@media (prefers-color-scheme:dark){body{background:#101c33;color:#eef2f8}.muted{color:#a9b5ca}.note{background:#3a2a17;border-color:#7a5326}footer{border-color:#2a3a59}footer a{color:#fff}}
+</style>
+</head>
+<body>
+<main>
+	<?php if ( $icon ) : ?>
+	<img class="icon" src="<?php echo esc_url( $icon ); ?>" width="72" height="72" alt="">
+	<?php endif; ?>
+	<h1><?php echo wp_kses( preg_replace( '/\./', '<span>.</span>', esc_html( $host ), 1 ), array( 'span' => array() ) ); ?></h1>
+	<?php if ( 200 !== $status ) : ?>
+	<p class="note"><?php esc_html_e( 'This short link does not exist (any more). Please check the address.', 'clean-short-links' ); ?></p>
+	<?php endif; ?>
+	<p class="lead"><?php echo esc_html( $text['lead'] ); ?></p>
+	<p><?php echo esc_html( $text['about'] ); ?></p>
+	<p class="muted"><?php echo esc_html( $text['privacy'] ); ?></p>
+	<footer><a href="<?php echo esc_url( $main ); ?>"><?php echo esc_html( preg_replace( '#^https?://|/$#', '', $main ) ); ?></a></footer>
+</main>
+</body>
+</html>
+	<?php
 	exit;
 }
 

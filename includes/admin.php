@@ -77,6 +77,7 @@ function admin_js_data() {
 			/* translators: %s: title of the content at that address */
 			'collision'   => __( 'The short form is taken by %s – only the link with prefix works.', 'clean-short-links' ),
 			/* translators: %s: domains, e.g. "cou.li" */
+			'onlyHere'  => __( 'Only this site', 'clean-short-links' ),
 			'hostTaken'   => __( 'This short address is already taken on %s.', 'clean-short-links' ),
 			'searching'   => __( 'Searching …', 'clean-short-links' ),
 			'noResults'   => __( 'Nothing found. You can also paste a URL.', 'clean-short-links' ),
@@ -424,8 +425,12 @@ function page_list() {
 					<h3 class="csl-link-name"><a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $label ); ?></a></h3>
 					<p class="csl-link-target"><?php the_icon( 'target' ); ?><?php target_link( $l['target'] ); ?></p>
 					<div class="csl-link-urls">
-						<?php copy_field( $urls['link'] ); ?>
-						<?php copy_field( $urls['root'] ); ?>
+						<?php copy_field( $urls['short'] ); ?>
+						<?php
+						if ( $urls['link'] !== $urls['short'] ) {
+							copy_field( $urls['link'] );
+						}
+						?>
 					</div>
 					<?php if ( $l['ends_at'] && 'expired' !== $st ) : ?>
 						<p class="csl-link-when"><?php the_icon( 'clock' ); ?><?php /* translators: %s: date */ echo esc_html( sprintf( __( 'until %s', 'clean-short-links' ), wp_date( get_option( 'date_format' ), $l['ends_at'] ) ) ); ?></p>
@@ -599,7 +604,7 @@ function variant_row( $i, array $v ) {
  * @param array $link Link.
  */
 function variants_card( array $link ) {
-	card_open( 'csl-sec-variants', 'split', __( 'Different targets by device and screen', 'clean-short-links' ), __( 'The first variant that fits the visitor decides – for the main target; rules by date and time come first. Device and system are recognised on the server and never stored. Screen widths are only known to the browser: such links show a tiny page that forwards at once.', 'clean-short-links' ) );
+	card_open( 'csl-sec-variants', 'split', __( 'Different targets by device and screen', 'clean-short-links' ), __( 'The first variant that fits the visitor decides – for the main target; rules by date and time come first. Device and system are recognised on the server and never stored. Screen widths are only known to the browser: such links show a tiny page that forwards at once.', 'clean-short-links' ), '', fold( (bool) $link['meta']['variants'], $link['meta']['variants'] ? '' : __( 'None', 'clean-short-links' ) ) );
 	?>
 	<div class="csl-variants">
 		<?php
@@ -634,7 +639,12 @@ function hosts_card( array $link ) {
 		}
 	}
 	list( $p ) = prefixes();
-	card_open( 'csl-sec-hosts', 'network', __( 'Further domains', 'clean-short-links' ), __( 'Offer the same short link on other domains of the network – for example on a short domain. Visits are counted here, on this site.', 'clean-short-links' ) );
+	$chosen    = array_values( array_intersect( $link['meta']['hosts'], array_keys( $hosts ) ) );
+	$any_taken = false;
+	foreach ( $chosen as $h ) {
+		$any_taken = $any_taken || ( $link['id'] && empty( $routed[ $h ] ) );
+	}
+	card_open( 'csl-sec-hosts', 'network', __( 'Further domains', 'clean-short-links' ), __( 'Offer the same short link on other domains of the network – for example on a short domain. Visits are counted here, on this site.', 'clean-short-links' ), '', fold( $any_taken, $chosen ? implode( ', ', $chosen ) : __( 'Only this site', 'clean-short-links' ) ) );
 	?>
 	<div class="csl-hosts">
 		<?php foreach ( $hosts as $host => $h ) : ?>
@@ -744,7 +754,7 @@ function place_row( $i, array $pl, $u = null ) {
  * @param array $urls Short URLs.
  */
 function places_card( array $link, array $urls ) {
-	card_open( 'csl-sec-places', 'pin', __( 'Locations', 'clean-short-links' ), __( 'Several posters, flyers or tags for the same target: each location gets an address of its own, the statistics show which one is used how often. Target, rules and variants stay shared.', 'clean-short-links' ) );
+	card_open( 'csl-sec-places', 'pin', __( 'Locations', 'clean-short-links' ), __( 'Several posters, flyers or tags for the same target: each location gets an address of its own, the statistics show which one is used how often. Target, rules and variants stay shared.', 'clean-short-links' ), '', fold( (bool) $link['meta']['places'], $link['meta']['places'] ? '' : __( 'None', 'clean-short-links' ) ) );
 	?>
 	<div class="csl-places">
 		<?php
@@ -768,7 +778,7 @@ function places_card( array $link, array $urls ) {
  * @param int   $link_id Link ID.
  */
 function nfc_card( array $urls, $link_id = 0 ) {
-	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag. Tags with a Wallet address open the guest page, where visitors add the card to Apple Wallet.', 'clean-short-links' ) );
+	card_open( 'csl-sec-nfc', 'nfc', __( 'NFC tag', 'clean-short-links' ), __( 'Stickers, cards or key rings with NFC: phones open the short link when they touch the tag – iPhone and Android, without an app. Visits count as NFC tag. Tags with a Wallet address open the guest page, where visitors add the card to Apple Wallet.', 'clean-short-links' ), '', fold( false ) );
 	code_for_select( $urls, 'nfc', (int) $link_id );
 	?>
 	<?php /* translators: %d: number of characters */ ?>
@@ -925,7 +935,8 @@ function social_card( array $link ) {
 	$own     = (bool) preg_match( '#^https?://#', $link['target'] );
 	$img_id  = (int) $meta['social']['image'];
 	$img_url = $img_id ? wp_get_attachment_image_url( $img_id, 'medium' ) : '';
-	card_open( 'csl-sec-social', 'share', __( 'Sharing and social media', 'clean-short-links' ), __( 'How the link looks when shared, where you share it and how visits are labelled.', 'clean-short-links' ) );
+	$shared = '' !== $meta['social']['title'] || '' !== $meta['social']['description'] || $img_id || $meta['channels'] || $meta['bio'] || $meta['permanent'];
+	card_open( 'csl-sec-social', 'share', __( 'Sharing and social media', 'clean-short-links' ), __( 'How the link looks when shared, where you share it and how visits are labelled.', 'clean-short-links' ), '', fold( $shared, $shared ? '' : __( 'As the target shows itself', 'clean-short-links' ) ) );
 	?>
 		<div class="csl-social-grid">
 			<div>
@@ -975,7 +986,7 @@ function social_card( array $link ) {
 				<div>
 					<span class="csl-field-label"><?php esc_html_e( 'Share', 'clean-short-links' ); ?></span>
 					<div class="csl-share">
-						<?php foreach ( share_links( short_urls( $link )['link'], $data ? $data['title'] : $link['title'] ) as $name => $href ) : ?>
+						<?php foreach ( share_links( short_urls( $link )['short'], $data ? $data['title'] : $link['title'] ) as $name => $href ) : ?>
 							<a class="button csl-btn" href="<?php echo esc_url( $href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $name ); ?></a>
 						<?php endforeach; ?>
 					</div>
@@ -1045,7 +1056,7 @@ function invites_card( array $link ) {
 		$groups[ $inv['title'] ][] = $inv;
 	}
 	$now = time();
-	card_open( 'csl-sec-invites', 'tag', __( 'Invitation links', 'clean-short-links' ), __( 'Personal links that lead where this short link leads – each with its own hard-to-guess address, an optional limit and expiry. Create them group by group, e.g. 10 links for the family with one visit each.', 'clean-short-links' ) );
+	card_open( 'csl-sec-invites', 'tag', __( 'Invitation links', 'clean-short-links' ), __( 'Personal links that lead where this short link leads – each with its own hard-to-guess address, an optional limit and expiry. Create them group by group, e.g. 10 links for the family with one visit each.', 'clean-short-links' ), '', fold( (bool) child_ids( $link['id'] ), __( 'None', 'clean-short-links' ) ) );
 	?>
 		<div class="csl-invite-gen">
 			<label class="csl-field"><span><?php esc_html_e( 'Group', 'clean-short-links' ); ?></span><input type="text" name="invite_group" placeholder="<?php esc_attr_e( 'e.g. Family', 'clean-short-links' ); ?>"></label>
@@ -1124,7 +1135,7 @@ function page_edit() {
 		'max_clicks' => 0,
 		'clicks'     => 0,
 		'parent_id'  => 0,
-		'meta'       => clean_meta( array() ),
+		'meta'       => array_merge( clean_meta( array() ), array( 'hosts' => default_hosts() ) ),
 		'check'      => array(
 			'status' => '',
 			'items'  => array(),
@@ -1132,7 +1143,7 @@ function page_edit() {
 		),
 	);
 	if ( ! $link['id'] && '' === $link['slug'] ) {
-		$link['slug'] = 'random' === $link['kind'] ? unique_random_slug() : suggest_slug( $link['kind'], $link['title'] );
+		$link['slug'] = slug_for_hosts( 'random' === $link['kind'] ? unique_random_slug() : suggest_slug( $link['kind'], $link['title'] ), $link['meta']['hosts'] );
 	}
 	$urls          = $link['id'] ? short_urls( $link ) : null;
 	list( $p, $q ) = prefixes();
@@ -1169,8 +1180,8 @@ function page_edit() {
 			function () use ( $urls ) {
 				if ( $urls ) {
 					?>
-					<button type="button" class="button csl-btn csl-copy-btn" data-copy="<?php echo esc_attr( $urls['link'] ); ?>"><?php the_icon( 'copy' ); ?><?php esc_html_e( 'Copy short link', 'clean-short-links' ); ?></button>
-					<a class="button csl-btn" href="<?php echo esc_url( $urls['link'] ); ?>" target="_blank" rel="noopener"><?php the_icon( 'external' ); ?><?php esc_html_e( 'Open', 'clean-short-links' ); ?></a>
+					<button type="button" class="button csl-btn csl-copy-btn" data-copy="<?php echo esc_attr( $urls['short'] ); ?>"><?php the_icon( 'copy' ); ?><?php esc_html_e( 'Copy short link', 'clean-short-links' ); ?></button>
+					<a class="button csl-btn" href="<?php echo esc_url( $urls['short'] ); ?>" target="_blank" rel="noopener"><?php the_icon( 'external' ); ?><?php esc_html_e( 'Open', 'clean-short-links' ); ?></a>
 					<?php
 				}
 				?>
@@ -1182,10 +1193,12 @@ function page_edit() {
 					return;
 				}
 				echo '<div class="csl-hero-urls">';
-				copy_field( $urls['link'] );
-				copy_field( $urls['root'], __( 'Short form', 'clean-short-links' ) );
-				foreach ( $urls['hosts'] as $host_url ) {
-					copy_field( $host_url );
+				// The shortest address first, the others after it.
+				copy_field( $urls['short'] );
+				foreach ( array_merge( array( $urls['link'], $urls['root'] ), array_values( $urls['hosts'] ) ) as $other ) {
+					if ( '' !== $other && $other !== $urls['short'] ) {
+						copy_field( $other );
+					}
 				}
 				echo '</div>';
 				if ( $now_result && 302 === $now_result['status'] ) {
@@ -1253,11 +1266,14 @@ function page_edit() {
 							</div>
 						<?php endif; ?>
 					</div>
+					<?php $root_on = ! empty( $link['root'] ) || ( ! $link['id'] && ! empty( $s['root_default'] ) && 'random' !== $link['kind'] ); ?>
+					<details class="csl-more" <?php echo ( $root_on && root_allowed() ) || '' !== $link['qr_slug'] ? 'open' : ''; ?>>
+					<summary><?php esc_html_e( 'More options', 'clean-short-links' ); ?></summary>
 					<?php if ( root_allowed() ) : ?>
 						<div class="csl-sub">
 							<?php
 							/* translators: %s: example of the short form */
-							toggle( 'root', ! empty( $link['root'] ) || ( ! $link['id'] && ! empty( $s['root_default'] ) && 'random' !== $link['kind'] ), sprintf( __( 'Also as short form %s', 'clean-short-links' ), $home . '…' ), __( 'Only works as long as the site has no content at that address – existing pages always win, the link with prefix keeps working.', 'clean-short-links' ), 'csl-root' );
+							toggle( 'root', $root_on, sprintf( __( 'Also as short form %s', 'clean-short-links' ), $home . '…' ), __( 'Only works as long as the site has no content at that address – existing pages always win, the link with prefix keeps working.', 'clean-short-links' ), 'csl-root' );
 							?>
 							<p class="csl-root-msg" aria-live="polite"></p>
 						</div>
@@ -1271,6 +1287,7 @@ function page_edit() {
 							<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home . $q . '/' ); ?></span><input type="text" name="qr_slug" id="csl-qr-slug" value="<?php echo esc_attr( $link['qr_slug'] ); ?>" maxlength="64" autocomplete="off" spellcheck="false"></span>
 						</div>
 					</div>
+					</details>
 					<?php
 					$aliases = $link['id'] ? link_aliases( $link['id'] ) : array();
 					if ( $aliases ) :
@@ -1287,7 +1304,8 @@ function page_edit() {
 					<?php endif; ?>
 				<?php card_close(); ?>
 
-				<?php card_open( 'csl-sec-time', 'clock', __( 'Time window', 'clean-short-links' ), __( 'When should the short link work?', 'clean-short-links' ) ); ?>
+				<?php $timed = '' !== $link['start_mode'] || $link['ends_at'] || '' !== $link['fallback'] || $link['max_clicks']; ?>
+				<?php card_open( 'csl-sec-time', 'clock', __( 'Time window', 'clean-short-links' ), __( 'When should the short link work?', 'clean-short-links' ), '', fold( $timed, $timed ? '' : __( 'Right away, without an end', 'clean-short-links' ) ) ); ?>
 					<div class="csl-tiles csl-tiles-3" role="radiogroup" aria-label="<?php esc_attr_e( 'Start', 'clean-short-links' ); ?>">
 						<?php
 						tile( 'start_mode', '', '' === $link['start_mode'], 'bolt', __( 'Right away', 'clean-short-links' ), __( 'Works as soon as it is saved.', 'clean-short-links' ), 'csl-tile-now' );
@@ -1320,7 +1338,7 @@ function page_edit() {
 					</div>
 				<?php card_close(); ?>
 
-				<?php card_open( 'csl-sec-rules', 'split', __( 'Different targets by date and time', 'clean-short-links' ), __( 'The first rule that fits right now decides where the link leads. If none fits, the target above applies. Example: during the festival to the programme, in the evening to the stage plan.', 'clean-short-links' ) ); ?>
+				<?php card_open( 'csl-sec-rules', 'split', __( 'Different targets by date and time', 'clean-short-links' ), __( 'The first rule that fits right now decides where the link leads. If none fits, the target above applies. Example: during the festival to the programme, in the evening to the stage plan.', 'clean-short-links' ), '', fold( $link['rules'] || '' !== $link['meta']['ical_url'], __( 'None', 'clean-short-links' ) ) ); ?>
 					<div class="csl-rules">
 						<?php
 						foreach ( $link['rules'] as $i => $rule ) {
@@ -1347,13 +1365,13 @@ function page_edit() {
 
 				<?php if ( $urls ) : ?>
 					<?php places_card( $link, $urls ); ?>
-					<?php card_open( 'csl-sec-qr', 'qr', __( 'QR code', 'clean-short-links' ), __( 'The QR code contains the short link – time window and rules also apply to printed codes.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-qr', 'qr', __( 'QR code', 'clean-short-links' ), __( 'The QR code contains the short link – time window and rules also apply to printed codes.', 'clean-short-links' ), '', fold( false, $link['qr'] ? __( 'Designed', 'clean-short-links' ) : '' ) ); ?>
 						<div class="csl-qr-start">
 							<?php copy_field( $urls['qr'] ); ?>
 							<button type="button" class="button button-primary csl-btn csl-qr-open"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Create QR code', 'clean-short-links' ); ?></button>
 						</div>
 						<?php wallet_first_option( $link, $urls ); ?>
-						<div class="csl-designer" hidden data-url="<?php echo esc_attr( $urls['qr'] ); ?>" data-upper="<?php echo esc_attr( $urls['qr_upper'] ); ?>" data-slug="<?php echo esc_attr( '' !== $link['qr_slug'] ? $link['qr_slug'] : $link['slug'] ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $urls['link'] ) ); ?>" data-cta="<?php esc_attr_e( 'Scan me', 'clean-short-links' ); ?>">
+						<div class="csl-designer" hidden data-url="<?php echo esc_attr( $urls['qr'] ); ?>" data-upper="<?php echo esc_attr( $urls['qr_upper'] ); ?>" data-slug="<?php echo esc_attr( '' !== $link['qr_slug'] ? $link['qr_slug'] : $link['slug'] ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $urls['short'] ) ); ?>" data-cta="<?php esc_attr_e( 'Scan me', 'clean-short-links' ); ?>">
 							<div class="csl-qr-stage">
 								<div class="csl-qr-preview"></div>
 								<p class="csl-qr-info csl-help"></p>
@@ -1796,7 +1814,7 @@ function page_settings() {
 					<?php wp_nonce_field( 'clean_short_links_settings' ); ?>
 					<input type="hidden" name="action" value="clean_short_links_settings">
 
-					<?php card_open( 'csl-sec-addr', 'link', __( 'Addresses', 'clean-short-links' ), __( 'Under which paths short links and QR codes live.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-addr', 'link', __( 'Addresses', 'clean-short-links' ), __( 'Under which paths short links and QR codes live.', 'clean-short-links' ), '', fold( false, $home . $p . '/… · ' . $home . $q . '/…' ) ); ?>
 						<?php if ( $own_prefix ) : ?>
 							<div class="csl-row">
 								<label class="csl-field"><span><?php esc_html_e( 'Links', 'clean-short-links' ); ?></span>
@@ -1822,7 +1840,7 @@ function page_settings() {
 						<div class="csl-sub"><?php toggle( 'pass_query', ! empty( $s['pass_query'] ), __( 'Pass parameters such as ?utm_source=… on to the target', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
-					<?php card_open( 'csl-sec-default', 'target', __( 'Default target', 'clean-short-links' ), __( 'Where visitors go when a short link does not lead anywhere – instead of a “not found” page.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-default', 'target', __( 'Default target', 'clean-short-links' ), __( 'Where visitors go when a short link does not lead anywhere – instead of a “not found” page.', 'clean-short-links' ), '', fold( '' !== $s['default_mode'], __( 'None', 'clean-short-links' ) ) ); ?>
 						<div class="csl-tiles csl-tiles-3">
 							<?php
 							tile( 'default_mode', '', '' === $s['default_mode'], 'page', __( 'None', 'clean-short-links' ), __( '“Not found” or “gone” as usual.', 'clean-short-links' ) );
@@ -1838,7 +1856,7 @@ function page_settings() {
 						<div class="csl-sub"><?php toggle( 'default_inactive', ! empty( $s['default_inactive'] ), __( 'For short links that do not lead anywhere right now', 'clean-short-links' ), __( 'Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
-					<?php card_open( 'csl-sec-auto', 'bolt', __( 'Create automatically', 'clean-short-links' ), __( 'When something of these types is published for the first time it gets a short link that starts with the publication.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-auto', 'bolt', __( 'Create automatically', 'clean-short-links' ), __( 'When something of these types is published for the first time it gets a short link that starts with the publication.', 'clean-short-links' ), '', fold( false, $s['auto_types'] ? implode( ', ', array_map( fn( $t ) => isset( $types[ $t ] ) ? $types[ $t ]->labels->name : $t, (array) $s['auto_types'] ) ) : __( 'Off', 'clean-short-links' ) ) ); ?>
 						<div class="csl-chips">
 							<?php foreach ( $types as $type ) : ?>
 								<label class="csl-chip"><input type="checkbox" name="auto_types[]" value="<?php echo esc_attr( $type->name ); ?>" <?php checked( in_array( $type->name, (array) $s['auto_types'], true ) ); ?>><span><?php echo esc_html( $type->labels->name ); ?></span></label>
@@ -1866,7 +1884,7 @@ function page_settings() {
 						</div>
 					<?php card_close(); ?>
 
-					<?php card_open( 'csl-sec-social', 'share', __( 'Social media', 'clean-short-links' ), __( 'Link previews for posts and pages always come straight from the content – there is nothing to set up for them.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-social', 'share', __( 'Social media', 'clean-short-links' ), __( 'Link previews for posts and pages always come straight from the content – there is nothing to set up for them.', 'clean-short-links' ), '', fold( false, ! empty( $s['bio_enabled'] ) ? __( 'Link-in-bio page', 'clean-short-links' ) : __( 'Off', 'clean-short-links' ) ) ); ?>
 						<?php toggle( 'bio_enabled', ! empty( $s['bio_enabled'] ), __( 'Link-in-bio page', 'clean-short-links' ), __( 'A simple page with buttons for chosen short links – for the link in your Instagram, TikTok or Mastodon profile. Name, tagline and icon come from the site settings.', 'clean-short-links' ) ); ?>
 						<div class="csl-sub">
 							<label class="csl-field" for="csl-bio-slug"><span><?php esc_html_e( 'Address of the page', 'clean-short-links' ); ?></span></label>
@@ -1881,7 +1899,7 @@ function page_settings() {
 
 					<?php if ( maintenance_available() ) : ?>
 						<?php $mr = maintenance_rules(); ?>
-						<?php card_open( 'csl-sec-maintenance', 'pause', __( 'Maintenance mode', 'clean-short-links' ), __( 'How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings.', 'clean-short-links' ) ); ?>
+						<?php card_open( 'csl-sec-maintenance', 'pause', __( 'Maintenance mode', 'clean-short-links' ), __( 'How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings.', 'clean-short-links' ), '', fold( false ) ); ?>
 							<input type="hidden" name="cm_rules[present]" value="1">
 							<span class="csl-field-label"><?php esc_html_e( 'While maintenance mode is on', 'clean-short-links' ); ?></span>
 							<div class="csl-tiles csl-tiles-3">
@@ -1905,7 +1923,7 @@ function page_settings() {
 						<?php card_close(); ?>
 					<?php endif; ?>
 
-					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-check', 'shield', __( 'Link check', 'clean-short-links' ), __( 'Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent.', 'clean-short-links' ), '', fold( false, ! empty( $s['auto_check'] ) ? __( 'Daily', 'clean-short-links' ) : __( 'Off', 'clean-short-links' ) ) ); ?>
 						<?php toggle( 'auto_check', ! empty( $s['auto_check'] ), __( 'Check automatically once a day', 'clean-short-links' ), __( 'Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them.', 'clean-short-links' ) ); ?>
 						<div class="csl-sub">
 							<label class="csl-field" for="csl-gone-days"><span><?php esc_html_e( 'Permanently unreachable after', 'clean-short-links' ); ?></span></label>
@@ -1915,7 +1933,7 @@ function page_settings() {
 						<div class="csl-sub"><?php toggle( 'skip_broken', ! empty( $s['skip_broken'] ), __( 'Do not send visitors to unreachable targets', 'clean-short-links' ), __( 'If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
-					<?php card_open( 'csl-sec-stat', 'chart', __( 'Statistics', 'clean-short-links' ), __( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ) ); ?>
+					<?php card_open( 'csl-sec-stat', 'chart', __( 'Statistics', 'clean-short-links' ), __( 'Only daily totals are stored – no IP addresses, no cookies.', 'clean-short-links' ), '', fold( false, $retention[ (int) $n['retention_days'] ] ?? '' ) ); ?>
 						<?php toggle( 'count_editors', ! empty( $s['count_editors'] ), __( 'Also count visits of logged-in authors and editors', 'clean-short-links' ) ); ?>
 						<div class="csl-sub">
 							<span class="csl-field-label"><?php esc_html_e( 'Keep statistics', 'clean-short-links' ); ?></span>
@@ -1936,7 +1954,7 @@ function page_settings() {
 					</div>
 				</form>
 
-				<?php card_open( 'csl-sec-bulk', 'plus', __( 'Short links for existing content', 'clean-short-links' ), __( 'One click gives every published item without a short link one – with the kind chosen above.', 'clean-short-links' ) ); ?>
+				<?php card_open( 'csl-sec-bulk', 'plus', __( 'Short links for existing content', 'clean-short-links' ), __( 'One click gives every published item without a short link one – with the kind chosen above.', 'clean-short-links' ), '', fold( false ) ); ?>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="csl-inline">
 						<?php wp_nonce_field( 'clean_short_links_bulk' ); ?>
 						<input type="hidden" name="action" value="clean_short_links_bulk">
@@ -1950,7 +1968,7 @@ function page_settings() {
 					</form>
 				<?php card_close(); ?>
 
-				<?php card_open( 'csl-sec-import', 'import', __( 'Import', 'clean-short-links' ), __( 'One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working.', 'clean-short-links' ) ); ?>
+				<?php card_open( 'csl-sec-import', 'import', __( 'Import', 'clean-short-links' ), __( 'One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working.', 'clean-short-links' ), '', fold( false ) ); ?>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<?php wp_nonce_field( 'clean_short_links_import' ); ?>
 						<input type="hidden" name="action" value="clean_short_links_import">

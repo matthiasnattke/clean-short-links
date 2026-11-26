@@ -211,8 +211,9 @@ function offer_hosts() {
 			return (int) $b['short'] <=> (int) $a['short'];
 		}
 	);
-	// Subdomains without a site of their own (sunrise.php).
-	foreach ( alias_hosts() as $host ) {
+	// Subdomains without a site of their own (sunrise.php). They belong to the network's own
+	// domain: a short domain is a link site of its own and does not offer them.
+	foreach ( is_short_site() ? array() : alias_hosts() as $host ) {
 		if ( ! isset( $out[ $host ] ) && $host !== $own ) {
 			$out[ $host ] = array(
 				'name'    => $host,
@@ -223,6 +224,40 @@ function offer_hosts() {
 		}
 	}
 	return $out;
+}
+
+/**
+ * The further domains a new short link is offered on without asking: the first short domain,
+ * so the link reads as short as it can. Nothing on a short domain itself.
+ *
+ * @return string[]
+ */
+function default_hosts() {
+	if ( is_short_site() ) {
+		return array();
+	}
+	foreach ( offer_hosts() as $host => $h ) {
+		if ( ! empty( $h['short'] ) ) {
+			return array( $host );
+		}
+	}
+	return array();
+}
+
+/**
+ * A short address for a new link made without a form: the wished one when it is free on the
+ * default hosts too, else the first free alternative.
+ *
+ * @param string   $slug  Wished short address (free on this site).
+ * @param string[] $hosts Hosts the link is offered on.
+ * @return string
+ */
+function slug_for_hosts( $slug, array $hosts ) {
+	if ( ! $hosts || ! hosts_taken( $slug, $hosts ) ) {
+		return $slug;
+	}
+	$alt = host_alternatives( $slug, $hosts );
+	return $alt ? $alt[0] : unique_random_slug();
 }
 
 /**
@@ -1352,10 +1387,13 @@ function short_urls( array $link ) {
 			'wallet'   => '' !== $w ? home_url( '/' . $w . '/' . $s ) : '',
 		);
 	}
+	$own  = home_url( '/' . ( is_short_site() ? '' : $p . '/' ) . $link['slug'] );
+	$root = ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '';
 	return array(
-		'link'     => home_url( '/' . ( is_short_site() ? '' : $p . '/' ) . $link['slug'] ),
+		'link'     => $own,
+		'short'    => shortest_url( $own, $root, $hosts, short_hosts() ),
 		'qr'       => $qr,
-		'root'     => ! empty( $link['root'] ) && root_allowed() ? home_url( '/' . $link['slug'] ) : '',
+		'root'     => $root,
 		'qr_upper' => qr_uppercase( $qr ),
 		'nfc'      => home_url( '/' . $p . '/' . $link['slug'] ) . '?nfc',
 		'wallet'   => '' !== $w ? home_url( '/' . $w . '/' . $link['slug'] ) : '',

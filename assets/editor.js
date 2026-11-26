@@ -329,8 +329,9 @@
 			var dirty = form && isDirty( form, link );
 			body = el( 'div', null,
 				'active' !== link.state ? el( 'p', null, el( 'strong', null, T[ link.state ] || link.state ) ) : null,
-				el( Copy, { url: link.urls.link } ),
-				link.urls.root ? el( Copy, { url: link.urls.root, label: T.short } ) : null,
+				el( Copy, { url: link.urls.short || link.urls.link } ),
+				link.urls.short && link.urls.short !== link.urls.link ? el( Copy, { url: link.urls.link } ) : null,
+				link.urls.root && link.urls.root !== link.urls.short ? el( Copy, { url: link.urls.root, label: T.short } ) : null,
 				el( 'p', { style: muted }, sprintf( T.visits, link.visits ), link.rules ? ' · ' + T.scheduled : '' ),
 				D.canCreate && form ? el( 'div', null,
 					el( Settings, { link: link, form: form, set: set } ),
