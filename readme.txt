@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.4.1
+Stable tag: 0.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.4.2 =
+* Nextcloud: a share label that holds our own short address (written by an earlier sync) no longer names the link; the file name does, and the label is brought up to date.
 
 = 0.4.1 =
 * A short domain answers its own short links first (without prefix), so it can be a link site of its own.

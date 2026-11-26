@@ -1134,6 +1134,17 @@ test( 'Nextcloud: deleted addresses are free again after 60 days', function () {
 
 echo "\nPlugin\n";
 
+test( 'Nextcloud: a label that is our own short address is not a name', function () {
+	$hosts = array( 'couch-blog.de', 'cou.li' );
+	same( true, nextcloud_own_label( 'cou.li/nextcloud-intro', $hosts ) );
+	same( true, nextcloud_own_label( 'https://Cou.li/s/abc', $hosts ) );
+	same( false, nextcloud_own_label( 'Fotos Sommer', $hosts ) );
+	same( false, nextcloud_own_label( 'cou.live/x', $hosts ) );
+	same( 'Nextcloud intro', nextcloud_title( 'cou.li/nextcloud-intro', 'Nextcloud intro.mp4', $hosts ) );
+	same( 'Fotos Sommer', nextcloud_title( 'Fotos Sommer', 'IMG_1.jpg', $hosts ) );
+	same( 'Bericht', nextcloud_title( '', 'Bericht.pdf', $hosts ) );
+} );
+
 test( 'Version numbers agree', function () {
 	$main   = file_get_contents( dirname( __DIR__ ) . '/clean-short-links.php' );
 	$readme = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );

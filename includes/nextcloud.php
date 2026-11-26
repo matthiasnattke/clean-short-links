@@ -240,6 +240,39 @@ function nextcloud_plan( array $shares, array $map, callable $link, $now ) {
 }
 
 /**
+ * Whether a share's label is one of our short addresses (written there by an earlier sync), not a name.
+ *
+ * @param string   $label Label of the share.
+ * @param string[] $hosts Hosts of this network that carry short links.
+ * @return bool
+ */
+function nextcloud_own_label( $label, array $hosts ) {
+	$label = strtolower( (string) preg_replace( '#^https?://#i', '', trim( (string) $label ) ) );
+	foreach ( $hosts as $host ) {
+		$host = strtolower( trim( (string) $host ) );
+		if ( '' !== $host && 0 === strpos( $label, $host . '/' ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * The title of the link for a share: its label when the user named it, else the file name without ending.
+ *
+ * @param string   $label Label of the share.
+ * @param string   $name  File name.
+ * @param string[] $hosts Hosts of this network that carry short links.
+ * @return string
+ */
+function nextcloud_title( $label, $name, array $hosts ) {
+	if ( '' !== (string) $label && ! nextcloud_own_label( $label, $hosts ) ) {
+		return (string) $label;
+	}
+	return (string) preg_replace( '/\.[A-Za-z0-9]{1,5}$/', '', (string) $name );
+}
+
+/**
  * A request to the sharing API.
  *
  * @param array  $c      Connection.
@@ -341,6 +374,14 @@ function nextcloud_sync_here( array $c ) {
 	$plan  = nextcloud_plan( $list, $state['map'], __NAMESPACE__ . '\\link_by_id', $now );
 	// On a short domain the links are its own; on the main site they are offered on the first short domain.
 	$hosts = is_short_site() ? array() : array_slice( short_hosts(), 0, 1 );
+	// Hosts whose addresses in a share's label are our own short addresses, not a name the user gave.
+	$known = array_merge(
+		array(
+			(string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ),
+			(string) wp_parse_url( network_home_url( '/' ), PHP_URL_HOST ),
+		),
+		short_hosts()
+	);
 	$done  = array(
 		'created' => 0,
 		'updated' => 0,
@@ -377,7 +418,8 @@ function nextcloud_sync_here( array $c ) {
 	}
 	foreach ( $plan['create'] as $share ) {
 		$s     = $list[ $share ];
-		$title = '' !== $s['label'] ? $s['label'] : (string) preg_replace( '/\.[A-Za-z0-9]{1,5}$/', '', $s['name'] );
+		$own   = nextcloud_own_label( $s['label'], $known );
+		$title = nextcloud_title( $s['label'], $s['name'], $known );
 		$slug  = unique_numbered( title_slug( $title ) );
 		if ( $hosts && hosts_taken( $slug, $hosts ) ) {
 			$alt  = host_alternatives( $slug, $hosts );
@@ -402,10 +444,13 @@ function nextcloud_sync_here( array $c ) {
 		}
 		$state['map'][ $share ] = (int) $id;
 		++$done['created'];
-		if ( '' === $s['label'] ) {
+		if ( '' === $s['label'] || $own ) {
 			$urls  = short_urls( link_by_id( $id ) );
 			$short = $hosts && isset( $urls['hosts'][ $hosts[0] ] ) ? $urls['hosts'][ $hosts[0] ] : $urls['link'];
-			nextcloud_request( $c, 'PUT', '/shares/' . rawurlencode( $share ), array( 'label' => preg_replace( '#^https://#', '', $short ) ) );
+			$label = (string) preg_replace( '#^https://#', '', $short );
+			if ( $label !== $s['label'] ) {
+				nextcloud_request( $c, 'PUT', '/shares/' . rawurlencode( $share ), array( 'label' => $label ) );
+			}
 		}
 	}
 

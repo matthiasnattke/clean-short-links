@@ -1775,11 +1775,11 @@ msgstr ""
 msgid "Sync now"
 msgstr ""
 
-#: includes/nextcloud.php:293
+#: includes/nextcloud.php:326
 msgid "Nextcloud is not set up in wp-config.php."
 msgstr ""
 
-#: includes/nextcloud.php:335
+#: includes/nextcloud.php:368
 msgid "Nextcloud refused the sign-in (app password?)."
 msgstr ""
 
