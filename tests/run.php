@@ -1153,10 +1153,33 @@ test( 'The shortest address of a link: short domain, else short form, else with 
 } );
 
 test( 'Error page of a short domain: a text per status', function () {
-	same( 'gone', short_error_text( 410 )['kind'] );
-	same( 'later', short_error_text( 503 )['kind'] );
-	same( 'unknown', short_error_text( 404 )['kind'] );
-	same( 'unknown', short_error_text( 0 )['kind'] );
+	$t = array( 'gone_title' => 'G', 'gone_text' => 'g', 'later_title' => 'L', 'later_text' => 'l', 'unknown_title' => 'U', 'unknown_text' => 'u' );
+	same( array( 'kind' => 'gone', 'title' => 'G', 'text' => 'g' ), short_error_text( 410, $t ) );
+	same( 'later', short_error_text( 503, $t )['kind'] );
+	same( 'U', short_error_text( 404, $t )['title'] );
+	same( 'unknown', short_error_text( 0, $t )['kind'] );
+} );
+
+test( 'Language of a visitor: the first one the browser asks for that is available', function () {
+	$have = array( 'de', 'en', 'fr', 'pt' );
+	same( 'fr', pick_language( 'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7', $have, 'de' ) );
+	same( 'en', pick_language( 'ja, en;q=0.5, fr;q=0.4', $have, 'de' ) );
+	same( 'fr', pick_language( 'en;q=0.3, fr;q=0.8', $have, 'de' ) );
+	same( 'pt', pick_language( 'pt-BR', $have, 'de' ) );
+	same( 'de', pick_language( '', $have, 'de' ) );
+	same( 'de', pick_language( 'zh-CN, *;q=0.1', $have, 'de' ) );
+	same( 'de', pick_language( 'fr;q=0', $have, 'de' ) );
+} );
+
+test( 'Pages of a short domain: every language has every text', function () {
+	$all  = require dirname( __DIR__ ) . '/languages/short-pages.php';
+	$keys = array_keys( $all['en'] );
+	same( 24, count( $all ) );
+	foreach ( $all as $lang => $t ) {
+		same( $keys, array_keys( $t ), $lang );
+		same( 1, substr_count( $t['about'], '%s' ), $lang );
+		same( array(), array_keys( array_filter( $t, fn( $v ) => '' === trim( $v ) ) ), $lang );
+	}
 } );
 
 test( 'Version numbers agree', function () {

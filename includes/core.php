@@ -123,31 +123,61 @@ function shortest_url( $link, $root, array $hosts, array $short ) {
 }
 
 /**
+ * Picks the language of a visitor: the first one the browser asks for (Accept-Language, by
+ * weight) that is available, else the fallback. Only the main language counts (pt-BR → pt).
+ *
+ * @param string   $accept    Accept-Language header.
+ * @param string[] $available Language codes, two letters.
+ * @param string   $fallback  Used when nothing fits.
+ * @return string
+ */
+function pick_language( $accept, array $available, $fallback ) {
+	$wanted = array();
+	foreach ( explode( ',', strtolower( substr( (string) $accept, 0, 400 ) ) ) as $n => $part ) {
+		if ( ! preg_match( '/^\s*([a-z]{2,3})(?:-[a-z0-9-]+)?\s*(?:;\s*q\s*=\s*([0-9.]+))?\s*$/', $part, $m ) ) {
+			continue;
+		}
+		$q = isset( $m[2] ) && '' !== $m[2] ? (float) $m[2] : 1.0;
+		if ( $q > 0 && ! isset( $wanted[ $m[1] ] ) ) {
+			$wanted[ $m[1] ] = array( $q, -$n );
+		}
+	}
+	arsort( $wanted );
+	foreach ( array_keys( $wanted ) as $lang ) {
+		if ( in_array( $lang, $available, true ) ) {
+			return $lang;
+		}
+	}
+	return (string) $fallback;
+}
+
+/**
+ * The texts of the pages a short domain shows to visitors, in every language they come in.
+ *
+ * @return array<string,array<string,string>> Language => key => text.
+ */
+function short_page_texts() {
+	static $all = null;
+	if ( null === $all ) {
+		$all = (array) require dirname( CLEAN_SHORT_LINKS_FILE ) . '/languages/short-pages.php';
+	}
+	return $all;
+}
+
+/**
  * What a short domain says about a short link that does not lead anywhere: headline and a
  * sentence of explanation, by HTTP status.
  *
- * @param int $status HTTP status.
+ * @param int   $status HTTP status.
+ * @param array $t      Texts of the page in the visitor's language.
  * @return array{kind:string,title:string,text:string}
  */
-function short_error_text( $status ) {
-	if ( 410 === (int) $status ) {
-		return array(
-			'kind'  => 'gone',
-			'title' => __( 'This short link has ended.', 'clean-short-links' ),
-			'text'  => __( 'It has reached its end date or its limit, or it was retired. The address is not handed out again.', 'clean-short-links' ),
-		);
-	}
-	if ( 503 === (int) $status ) {
-		return array(
-			'kind'  => 'later',
-			'title' => __( 'This short link cannot be reached right now.', 'clean-short-links' ),
-			'text'  => __( 'It has not started yet, is paused, or its target does not answer at the moment. Please try again later.', 'clean-short-links' ),
-		);
-	}
+function short_error_text( $status, array $t ) {
+	$kind = 410 === (int) $status ? 'gone' : ( 503 === (int) $status ? 'later' : 'unknown' );
 	return array(
-		'kind'  => 'unknown',
-		'title' => __( 'This short link does not exist.', 'clean-short-links' ),
-		'text'  => __( 'Perhaps a typing mistake. Please check the address – every character counts.', 'clean-short-links' ),
+		'kind'  => $kind,
+		'title' => (string) ( $t[ $kind . '_title' ] ?? '' ),
+		'text'  => (string) ( $t[ $kind . '_text' ] ?? '' ),
 	);
 }
 

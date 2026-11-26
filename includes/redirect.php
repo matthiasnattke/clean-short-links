@@ -165,9 +165,10 @@ function handle_alias( $host ) {
  * The legal links of a short domain: the addresses from the settings, else a page of this
  * site named "impressum"/"imprint" and its privacy policy page.
  *
+ * @param array $t Texts of the page in the visitor's language.
  * @return array<string,string> Label => URL.
  */
-function short_legal_links() {
+function short_legal_links( array $t ) {
 	$s       = site_settings();
 	$imprint = (string) $s['imprint_url'];
 	if ( '' === $imprint ) {
@@ -182,10 +183,10 @@ function short_legal_links() {
 	$privacy = '' !== (string) $s['privacy_url'] ? (string) $s['privacy_url'] : (string) get_privacy_policy_url();
 	$out     = array();
 	if ( '' !== $imprint ) {
-		$out[ __( 'Imprint', 'clean-short-links' ) ] = $imprint;
+		$out[ (string) $t['imprint'] ] = $imprint;
 	}
 	if ( '' !== $privacy ) {
-		$out[ __( 'Privacy', 'clean-short-links' ) ] = $privacy;
+		$out[ (string) $t['privacy'] ] = $privacy;
 	}
 	return $out;
 }
@@ -198,37 +199,39 @@ function short_legal_links() {
  * @param bool $known  The short link exists but does not lead anywhere right now.
  */
 function render_short_home( $status, $known = false ) {
-	// This runs before init, where the translations are loaded otherwise.
-	load_plugin_textdomain( 'clean-short-links', false, dirname( plugin_basename( CLEAN_SHORT_LINKS_FILE ) ) . '/languages' );
+	// Visitors read the page in the language their browser asks for; else in the site's language.
+	$all  = short_page_texts();
+	$site = strtolower( substr( (string) get_locale(), 0, 2 ) );
+	$site = isset( $all[ $site ] ) ? $site : 'en';
+	$lang = pick_language( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '', array_keys( $all ), $site );
+	$t    = array_merge( $all['en'], $all[ $lang ] );
 	$status = (int) $status;
 	$host   = preg_replace( '#^https?://|/$#', '', home_url( '/' ) );
 	$icon   = get_site_icon_url( 192 );
 	$tag    = trim( (string) get_bloginfo( 'description' ) );
 	// A link that exists but answers "not found" (not started, target unreachable) is not a typing mistake.
-	$error  = 200 === $status ? null : short_error_text( $known && 404 === $status ? 503 : $status );
+	$error  = 200 === $status ? null : short_error_text( $known && 404 === $status ? 503 : $status, $t );
 	$path   = trim( request_path(), '/' );
 	/**
 	 * The texts of the home page of a short domain.
 	 *
 	 * @param array  $text lead, about (line on the error page), targets (three labels), facts (three short lines).
 	 * @param string $host The short domain.
+	 * @param string $lang Language of the visitor, two letters.
 	 */
 	$text = (array) apply_filters(
 		'clean_short_links_short_home',
 		array(
-			'lead'    => '' !== $tag ? $tag : __( 'Short links to type, scan and share.', 'clean-short-links' ),
-			/* translators: %s: short domain */
-			'about'   => sprintf( __( '%s is a private link shortener.', 'clean-short-links' ), $host ),
-			'targets' => array( __( 'Page', 'clean-short-links' ), __( 'File', 'clean-short-links' ), __( 'Card', 'clean-short-links' ) ),
-			'facts'   => array(
-				__( 'For posters, QR codes and messages', 'clean-short-links' ),
-				__( 'No cookies, no profiles', 'clean-short-links' ),
-				__( 'Private – visitors cannot create links', 'clean-short-links' ),
-			),
+			// The site's tagline is the lead – in the site's own language only.
+			'lead'    => '' !== $tag && $lang === $site ? $tag : $t['lead'],
+			'about'   => sprintf( $t['about'], $host ),
+			'targets' => array( $t['page'], $t['file'], $t['card'] ),
+			'facts'   => array( $t['fact_use'], $t['fact_privacy'], $t['fact_private'] ),
 		),
-		$host
+		$host,
+		$lang
 	);
-	$legal = short_legal_links();
+	$legal = short_legal_links( $t );
 	// Small line drawings: page, file, card – poster with a code, shield, lock.
 	$svg   = function ( $d ) {
 		return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $d . '</svg>';
@@ -249,10 +252,12 @@ function render_short_home( $status, $known = false ) {
 		header( 'Retry-After: 3600' );
 	}
 	header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
+	header( 'Content-Language: ' . $lang );
+	header( 'Vary: Accept-Language' );
 	header( 'X-Robots-Tag: ' . ( $error ? 'noindex' : 'all' ) );
 	?>
 <!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html lang="<?php echo esc_attr( $lang ); ?>">
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">

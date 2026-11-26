@@ -1474,11 +1474,11 @@ msgstr ""
 msgid "The short domain says in a few words what it is, and catches short links that have ended or do not exist. The lead comes from the site’s tagline."
 msgstr ""
 
-#: includes/admin.php:1906 includes/redirect.php:185
+#: includes/admin.php:1906
 msgid "Imprint"
 msgstr ""
 
-#: includes/admin.php:1907 includes/redirect.php:188
+#: includes/admin.php:1907
 msgid "Privacy"
 msgstr ""
 
@@ -1654,40 +1654,16 @@ msgstr ""
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
 msgstr ""
 
-#: includes/core.php:136
-msgid "This short link has ended."
-msgstr ""
-
-#: includes/core.php:137
-msgid "It has reached its end date or its limit, or it was retired. The address is not handed out again."
-msgstr ""
-
-#: includes/core.php:143
-msgid "This short link cannot be reached right now."
-msgstr ""
-
-#: includes/core.php:144
-msgid "It has not started yet, is paused, or its target does not answer at the moment. Please try again later."
-msgstr ""
-
-#: includes/core.php:149
-msgid "This short link does not exist."
-msgstr ""
-
-#: includes/core.php:150
-msgid "Perhaps a typing mistake. Please check the address – every character counts."
-msgstr ""
-
-#: includes/core.php:698
+#: includes/core.php:728
 msgid "Newsletter"
 msgstr ""
 
 #. translators: E-mail share option
-#: includes/core.php:699 includes/social.php:145
+#: includes/core.php:729 includes/social.php:145
 msgid "E-mail"
 msgstr ""
 
-#: includes/core.php:700
+#: includes/core.php:730
 msgid "Print"
 msgstr ""
 
@@ -1862,44 +1838,6 @@ msgstr ""
 
 #: includes/redirect.php:126 includes/redirect.php:149
 msgid "This short link is not available."
-msgstr ""
-
-#: includes/redirect.php:219
-msgid "Short links to type, scan and share."
-msgstr ""
-
-#. translators: %s: short domain
-#: includes/redirect.php:221
-#, php-format
-msgid "%s is a private link shortener."
-msgstr ""
-
-#. translators: %s: short domain
-#: includes/redirect.php:222
-msgid "Page"
-msgstr ""
-
-#. translators: %s: short domain
-#: includes/redirect.php:222
-msgid "File"
-msgstr ""
-
-#. translators: %s: short domain
-#: includes/redirect.php:222
-msgid "Card"
-msgstr ""
-
-#. translators: %s: short domain
-#: includes/redirect.php:224
-msgid "For posters, QR codes and messages"
-msgstr ""
-
-#: includes/redirect.php:225
-msgid "No cookies, no profiles"
-msgstr ""
-
-#: includes/redirect.php:226
-msgid "Private – visitors cannot create links"
 msgstr ""
 
 #: includes/rest.php:23
