@@ -414,11 +414,11 @@ function page_list() {
 						<?php if ( '' !== ( $l['meta']['nextcloud'] ?? '' ) ) : ?>
 							<span class="csl-badge csl-badge-soft" title="<?php esc_attr_e( 'Made for a Nextcloud share – deleted with it', 'clean-short-links' ); ?>"><?php the_icon( 'cloud' ); ?>Nextcloud</span>
 						<?php endif; ?>
-						<?php if ( $l['rules'] ) : ?>
+						<?php if ( $l['rules'] && ! is_nextcloud_link( $l ) ) : ?>
 							<span class="csl-badge csl-badge-soft"><?php the_icon( 'split' ); ?><?php /* translators: %d: number of rules */ echo esc_html( sprintf( _n( '%d rule', '%d rules', count( $l['rules'] ), 'clean-short-links' ), count( $l['rules'] ) ) ); ?></span>
 						<?php endif; ?>
 						<a class="csl-icon-link" href="<?php echo esc_url( $edit . '#csl-sec-qr' ); ?>" title="<?php esc_attr_e( 'QR code', 'clean-short-links' ); ?>"><?php the_icon( 'qr' ); ?><span class="screen-reader-text"><?php esc_html_e( 'QR code', 'clean-short-links' ); ?></span></a>
-						<?php if ( wallet_link_offered( $l ) ) : ?>
+						<?php if ( wallet_link_offered( $l ) && ! is_nextcloud_link( $l ) ) : ?>
 							<a class="csl-icon-link" href="<?php echo esc_url( $edit . '#csl-sec-wallet' ); ?>" title="<?php esc_attr_e( 'Wallet card', 'clean-short-links' ); ?>"><?php the_icon( 'wallet' ); ?><span class="screen-reader-text"><?php esc_html_e( 'Wallet card', 'clean-short-links' ); ?></span></a>
 						<?php endif; ?>
 					</div>
@@ -1159,7 +1159,16 @@ function page_edit() {
 		'csl-sec-rules'  => __( 'Rules', 'clean-short-links' ),
 		'csl-sec-social' => __( 'Sharing', 'clean-short-links' ),
 	);
-	if ( $link['id'] ) {
+	$nc = is_nextcloud_link( $link );
+	if ( $nc ) {
+		// A Nextcloud link only has what the share does not settle: name, address, code, visits.
+		$sections = array(
+			'csl-sec-target' => __( 'Target', 'clean-short-links' ),
+			'csl-sec-slug'   => __( 'Short address', 'clean-short-links' ),
+			'csl-sec-qr'     => __( 'QR code', 'clean-short-links' ),
+			'csl-sec-stats'  => __( 'Visits', 'clean-short-links' ),
+		);
+	} elseif ( $link['id'] ) {
 		$sections['csl-sec-invites'] = __( 'Invitations', 'clean-short-links' );
 		$sections['csl-sec-places']  = __( 'Locations', 'clean-short-links' );
 		$sections['csl-sec-qr']      = __( 'QR code', 'clean-short-links' );
@@ -1212,7 +1221,9 @@ function page_edit() {
 					/* translators: %d: HTTP status */
 					echo '<p class="csl-now">' . icon( 'target' ) . esc_html( sprintf( __( 'Right now it answers with status %d.', 'clean-short-links' ), $now_result['status'] ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG from icon().
 				}
-				check_line( $link );
+				if ( ! is_nextcloud_link( $link ) ) {
+					check_line( $link );
+				}
 			}
 		);
 		action_notice();
@@ -1232,10 +1243,19 @@ function page_edit() {
 				<?php if ( '' !== ( $link['meta']['nextcloud'] ?? '' ) ) : ?>
 					<div class="notice notice-info inline"><p><?php the_icon( 'cloud' ); ?> <?php esc_html_e( 'This short link was made for a Nextcloud share. It ends with the share and is then deleted; for 60 days its address leads to Nextcloud, then it is free again.', 'clean-short-links' ); ?></p></div>
 				<?php endif; ?>
-				<?php card_open( 'csl-sec-target', 'target', __( 'Target', 'clean-short-links' ), __( 'Where should the short link lead?', 'clean-short-links' ) ); ?>
+				<?php card_open( 'csl-sec-target', 'target', __( 'Target', 'clean-short-links' ), $nc ? __( 'Target and end come from the share – change them in Nextcloud.', 'clean-short-links' ) : __( 'Where should the short link lead?', 'clean-short-links' ) ); ?>
+					<?php if ( $nc ) : ?>
+						<dl class="csl-facts">
+							<dt><?php esc_html_e( 'Leads to', 'clean-short-links' ); ?></dt>
+							<dd><a href="<?php echo esc_url( $link['target'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( preg_replace( '#^https?://#', '', $link['target'] ) ); ?></a></dd>
+							<dt><?php esc_html_e( 'Expires', 'clean-short-links' ); ?></dt>
+							<dd><?php echo esc_html( $link['ends_at'] ? wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $link['ends_at'] ) : __( 'Never – as long as the share exists', 'clean-short-links' ) ); ?></dd>
+						</dl>
+					<?php else : ?>
 					<label class="csl-field" for="csl-target"><span><?php esc_html_e( 'Leads to', 'clean-short-links' ); ?></span></label>
 					<?php target_picker( 'target', $link['target'], 'csl-target', true ); ?>
 					<span class="csl-help"><?php esc_html_e( 'Posts and pages are followed by ID – the short link keeps working when their address changes.', 'clean-short-links' ); ?></span>
+					<?php endif; ?>
 					<div class="csl-sub">
 						<label class="csl-field" for="csl-title"><span><?php esc_html_e( 'Title', 'clean-short-links' ); ?></span></label>
 						<input type="text" id="csl-title" name="title" class="csl-wide" value="<?php echo esc_attr( $link['title'] ); ?>" placeholder="<?php esc_attr_e( 'Only for you, e.g. “Poster 725 years”', 'clean-short-links' ); ?>">
@@ -1243,7 +1263,7 @@ function page_edit() {
 				<?php card_close(); ?>
 
 				<?php card_open( 'csl-sec-slug', 'tag', __( 'Short address', 'clean-short-links' ), __( 'How should the short link read?', 'clean-short-links' ) ); ?>
-					<div class="csl-tiles csl-tiles-4" role="radiogroup" aria-label="<?php esc_attr_e( 'Kind of short address', 'clean-short-links' ); ?>">
+					<div class="csl-tiles csl-tiles-4" role="radiogroup" aria-label="<?php esc_attr_e( 'Kind of short address', 'clean-short-links' ); ?>" <?php echo $nc ? 'hidden' : ''; ?>>
 						<?php
 						tile( 'kind', 'random', 'random' === $link['kind'], 'shuffle', __( 'Random', 'clean-short-links' ), __( 'Short and unique, e.g. k7mq4', 'clean-short-links' ) );
 						tile( 'kind', 'memorable', 'memorable' === $link['kind'], 'sparkle', __( 'Memorable', 'clean-short-links' ), __( 'Two words, e.g. blue-couch', 'clean-short-links' ) );
@@ -1255,7 +1275,7 @@ function page_edit() {
 						<label for="csl-slug" class="csl-field"><span><?php esc_html_e( 'Short address', 'clean-short-links' ); ?></span></label>
 						<div class="csl-slug-row">
 							<span class="csl-slug-input"><span class="csl-slug-pre"><?php echo esc_html( $home . ( is_short_site() ? '' : $p . '/' ) ); ?></span><input type="text" id="csl-slug" name="slug" value="<?php echo esc_attr( $link['slug'] ); ?>" data-original="<?php echo esc_attr( $link['slug'] ); ?>" data-id="<?php echo esc_attr( (string) $link['id'] ); ?>" maxlength="64" required autocomplete="off" spellcheck="false"></span>
-							<button type="button" class="button csl-btn csl-reroll"><?php the_icon( 'shuffle' ); ?><?php esc_html_e( 'New suggestion', 'clean-short-links' ); ?></button>
+							<button type="button" class="button csl-btn csl-reroll" <?php echo $nc ? 'hidden' : ''; ?>><?php the_icon( 'shuffle' ); ?><?php esc_html_e( 'New suggestion', 'clean-short-links' ); ?></button>
 						</div>
 						<p class="csl-slug-msg" aria-live="polite"></p>
 						<?php if ( $link['id'] ) : ?>
@@ -1267,7 +1287,7 @@ function page_edit() {
 						<?php endif; ?>
 					</div>
 					<?php $root_on = ! empty( $link['root'] ) || ( ! $link['id'] && ! empty( $s['root_default'] ) && 'random' !== $link['kind'] ); ?>
-					<details class="csl-more" <?php echo ( $root_on && root_allowed() ) || '' !== $link['qr_slug'] ? 'open' : ''; ?>>
+					<details class="csl-more" <?php echo ( $root_on && root_allowed() ) || '' !== $link['qr_slug'] ? 'open' : ''; ?> <?php echo $nc ? 'hidden' : ''; ?>>
 					<summary><?php esc_html_e( 'More options', 'clean-short-links' ); ?></summary>
 					<?php if ( root_allowed() ) : ?>
 						<div class="csl-sub">
@@ -1304,6 +1324,7 @@ function page_edit() {
 					<?php endif; ?>
 				<?php card_close(); ?>
 
+				<?php if ( ! $nc ) : ?>
 				<?php $timed = '' !== $link['start_mode'] || $link['ends_at'] || '' !== $link['fallback'] || $link['max_clicks']; ?>
 				<?php card_open( 'csl-sec-time', 'clock', __( 'Time window', 'clean-short-links' ), __( 'When should the short link work?', 'clean-short-links' ), '', fold( $timed, $timed ? '' : __( 'Right away, without an end', 'clean-short-links' ) ) ); ?>
 					<div class="csl-tiles csl-tiles-3" role="radiogroup" aria-label="<?php esc_attr_e( 'Start', 'clean-short-links' ); ?>">
@@ -1363,14 +1384,24 @@ function page_edit() {
 				}
 				?>
 
+				<?php endif; ?>
+
 				<?php if ( $urls ) : ?>
-					<?php places_card( $link, $urls ); ?>
+					<?php
+					if ( ! $nc ) {
+						places_card( $link, $urls );
+					}
+					?>
 					<?php card_open( 'csl-sec-qr', 'qr', __( 'QR code', 'clean-short-links' ), __( 'The QR code contains the short link – time window and rules also apply to printed codes.', 'clean-short-links' ), '', fold( false, $link['qr'] ? __( 'Designed', 'clean-short-links' ) : '' ) ); ?>
 						<div class="csl-qr-start">
 							<?php copy_field( $urls['qr'] ); ?>
 							<button type="button" class="button button-primary csl-btn csl-qr-open"><?php the_icon( 'qr' ); ?><?php esc_html_e( 'Create QR code', 'clean-short-links' ); ?></button>
 						</div>
-						<?php wallet_first_option( $link, $urls ); ?>
+						<?php
+						if ( ! $nc ) {
+							wallet_first_option( $link, $urls );
+						}
+						?>
 						<div class="csl-designer" hidden data-url="<?php echo esc_attr( $urls['qr'] ); ?>" data-upper="<?php echo esc_attr( $urls['qr_upper'] ); ?>" data-slug="<?php echo esc_attr( '' !== $link['qr_slug'] ? $link['qr_slug'] : $link['slug'] ); ?>" data-print="<?php echo esc_attr( preg_replace( '#^https?://#', '', $urls['short'] ) ); ?>" data-cta="<?php esc_attr_e( 'Scan me', 'clean-short-links' ); ?>">
 							<div class="csl-qr-stage">
 								<div class="csl-qr-preview"></div>
@@ -1450,8 +1481,12 @@ function page_edit() {
 							</div>
 						</div>
 					<?php card_close(); ?>
-					<?php nfc_card( $urls, (int) $link['id'] ); ?>
-					<?php wallet_card( $link, $urls ); ?>
+					<?php
+					if ( ! $nc ) {
+						nfc_card( $urls, (int) $link['id'] );
+						wallet_card( $link, $urls );
+					}
+					?>
 
 					<?php
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Chooses the period of the chart.
@@ -1514,7 +1549,7 @@ function page_edit() {
 			</div>
 		</form>
 		<?php
-		if ( $urls ) {
+		if ( $urls && ! $nc ) {
 			wallet_anew_forms( $link, $urls );
 		}
 		?>
@@ -1600,6 +1635,12 @@ add_action(
 		if ( 'publish' === $data['start_mode'] && ! target_post_id( clean_target( $data['target'] ) ) ) {
 			$data['start_mode'] = '';
 		}
+		$nc = is_nextcloud_link( $old );
+		if ( $nc ) {
+			// Only title, short address, QR design and pause are the editor's; the rest follows the share.
+			$data = nextcloud_form_data( $old, $data );
+			$p    = array_intersect_key( $p, array_flip( array( 'id', 'title', 'slug', 'old_slug', 'qr_design', 'paused' ) ) );
+		}
 		$result = save_link( $data );
 		if ( is_wp_error( $result ) ) {
 			// Keep what was typed is not possible across a redirect – go back with the message.
@@ -1609,7 +1650,9 @@ add_action(
 		if ( ! empty( $p['reset_clicks'] ) ) {
 			reset_clicks( $result );
 		}
-		wallet_save_posted( (int) $result, $p );
+		if ( ! $nc ) {
+			wallet_save_posted( (int) $result, $p );
+		}
 		// Calendar: an uploaded file, or the calendar address when asked or when it changed.
 		$cal_msg = null;
 		$saved   = link_by_id( $result );

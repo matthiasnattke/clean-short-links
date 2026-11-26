@@ -549,3 +549,8 @@ textarea.csl-wide { max-width: none; }
 .csl-more > summary { cursor: pointer; color: var(--csl-muted); font-size: 13px; }
 .csl-more[open] > summary { margin-bottom: 4px; }
 @media (prefers-reduced-motion: reduce) { .csl-fold-chev { transition: none; } }
+
+/* Facts that are shown, not edited (Nextcloud links). */
+.csl-facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 12px 0 0; }
+.csl-facts dt { color: var(--csl-muted); }
+.csl-facts dd { margin: 0; overflow-wrap: anywhere; }

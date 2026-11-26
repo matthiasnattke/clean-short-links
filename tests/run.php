@@ -1182,6 +1182,23 @@ test( 'Pages of a short domain: every language has every text', function () {
 	}
 } );
 
+test( 'Nextcloud link: the editor changes only title, short address, QR design and pause', function () {
+	$old = array( 'id' => 7, 'title' => 'A', 'slug' => 'a', 'kind' => 'title', 'target' => 'https://cloud.example/s/x', 'ends_at' => 99, 'rules' => array(), 'status' => 'active', 'qr' => array(), 'meta' => array( 'nextcloud' => '3', 'hosts' => array() ) );
+	$new = nextcloud_form_data( $old, array( 'title' => 'B', 'slug' => 'b', 'kind' => 'random', 'target' => 'https://evil.example/', 'ends_at' => 0, 'status' => 'paused', 'meta' => array(), 'rules' => array( array( 'x' ) ) ) );
+	same( 'B', $new['title'] );
+	same( 'b', $new['slug'] );
+	same( 'custom', $new['kind'] );
+	same( 'paused', $new['status'] );
+	same( 'https://cloud.example/s/x', $new['target'] );
+	same( 99, $new['ends_at'] );
+	same( '3', $new['meta']['nextcloud'] );
+	same( array(), $new['rules'] );
+	same( 'title', nextcloud_form_data( $old, array( 'title' => 'B', 'slug' => 'a' ) )['kind'] );
+	same( true, is_nextcloud_link( $old ) );
+	same( false, is_nextcloud_link( array( 'meta' => array( 'nextcloud' => '' ) ) ) );
+	same( false, is_nextcloud_link( null ) );
+} );
+
 test( 'Version numbers agree', function () {
 	$main   = file_get_contents( dirname( __DIR__ ) . '/clean-short-links.php' );
 	$readme = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );

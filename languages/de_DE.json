@@ -543,5 +543,7 @@
 	"Card": "Karte",
 	"For posters, QR codes and messages": "Für Plakate, QR-Codes und Nachrichten",
 	"No cookies, no profiles": "Ohne Cookies, ohne Profile",
-	"Private – visitors cannot create links": "Privat – Besucher legen keine Links an"
+	"Private – visitors cannot create links": "Privat – Besucher legen keine Links an",
+	"Target and end come from the share – change them in Nextcloud.": "Ziel und Ende kommen aus der Freigabe – ändere sie in Nextcloud.",
+	"Never – as long as the share exists": "Nie – solange es die Freigabe gibt"
 }

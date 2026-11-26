@@ -128,6 +128,14 @@ function check_target( $target ) {
  * @return string Overall result.
  */
 function check_link( array $link ) {
+	// A Nextcloud link is not checked: the sync knows whether its share still exists, and a share
+	// behind a password does not answer a check like an open page.
+	if ( is_nextcloud_link( $link ) ) {
+		if ( '' !== (string) ( $link['check']['status'] ?? '' ) ) {
+			save_check( $link['id'], '', array(), 0 );
+		}
+		return '';
+	}
 	$items   = array();
 	$overall = 'ok';
 	$targets = array( 'main' => $link['target'] );

@@ -123,6 +123,36 @@ function shortest_url( $link, $root, array $hosts, array $short ) {
 }
 
 /**
+ * Was a link made for a Nextcloud share (see nextcloud.php)? Target and end follow the share.
+ *
+ * @param array|null $link Link.
+ * @return bool
+ */
+function is_nextcloud_link( $link ) {
+	return is_array( $link ) && '' !== (string) ( $link['meta']['nextcloud'] ?? '' );
+}
+
+/**
+ * What the editor may change on a Nextcloud link: title, short address, QR design and pause.
+ * Everything else – target, end, rules, options – stays as the sync keeps it.
+ *
+ * @param array $old  Link as stored.
+ * @param array $data Data from the form.
+ * @return array Data for save_link().
+ */
+function nextcloud_form_data( array $old, array $data ) {
+	$out = $old;
+	foreach ( array( 'title', 'slug', 'old_slug', 'qr', 'status' ) as $key ) {
+		if ( array_key_exists( $key, $data ) ) {
+			$out[ $key ] = $data[ $key ];
+		}
+	}
+	$out['id']   = (int) $old['id'];
+	$out['kind'] = (string) ( $data['slug'] ?? $old['slug'] ) !== (string) $old['slug'] ? 'custom' : $old['kind'];
+	return $out;
+}
+
+/**
  * Picks the language of a visitor: the first one the browser asks for (Accept-Language, by
  * weight) that is available, else the fallback. Only the main language counts (pt-BR → pt).
  *

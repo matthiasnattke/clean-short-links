@@ -406,6 +406,9 @@ function nextcloud_sync_here( array $c ) {
 		$l    = link_by_id( $id );
 		$s    = $list[ $share ];
 		$ends = (int) $s['ends'];
+		if ( $l && '' !== (string) $l['check']['status'] ) {
+			save_check( $id, '', array(), 0 ); // Nextcloud links are not checked; forget an earlier result.
+		}
 		if ( $l && ( $l['target'] !== $s['url'] || (int) $l['ends_at'] !== $ends ) ) {
 			$data            = $l;
 			$data['id']      = $id;
