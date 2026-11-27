@@ -151,7 +151,7 @@ msgstr ""
 msgid "Remove this rule?"
 msgstr ""
 
-#: includes/admin.php:101 includes/admin.php:486 includes/admin.php:887 includes/admin.php:2245 includes/rest.php:92 includes/rest.php:336 includes/rest.php:458 includes/rest.php:482
+#: includes/admin.php:101 includes/admin.php:486 includes/admin.php:887 includes/admin.php:2247 includes/rest.php:92 includes/rest.php:336 includes/rest.php:458 includes/rest.php:482
 msgid "Short link"
 msgstr ""
 
@@ -308,7 +308,7 @@ msgstr ""
 msgid "No short links yet."
 msgstr ""
 
-#: includes/admin.php:408 includes/admin.php:1822 includes/admin.php:1983
+#: includes/admin.php:408 includes/admin.php:1822 includes/admin.php:1984
 msgid "Link check"
 msgstr ""
 
@@ -958,27 +958,27 @@ msgstr ""
 msgid "Kind of short address"
 msgstr ""
 
-#: includes/admin.php:1268 includes/admin.php:1917 includes/admin.php:1925 includes/rest.php:339
+#: includes/admin.php:1268 includes/admin.php:1918 includes/admin.php:1926 includes/rest.php:339
 msgid "Random"
 msgstr ""
 
-#: includes/admin.php:1268 includes/admin.php:1917 includes/admin.php:1925
+#: includes/admin.php:1268 includes/admin.php:1918 includes/admin.php:1926
 msgid "Short and unique, e.g. k7mq4"
 msgstr ""
 
-#: includes/admin.php:1269 includes/admin.php:1916 includes/admin.php:1926 includes/rest.php:340
+#: includes/admin.php:1269 includes/admin.php:1917 includes/admin.php:1927 includes/rest.php:340
 msgid "Memorable"
 msgstr ""
 
-#: includes/admin.php:1269 includes/admin.php:1916 includes/admin.php:1926
+#: includes/admin.php:1269 includes/admin.php:1917 includes/admin.php:1927
 msgid "Two words, e.g. blue-couch"
 msgstr ""
 
-#: includes/admin.php:1270 includes/admin.php:1915 includes/rest.php:341
+#: includes/admin.php:1270 includes/admin.php:1916 includes/rest.php:341
 msgid "From the title"
 msgstr ""
 
-#: includes/admin.php:1270 includes/admin.php:1915
+#: includes/admin.php:1270 includes/admin.php:1916
 msgid "The first words of the title"
 msgstr ""
 
@@ -1247,7 +1247,7 @@ msgstr ""
 msgid "Short form"
 msgstr ""
 
-#: includes/admin.php:1499 includes/admin.php:1933 includes/admin.php:1934
+#: includes/admin.php:1499 includes/admin.php:1934 includes/admin.php:1935
 msgid "Link-in-bio page"
 msgstr ""
 
@@ -1298,7 +1298,7 @@ msgstr ""
 msgid "Save short link"
 msgstr ""
 
-#: includes/admin.php:1543 includes/admin.php:2247 includes/rest.php:342
+#: includes/admin.php:1543 includes/admin.php:2249 includes/rest.php:342
 msgid "Create short link"
 msgstr ""
 
@@ -1306,7 +1306,7 @@ msgstr ""
 msgid "Delete short link"
 msgstr ""
 
-#: includes/admin.php:1591 includes/admin.php:1706 includes/admin.php:1730 includes/admin.php:1751 includes/admin.php:1770 includes/admin.php:1784 includes/admin.php:2047 includes/admin.php:2117 includes/admin.php:2177 includes/network.php:286 includes/network.php:299 includes/wallet-admin.php:328 includes/wallet-admin.php:332
+#: includes/admin.php:1591 includes/admin.php:1706 includes/admin.php:1730 includes/admin.php:1751 includes/admin.php:1770 includes/admin.php:1784 includes/admin.php:2048 includes/admin.php:2119 includes/admin.php:2179 includes/network.php:286 includes/network.php:299 includes/wallet-admin.php:328 includes/wallet-admin.php:332
 msgid "You are not allowed to do this."
 msgstr ""
 
@@ -1334,19 +1334,19 @@ msgstr ""
 msgid "Default target"
 msgstr ""
 
-#: includes/admin.php:1819 includes/admin.php:1905
+#: includes/admin.php:1819 includes/admin.php:1906
 msgid "Create automatically"
 msgstr ""
 
-#: includes/admin.php:1820 includes/admin.php:1933
+#: includes/admin.php:1820 includes/admin.php:1934
 msgid "Social media"
 msgstr ""
 
-#: includes/admin.php:1821 includes/admin.php:1959
+#: includes/admin.php:1821 includes/admin.php:1960
 msgid "Maintenance mode"
 msgstr ""
 
-#: includes/admin.php:1823 includes/admin.php:1993
+#: includes/admin.php:1823 includes/admin.php:1994
 msgid "Statistics"
 msgstr ""
 
@@ -1354,7 +1354,7 @@ msgstr ""
 msgid "Existing content"
 msgstr ""
 
-#: includes/admin.php:1825 includes/admin.php:2028 includes/admin.php:2032 includes/admin.php:2034
+#: includes/admin.php:1825 includes/admin.php:2029 includes/admin.php:2033 includes/admin.php:2035
 msgid "Import"
 msgstr ""
 
@@ -1378,7 +1378,7 @@ msgstr ""
 msgid "Changing a prefix changes all short links – printed QR codes then stop working. Best decide once."
 msgstr ""
 
-#: includes/admin.php:1878 includes/admin.php:2004
+#: includes/admin.php:1878 includes/admin.php:2005
 msgid "Set for the whole network."
 msgstr ""
 
@@ -1398,7 +1398,7 @@ msgstr ""
 msgid "Where visitors go when a short link does not lead anywhere – instead of a “not found” page."
 msgstr ""
 
-#: includes/admin.php:1892 includes/admin.php:1973
+#: includes/admin.php:1892 includes/admin.php:1974
 msgid "“Not found” or “gone” as usual."
 msgstr ""
 
@@ -1430,203 +1430,211 @@ msgstr ""
 msgid "Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own."
 msgstr ""
 
-#: includes/admin.php:1905
+#: includes/admin.php:1903
+msgid "Hide buttons to such short links"
+msgstr ""
+
+#: includes/admin.php:1903
+msgid "A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused or has reached its limit."
+msgstr ""
+
+#: includes/admin.php:1906
 msgid "When something of these types is published for the first time it gets a short link that starts with the publication."
 msgstr ""
 
-#: includes/admin.php:1905 includes/admin.php:1933 includes/admin.php:1983
+#: includes/admin.php:1906 includes/admin.php:1934 includes/admin.php:1984
 msgid "Off"
 msgstr ""
 
-#: includes/admin.php:1912
+#: includes/admin.php:1913
 msgid "Short address for posts and pages"
 msgstr ""
 
-#: includes/admin.php:1922
+#: includes/admin.php:1923
 msgid "Short address for all other targets"
 msgstr ""
 
-#: includes/admin.php:1929
+#: includes/admin.php:1930
 msgid "The default for new short links – each link can still get a different kind."
 msgstr ""
 
-#: includes/admin.php:1933
+#: includes/admin.php:1934
 msgid "Link previews for posts and pages always come straight from the content – there is nothing to set up for them."
 msgstr ""
 
-#: includes/admin.php:1934
+#: includes/admin.php:1935
 msgid "A simple page with buttons for chosen short links – for the link in your Instagram, TikTok or Mastodon profile. Name, tagline and icon come from the site settings."
 msgstr ""
 
-#: includes/admin.php:1936
+#: includes/admin.php:1937
 msgid "Address of the page"
 msgstr ""
 
-#: includes/admin.php:1941
+#: includes/admin.php:1942
 msgid "Which short links appear is chosen at each short link under “Sharing”."
 msgstr ""
 
-#: includes/admin.php:1943
+#: includes/admin.php:1944
 msgid "New short links add UTM parameters"
 msgstr ""
 
-#: includes/admin.php:1943
+#: includes/admin.php:1944
 msgid "Can be changed per short link."
 msgstr ""
 
-#: includes/admin.php:1947
+#: includes/admin.php:1948
 msgid "Home page and error page"
 msgstr ""
 
-#: includes/admin.php:1947
+#: includes/admin.php:1948
 msgid "The short domain says in a few words what it is, and catches short links that have ended or do not exist. The lead comes from the site’s tagline."
 msgstr ""
 
-#: includes/admin.php:1949
+#: includes/admin.php:1950
 msgid "Imprint"
 msgstr ""
 
-#: includes/admin.php:1950
+#: includes/admin.php:1951
 msgid "Privacy"
 msgstr ""
 
-#: includes/admin.php:1952
+#: includes/admin.php:1953
 msgid "Shown at the foot of both pages. Empty = a page of this site named “impressum” or “imprint”, and its privacy policy page."
 msgstr ""
 
-#: includes/admin.php:1953
+#: includes/admin.php:1954
 msgid "Open the home page"
 msgstr ""
 
-#: includes/admin.php:1959
+#: includes/admin.php:1960
 msgid "How short links and the maintenance mode of Clean Maintenance work together on this site. The same setting appears in the maintenance mode settings."
 msgstr ""
 
-#: includes/admin.php:1961
+#: includes/admin.php:1962
 msgid "While maintenance mode is on"
 msgstr ""
 
-#: includes/admin.php:1964
+#: includes/admin.php:1965
 msgid "Redirect as usual"
 msgstr ""
 
-#: includes/admin.php:1964
+#: includes/admin.php:1965
 msgid "Short links work; pages of this site show the maintenance page."
 msgstr ""
 
-#: includes/admin.php:1965
+#: includes/admin.php:1966
 msgid "Let targets through"
 msgstr ""
 
-#: includes/admin.php:1965
+#: includes/admin.php:1966
 msgid "Pages that active short links lead to stay reachable."
 msgstr ""
 
-#: includes/admin.php:1966
+#: includes/admin.php:1967
 msgid "Pause short links"
 msgstr ""
 
-#: includes/admin.php:1966
+#: includes/admin.php:1967
 msgid "Short links show the maintenance page too."
 msgstr ""
 
-#: includes/admin.php:1970
+#: includes/admin.php:1971
 msgid "Short links that do not work"
 msgstr ""
 
-#: includes/admin.php:1973
+#: includes/admin.php:1974
 msgid "Error page"
 msgstr ""
 
-#: includes/admin.php:1974
+#: includes/admin.php:1975
 msgid "Maintenance page when temporary"
 msgstr ""
 
-#: includes/admin.php:1974
+#: includes/admin.php:1975
 msgid "For targets that are only temporarily unreachable."
 msgstr ""
 
-#: includes/admin.php:1975
+#: includes/admin.php:1976
 msgid "Always the maintenance page"
 msgstr ""
 
-#: includes/admin.php:1975
+#: includes/admin.php:1976
 msgid "Instead of every error page – also without maintenance mode."
 msgstr ""
 
-#: includes/admin.php:1978
+#: includes/admin.php:1979
 msgid "A fallback of the short link and the default target always come first."
 msgstr ""
 
-#: includes/admin.php:1983
+#: includes/admin.php:1984
 msgid "Checks whether short links answer and whether their targets can still be reached. Only the target addresses are requested – nothing else is sent."
 msgstr ""
 
-#: includes/admin.php:1983
+#: includes/admin.php:1984
 msgid "Daily"
 msgstr ""
 
-#: includes/admin.php:1984
+#: includes/admin.php:1985
 msgid "Check automatically once a day"
 msgstr ""
 
-#: includes/admin.php:1984
+#: includes/admin.php:1985
 msgid "Up to 25 short links per day, the ones checked longest ago first. New and changed links are checked when you save them."
 msgstr ""
 
-#: includes/admin.php:1986
+#: includes/admin.php:1987
 msgid "Permanently unreachable after"
 msgstr ""
 
-#: includes/admin.php:1987
+#: includes/admin.php:1988
 msgid "days"
 msgstr ""
 
-#: includes/admin.php:1988
+#: includes/admin.php:1989
 msgid "Until then an unreachable target counts as temporarily unreachable: “try again later” (503). Afterwards: “gone” (410). If the target answers again, the link works again."
 msgstr ""
 
-#: includes/admin.php:1990
+#: includes/admin.php:1991
 msgid "Do not send visitors to unreachable targets"
 msgstr ""
 
-#: includes/admin.php:1990
+#: includes/admin.php:1991
 msgid "If the check found a target unreachable, the link leads to its fallback instead – or to the default target, or the “not found” page."
 msgstr ""
 
-#: includes/admin.php:1993 includes/network.php:197
+#: includes/admin.php:1994 includes/network.php:197
 msgid "Only daily totals are stored – no IP addresses, no cookies."
 msgstr ""
 
-#: includes/admin.php:1994
+#: includes/admin.php:1995
 msgid "Also count visits of logged-in authors and editors"
 msgstr ""
 
-#: includes/admin.php:1996 includes/network.php:191
+#: includes/admin.php:1997 includes/network.php:191
 msgid "Keep statistics"
 msgstr ""
 
-#: includes/admin.php:2010 includes/network.php:233
+#: includes/admin.php:2011 includes/network.php:233
 msgid "Save settings"
 msgstr ""
 
-#: includes/admin.php:2014
+#: includes/admin.php:2015
 msgid "Short links for existing content"
 msgstr ""
 
-#: includes/admin.php:2014
+#: includes/admin.php:2015
 msgid "One click gives every published item without a short link one – with the kind chosen above."
 msgstr ""
 
-#: includes/admin.php:2018
+#: includes/admin.php:2019
 msgid "Content type"
 msgstr ""
 
-#: includes/admin.php:2024
+#: includes/admin.php:2025
 msgid "Create short links"
 msgstr ""
 
-#: includes/admin.php:2028
+#: includes/admin.php:2029
 msgid "One short link per line: short address ; target ; title – separated by semicolons or tabs. Targets on this site are recognised as posts and pages. Imported links also get the short form without prefix, so existing short links like example.com/abc keep working."
 msgstr ""
 
@@ -1662,16 +1670,16 @@ msgstr ""
 msgid "Answers with %1$d instead of %2$d – maybe a cache or another plugin is in the way."
 msgstr ""
 
-#: includes/core.php:758
+#: includes/core.php:759
 msgid "Newsletter"
 msgstr ""
 
 #. translators: E-mail share option
-#: includes/core.php:759 includes/social.php:145
+#: includes/core.php:760 includes/social.php:145
 msgid "E-mail"
 msgstr ""
 
-#: includes/core.php:760
+#: includes/core.php:761
 msgid "Print"
 msgstr ""
 

@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.5.8
+Stable tag: 0.5.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.5.9 =
+* Buttons follow their short link: a button that points to a short link of the network only shows while the link leads to its target – it appears when the link starts and disappears when it ends, is paused, has reached its limit or was retired. Rows without a visible button leave no gap. On by default, under Settings → Default target; filter `clean_short_links_button_shows`.
 
 = 0.5.8 =
 * Nextcloud links have a lean editor: title, short address, QR code and visits. Target and end are shown and follow the share; everything the share settles itself is left out.

@@ -353,6 +353,7 @@ function site_defaults() {
 		'default_inactive' => 1,
 		'auto_check'    => 1,
 		'skip_broken'   => 1,
+		'hide_dead_buttons' => 1,
 		'gone_days'     => 30,
 		'utm_default'   => 0,
 		'bio_enabled'   => 0,
@@ -1232,6 +1233,28 @@ function resolve( array $link, \DateTimeImmutable $now, callable $url_of, callab
 		'state'  => $state,
 		'target' => $target,
 	);
+}
+
+/**
+ * Does a link lead to its own target right now – not to a fallback, not to nowhere?
+ * Buttons that point to a short link are only shown then.
+ *
+ * @param array $result Result of resolve().
+ * @return bool
+ */
+function leads_now( array $result ) {
+	$state = (string) ( $result['state'] ?? '' );
+	return 302 === (int) ( $result['status'] ?? 0 ) && ( 'default' === $state || 0 === strpos( $state, 'rule-' ) );
+}
+
+/**
+ * The address of the first link in a piece of HTML, e.g. a rendered button.
+ *
+ * @param string $html HTML.
+ * @return string Address, '' without a link.
+ */
+function first_href( $html ) {
+	return preg_match( '/<a\s[^>]*?\bhref\s*=\s*(["\'])(.*?)\1/is', (string) $html, $m ) ? html_entity_decode( trim( $m[2] ), ENT_QUOTES ) : '';
 }
 
 /**

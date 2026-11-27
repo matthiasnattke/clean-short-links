@@ -1900,6 +1900,7 @@ function page_settings() {
 						</div>
 						<div class="csl-sub"><?php toggle( 'default_unknown', ! empty( $s['default_unknown'] ), __( 'For unknown short addresses', 'clean-short-links' ), __( 'e.g. a mistyped example.com/s/…', 'clean-short-links' ) ); ?></div>
 						<div class="csl-sub"><?php toggle( 'default_inactive', ! empty( $s['default_inactive'] ), __( 'For short links that do not lead anywhere right now', 'clean-short-links' ), __( 'Not started yet, expired, limit reached, paused or retired – unless the link has a fallback of its own.', 'clean-short-links' ) ); ?></div>
+						<div class="csl-sub"><?php toggle( 'hide_dead_buttons', ! empty( $s['hide_dead_buttons'] ), __( 'Hide buttons to such short links', 'clean-short-links' ), __( 'A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused or has reached its limit.', 'clean-short-links' ) ); ?></div>
 					<?php card_close(); ?>
 
 					<?php card_open( 'csl-sec-auto', 'bolt', __( 'Create automatically', 'clean-short-links' ), __( 'When something of these types is published for the first time it gets a short link that starts with the publication.', 'clean-short-links' ), '', fold( false, $s['auto_types'] ? implode( ', ', array_map( fn( $t ) => isset( $types[ $t ] ) ? $types[ $t ]->labels->name : $t, (array) $s['auto_types'] ) ) : __( 'Off', 'clean-short-links' ) ) ); ?>
@@ -2066,6 +2067,7 @@ add_action(
 			'default_inactive' => empty( $p['default_inactive'] ) ? 0 : 1,
 			'auto_check'    => empty( $p['auto_check'] ) ? 0 : 1,
 			'skip_broken'   => empty( $p['skip_broken'] ) ? 0 : 1,
+			'hide_dead_buttons' => empty( $p['hide_dead_buttons'] ) ? 0 : 1,
 			'gone_days'     => min( 365, max( 1, absint( $p['gone_days'] ?? 30 ) ) ),
 			'utm_default'   => empty( $p['utm_default'] ) ? 0 : 1,
 			'bio_enabled'   => empty( $p['bio_enabled'] ) ? 0 : 1,

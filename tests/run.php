@@ -1348,6 +1348,23 @@ test( 'uninstall ends the cards of links and locations when Connect is active', 
 	same( true, in_array( 'clean_short_links_wallet_touch_all', $GLOBALS['csl_cleared'], true ) );
 } );
 
+test( 'buttons show only while the link leads to its own target', function () {
+	same( true, leads_now( array( 'status' => 302, 'state' => 'default' ) ), 'active' );
+	same( true, leads_now( array( 'status' => 302, 'state' => 'rule-2' ) ), 'rule' );
+	same( false, leads_now( array( 'status' => 302, 'state' => 'expired' ) ), 'expired with fallback' );
+	same( false, leads_now( array( 'status' => 302, 'state' => 'waiting' ) ), 'not started, fallback' );
+	same( false, leads_now( array( 'status' => 404, 'state' => 'waiting' ) ), 'not started' );
+	same( false, leads_now( array( 'status' => 410, 'state' => 'expired' ) ), 'expired' );
+	same( false, leads_now( array( 'status' => 404, 'state' => 'paused' ) ), 'paused' );
+} );
+
+test( 'first link of a rendered button', function () {
+	same( 'https://nattke.eu/s/slides', first_href( '<div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="https://nattke.eu/s/slides">Slides</a></div>' ) );
+	same( '/s/a?x=1&y=2', first_href( "<div><a target='_blank' href='/s/a?x=1&amp;y=2'>A</a></div>" ) );
+	same( '', first_href( '<div class="wp-block-button"><a class="wp-block-button__link">Kein Link</a></div>' ) );
+	same( '', first_href( '<div data-href="x"><abbr>no</abbr></div>' ) );
+} );
+
 $fail = $GLOBALS['fail'];
 echo "\n" . $GLOBALS['pass'] . ' passed, ' . count( $fail ) . " failed\n";
 exit( $fail ? 1 : 0 );
