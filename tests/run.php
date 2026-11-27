@@ -1358,6 +1358,12 @@ test( 'buttons show only while the link leads to its own target', function () {
 	same( false, leads_now( array( 'status' => 404, 'state' => 'paused' ) ), 'paused' );
 } );
 
+test( 'same page ignores scheme, www, query and trailing slash', function () {
+	same( true, same_page( 'https://nattke.eu/2026/11/24/talk/', 'http://www.nattke.eu/2026/11/24/talk?x=1#a' ) );
+	same( false, same_page( 'https://www.b-tu.de/owncloud/s/5JFY', 'https://nattke.eu/2026/11/24/talk/' ) );
+	same( false, same_page( '', '' ) );
+} );
+
 test( 'first link of a rendered button', function () {
 	same( 'https://nattke.eu/s/slides', first_href( '<div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="https://nattke.eu/s/slides">Slides</a></div>' ) );
 	same( '/s/a?x=1&y=2', first_href( "<div><a target='_blank' href='/s/a?x=1&amp;y=2'>A</a></div>" ) );

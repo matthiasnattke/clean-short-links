@@ -1435,7 +1435,7 @@ msgid "Hide buttons to such short links"
 msgstr ""
 
 #: includes/admin.php:1903
-msgid "A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused or has reached its limit."
+msgid "A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused, has reached its limit or leads back to the page the button is on."
 msgstr ""
 
 #: includes/admin.php:1906

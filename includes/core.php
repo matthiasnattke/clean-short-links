@@ -1248,6 +1248,24 @@ function leads_now( array $result ) {
 }
 
 /**
+ * Do two addresses name the same page? Scheme, "www.", query, fragment and a trailing
+ * slash do not count.
+ *
+ * @param string $a Address.
+ * @param string $b Address.
+ * @return bool
+ */
+function same_page( $a, $b ) {
+	$norm = function ( $url ) {
+		$url  = strtolower( trim( (string) $url ) );
+		$url  = preg_replace( '/[?#].*$/', '', $url );
+		$url  = preg_replace( '#^https?://(www\.)?#', '', $url );
+		return rtrim( $url, '/' );
+	};
+	return '' !== $norm( $a ) && $norm( $a ) === $norm( $b );
+}
+
+/**
  * The address of the first link in a piece of HTML, e.g. a rendered button.
  *
  * @param string $html HTML.

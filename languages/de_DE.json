@@ -547,5 +547,5 @@
 	"Target and end come from the share – change them in Nextcloud.": "Ziel und Ende kommen aus der Freigabe – ändere sie in Nextcloud.",
 	"Never – as long as the share exists": "Nie – solange es die Freigabe gibt",
 	"Hide buttons to such short links": "Knöpfe zu solchen Kurzlinks ausblenden",
-	"A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused or has reached its limit.": "Ein Knopf auf dieser Website, der auf einen Kurzlink zeigt, erscheint nur, solange der Link zu seinem Ziel führt: Er taucht auf, wenn der Link startet, und verschwindet, wenn er abläuft, pausiert ist oder sein Limit erreicht hat."
+	"A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused, has reached its limit or leads back to the page the button is on.": "Ein Knopf auf dieser Website, der auf einen Kurzlink zeigt, erscheint nur, solange der Link zu seinem Ziel führt: Er taucht auf, wenn der Link startet, und verschwindet, wenn er abläuft, pausiert ist, sein Limit erreicht hat oder zurück auf die Seite führt, auf der der Knopf steht."
 }

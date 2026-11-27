@@ -2,7 +2,9 @@
 /**
  * Buttons that follow their short link: a button block whose link is a short link of this
  * network is only shown while the link leads to its target. It appears when the link starts
- * and disappears when it ends, is paused, has reached its limit or was retired.
+ * and disappears when it ends, is paused, has reached its limit or was retired – and while
+ * it leads back to the very page the button is on (e.g. a rule sends it to the slides only
+ * on the day of a talk, otherwise to the post about the talk).
  *
  * Decided when the page is rendered – a page cache keeps the state it saw.
  *
@@ -88,12 +90,14 @@ function link_for_url( $url ) {
  */
 function button_shows( $url ) {
 	static $memo = array();
-	if ( array_key_exists( $url, $memo ) ) {
-		return $memo[ $url ];
+	$here = (string) ( is_singular() ? get_permalink( get_queried_object_id() ) : '' );
+	$key  = $url . '|' . $here;
+	if ( array_key_exists( $key, $memo ) ) {
+		return $memo[ $key ];
 	}
 	$hit = link_for_url( $url );
 	if ( ! $hit ) {
-		$memo[ $url ] = null;
+		$memo[ $key ] = null;
 		return null;
 	}
 	list( $found, $blog ) = $hit;
@@ -108,14 +112,14 @@ function button_shows( $url ) {
 		$link   = $parent ? merge_parent( $link, $parent ) : null;
 	}
 	if ( $link && 'retired' !== $kind ) {
-		$shows = leads_now(
-			resolve(
-				$link,
-				new \DateTimeImmutable( 'now', wp_timezone() ),
-				__NAMESPACE__ . '\\target_url',
-				__NAMESPACE__ . '\\target_published'
-			)
+		$result = resolve(
+			$link,
+			new \DateTimeImmutable( 'now', wp_timezone() ),
+			__NAMESPACE__ . '\\target_url',
+			__NAMESPACE__ . '\\target_published'
 		);
+		// A link that leads back to this very page is no use as a button here.
+		$shows = leads_now( $result ) && ! ( '' !== $here && same_page( $result['url'], $here ) );
 	}
 	if ( $switch ) {
 		restore_current_blog();
@@ -127,8 +131,8 @@ function button_shows( $url ) {
 	 * @param string $url   Address of the button.
 	 * @param array  $link  The short link (empty for a retired address).
 	 */
-	$memo[ $url ] = (bool) apply_filters( 'clean_short_links_button_shows', $shows, $url, $link ? $link : array() );
-	return $memo[ $url ];
+	$memo[ $key ] = (bool) apply_filters( 'clean_short_links_button_shows', $shows, $url, $link ? $link : array() );
+	return $memo[ $key ];
 }
 
 add_filter(

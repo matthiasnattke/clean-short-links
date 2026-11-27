@@ -1436,8 +1436,8 @@ msgid "Hide buttons to such short links"
 msgstr "Knöpfe zu solchen Kurzlinks ausblenden"
 
 #: includes/admin.php:1903
-msgid "A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused or has reached its limit."
-msgstr "Ein Knopf auf dieser Website, der auf einen Kurzlink zeigt, erscheint nur, solange der Link zu seinem Ziel führt: Er taucht auf, wenn der Link startet, und verschwindet, wenn er abläuft, pausiert ist oder sein Limit erreicht hat."
+msgid "A button on this site that points to a short link only shows while the link leads to its target: it appears when the link starts and disappears when it ends, is paused, has reached its limit or leads back to the page the button is on."
+msgstr "Ein Knopf auf dieser Website, der auf einen Kurzlink zeigt, erscheint nur, solange der Link zu seinem Ziel führt: Er taucht auf, wenn der Link startet, und verschwindet, wenn er abläuft, pausiert ist, sein Limit erreicht hat oder zurück auf die Seite führt, auf der der Knopf steht."
 
 #: includes/admin.php:1906
 msgid "When something of these types is published for the first time it gets a short link that starts with the publication."
