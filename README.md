@@ -1,7 +1,7 @@
 # Clean Short Links
 
 <p align="center">
-  <a href="https://couch-blog.de/projekte/clean-short-links/"><img src="https://img.shields.io/badge/WordPress-Plugin-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress plugin"></a>
+  <a href="https://couch-blog.de/clean-short-links/"><img src="https://img.shields.io/badge/WordPress-Plugin-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress plugin"></a>
   <a href="https://github.com/matthiasnattke/clean-short-links/releases/latest"><img src="https://img.shields.io/github/v/release/matthiasnattke/clean-short-links?style=for-the-badge&label=Release" alt="Release"></a>
   <img src="https://img.shields.io/badge/WordPress-6.4%2B-21759B?style=for-the-badge" alt="WordPress 6.4+">
   <img src="https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.0+">
