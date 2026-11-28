@@ -60,5 +60,6 @@ require dirname( __DIR__ ) . '/includes/nextcloud.php';
 /* Stand-ins for uninstall.php and Connect's card API (test: uninstall ends the cards). */
 function clean_mobile_connect_wallet_end_card( $owner, $ref ) { $GLOBALS['csl_ended'][] = $owner . '|' . $ref; }
 function delete_option( $name ) {}
+function delete_post_meta_by_key( $key ) { $GLOBALS['csl_deleted_meta'][] = $key; }
 function wp_clear_scheduled_hook( $hook ) { $GLOBALS['csl_cleared'][] = $hook; }
 function wp_unschedule_hook( $hook ) { $GLOBALS['csl_cleared'][] = $hook; }

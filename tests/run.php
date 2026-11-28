@@ -1371,6 +1371,33 @@ test( 'first link of a rendered button', function () {
 	same( '', first_href( '<div data-href="x"><abbr>no</abbr></div>' ) );
 } );
 
+/* Permalinks of post types that are unknown where the short link is resolved (short domain). */
+if ( ! class_exists( '\WP_Post' ) ) { eval( 'class WP_Post { public $ID = 0; public $post_type = "post"; public $post_status = "publish"; }' ); }
+function post_type_exists( $type ) { return in_array( $type, $GLOBALS['csl_types'], true ); }
+function get_permalink( $post ) { return post_type_exists( $post->post_type ) ? 'https://example.org/2013/09/20/folge-' . $post->ID . '/' : 'https://example.org/?p=' . $post->ID; }
+function get_post_meta( $id, $key, $single = false ) { return $GLOBALS['csl_meta'][ $id ][ $key ] ?? ''; }
+function update_post_meta( $id, $key, $value ) { $GLOBALS['csl_meta'][ $id ][ $key ] = $value; ++$GLOBALS['csl_meta_writes']; return true; }
+
+test( 'permalink is remembered and used where the post type is unknown', function () {
+	$GLOBALS['csl_meta']        = array();
+	$GLOBALS['csl_meta_writes'] = 0;
+	$post            = new \WP_Post();
+	$post->ID        = 5749;
+	$post->post_type = 'podcast';
+
+	$GLOBALS['csl_types'] = array( 'post', 'page' ); // Short domain: no podcast plugin.
+	same( 'https://example.org/?p=5749', post_permalink( $post ), 'nothing remembered yet' );
+
+	$GLOBALS['csl_types'] = array( 'post', 'page', 'podcast' ); // The link's own site.
+	same( 'https://example.org/2013/09/20/folge-5749/', post_permalink( $post ), 'own site' );
+	same( 1, $GLOBALS['csl_meta_writes'], 'remembered once' );
+	post_permalink( $post );
+	same( 1, $GLOBALS['csl_meta_writes'], 'not written again while unchanged' );
+
+	$GLOBALS['csl_types'] = array( 'post', 'page' );
+	same( 'https://example.org/2013/09/20/folge-5749/', post_permalink( $post ), 'short domain uses the remembered permalink' );
+} );
+
 $fail = $GLOBALS['fail'];
 echo "\n" . $GLOBALS['pass'] . ' passed, ' . count( $fail ) . " failed\n";
 exit( $fail ? 1 : 0 );

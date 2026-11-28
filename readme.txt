@@ -4,7 +4,7 @@ Tags: short links, url shortener, qr code, redirect, statistics
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.5.10
+Stable tag: 0.5.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ No. Clean Short Links works completely on its own. Only when the plugin Clean Mo
 Visits are only added up per day – no IP addresses, cookies or user IDs are stored. Only the host of a referring page is kept, never the full address.
 
 == Changelog ==
+
+= 0.5.11 =
+* Short links on a short domain lead straight to posts of custom post types (a podcast episode, for example) instead of taking a detour via ?p=123: the real permalink is remembered on the post.
 
 = 0.5.10 =
 * A button whose short link leads back to the page the button is on is hidden too – e.g. a link that leads to the slides only on the day of a talk and otherwise to the post about it.

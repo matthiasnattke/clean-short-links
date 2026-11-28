@@ -40,6 +40,7 @@ function clean_short_links_uninstall_site() {
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL -- Removing the plugin's own tables.
 	}
 	delete_option( 'clean_short_links_db' );
+	delete_post_meta_by_key( '_clean_short_links_permalink' );
 	delete_option( 'clean_short_links_site' );
 	delete_option( 'clean_short_links_network' );
 	wp_clear_scheduled_hook( 'clean_short_links_prune' );

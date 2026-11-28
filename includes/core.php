@@ -645,6 +645,30 @@ function parse_path( $path, $home_path, $prefix, $qr_prefix, $wallet_prefix = ''
  * Targets, time windows and rules
  * ------------------------------------------------------------------------ */
 
+/** Post meta with the remembered permalink of a link target, see post_permalink(). */
+const PERMALINK_META = '_clean_short_links_permalink';
+
+/**
+ * Permalink of a post – also where its post type is not registered. A short domain is a site of
+ * its own and does not load the plugins of the site the link belongs to (a podcast plugin, for
+ * example); WordPress could only build "?p=123" there, an extra redirect for every visitor.
+ * So the real permalink is remembered on the post whenever it is known, and used where it is not.
+ *
+ * @param \WP_Post $post Post.
+ * @return string
+ */
+function post_permalink( \WP_Post $post ) {
+	if ( post_type_exists( $post->post_type ) ) {
+		$url = (string) get_permalink( $post );
+		if ( '' !== $url && get_post_meta( $post->ID, PERMALINK_META, true ) !== $url ) {
+			update_post_meta( $post->ID, PERMALINK_META, $url );
+		}
+		return $url;
+	}
+	$known = (string) get_post_meta( $post->ID, PERMALINK_META, true );
+	return '' !== $known ? $known : (string) get_permalink( $post );
+}
+
 /**
  * Cleans a target: "post:123" for content of this site, "link:45" for another short link,
  * "home" for the home page, otherwise an http(s) URL.

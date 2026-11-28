@@ -21,6 +21,7 @@ const DB_VERSION = 4;
 // Version of the network-wide routes table (further domains).
 const ROUTES_VERSION = 1;
 
+
 /**
  * Table names of the current site.
  *
@@ -850,6 +851,10 @@ function save_link( array $data ) {
 			return new \WP_Error( 'db', __( 'The short link could not be saved.', 'clean-short-links' ) );
 		}
 	}
+	$target_post = target_post_id( $target ) ? get_post( target_post_id( $target ) ) : null;
+	if ( $target_post && 'publish' === $target_post->post_status ) {
+		post_permalink( $target_post ); // Remember it while the post type is known.
+	}
 
 	// Short addresses: the old main address becomes an alias or is retired.
 	if ( $old && $old['slug'] !== $slug ) {
@@ -1305,11 +1310,26 @@ function target_url( $target, $depth = 0 ) {
 		if ( ! $post || 'publish' !== $post->post_status ) {
 			return null;
 		}
-		$url = get_permalink( $post );
+		$url = post_permalink( $post );
 		return $url ? $url : null;
 	}
 	return '' !== $target ? $target : null;
 }
+
+/*
+ * Keep the remembered permalink of posts with short links up to date when they are saved.
+ */
+add_action(
+	'save_post',
+	function ( $post_id, $post ) {
+		if ( wp_is_post_revision( $post_id ) || 'publish' !== $post->post_status || ! links_for_post( (int) $post_id ) ) {
+			return;
+		}
+		post_permalink( $post );
+	},
+	20,
+	2
+);
 
 /**
  * Publication time of a target post, null if it is not published (yet).
