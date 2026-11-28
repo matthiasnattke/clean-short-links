@@ -1,5 +1,14 @@
 # Clean Short Links
 
+<p align="center">
+  <a href="https://couch-blog.de/projekte/clean-short-links/"><img src="https://img.shields.io/badge/WordPress-Plugin-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress plugin"></a>
+  <a href="https://github.com/matthiasnattke/clean-short-links/releases/latest"><img src="https://img.shields.io/github/v/release/matthiasnattke/clean-short-links?style=for-the-badge&label=Release" alt="Release"></a>
+  <img src="https://img.shields.io/badge/WordPress-6.4%2B-21759B?style=for-the-badge" alt="WordPress 6.4+">
+  <img src="https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.0+">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--2.0--or--later-blue?style=for-the-badge" alt="License: GPL-2.0-or-later"></a>
+  <a href="https://buymeacoffee.com/couch"><img src="https://img.shields.io/badge/Buy%20me%20a-coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee"></a>
+</p>
+
 Short links for WordPress posts, pages and any URL – on your own domain, with time windows, targets that change by date and time, QR codes with your logo and privacy-friendly statistics. Multisite-ready.
 
 ```
